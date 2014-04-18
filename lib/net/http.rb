@@ -851,6 +851,7 @@ module Net   #:nodoc:
       :@cert,
       :@cert_store,
       :@ciphers,
+      :@extra_chain_cert,
       :@key,
       :@ssl_timeout,
       :@ssl_version,
@@ -867,6 +868,7 @@ module Net   #:nodoc:
       :cert,
       :cert_store,
       :ciphers,
+      :extra_chain_cert
       :key,
       :ssl_timeout,
       :ssl_version,
@@ -896,6 +898,10 @@ module Net   #:nodoc:
 
     # Sets the available ciphers.  See OpenSSL::SSL::SSLContext#ciphers=
     attr_accessor :ciphers
+
+    # Sets the extra X509 certificates to be added to the certificate chain.
+    # See OpenSSL::SSL::SSLContext#extra_chain_cert=
+    attr_accessor :extra_chain_cert
 
     # Sets an OpenSSL::PKey::RSA or OpenSSL::PKey::DSA object.
     # (This method is appeared in Michal Rokos's OpenSSL extension.)
