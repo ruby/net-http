@@ -1,8 +1,14 @@
 # Net::Http
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/net/http`. To experiment with that code, run `bin/console` for an interactive prompt.
+Net::HTTP provides a rich library which can be used to build HTTP
+user-agents.  For more details about HTTP see
+[RFC2616](http://www.ietf.org/rfc/rfc2616.txt).
 
-TODO: Delete this and the text above, and describe your gem
+Net::HTTP is designed to work closely with URI.  URI::HTTP#host,
+URI::HTTP#port and URI::HTTP#request_uri are designed to work with
+Net::HTTP.
+
+If you are only performing a few GET requests you should try OpenURI.
 
 ## Installation
 
@@ -22,7 +28,57 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+All examples assume you have loaded Net::HTTP with:
+
+```ruby
+require 'net/http'
+```
+
+This will also require 'uri' so you don't need to require it separately.
+
+The Net::HTTP methods in the following section do not persist
+connections.  They are not recommended if you are performing many HTTP
+requests.
+
+### GET
+
+```ruby
+Net::HTTP.get('example.com', '/index.html') # => String
+```
+
+### GET by URI
+
+```ruby
+uri = URI('http://example.com/index.html?count=10')
+Net::HTTP.get(uri) # => String
+```
+
+### GET with Dynamic Parameters
+
+```ruby 
+uri = URI('http://example.com/index.html')
+params = { :limit => 10, :page => 3 }
+uri.query = URI.encode_www_form(params)
+
+res = Net::HTTP.get_response(uri)
+puts res.body if res.is_a?(Net::HTTPSuccess)
+```
+
+### POST
+
+```ruby
+uri = URI('http://www.example.com/search.cgi')
+res = Net::HTTP.post_form(uri, 'q' => 'ruby', 'max' => '50')
+puts res.body
+```
+
+### POST with Multiple Values
+
+```ruby
+uri = URI('http://www.example.com/search.cgi')
+res = Net::HTTP.post_form(uri, 'q' => ['ruby', 'perl'], 'max' => '50')
+puts res.body
+```
 
 ## Development
 
@@ -32,5 +88,5 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/hsbt/net-http.
+Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/net-http.
 
