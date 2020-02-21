@@ -3,8 +3,8 @@ require_relative 'lib/net/http/version'
 Gem::Specification.new do |spec|
   spec.name          = "net-http"
   spec.version       = Net::Http::VERSION
-  spec.authors       = ["Hiroshi SHIBATA"]
-  spec.email         = ["hsbt@ruby-lang.org"]
+  spec.authors       = ["NARUSE, Yui"]
+  spec.email         = ["naruse@airemix.jp"]
 
   spec.summary       = %q{HTTP client api for Ruby.}
   spec.description   = %q{HTTP client api for Ruby.}
