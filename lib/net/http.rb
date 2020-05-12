@@ -868,7 +868,7 @@ module Net   #:nodoc:
       :cert,
       :cert_store,
       :ciphers,
-      :extra_chain_cert
+      :extra_chain_cert,
       :key,
       :ssl_timeout,
       :ssl_version,
