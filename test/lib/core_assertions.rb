@@ -194,7 +194,11 @@ module Test
           end
           if ((args.empty? && !as) ||
               args.any? {|a| a.instance_of?(Module) ? e.is_a?(a) : e.class == a })
-            msg = message(msg) { "Exception raised:\n<#{mu_pp(e)}>" }
+            msg = message(msg) {
+              "Exception raised:\n<#{mu_pp(e)}>\n" +
+              "Backtrace:\n" +
+              e.backtrace.map{|frame| "  #{frame}"}.join("\n")
+            }
             raise MiniTest::Assertion, msg.call, bt
           else
             raise
@@ -287,6 +291,7 @@ eom
         args = args.dup
         args.insert((Hash === args.first ? 1 : 0), "-w", "--disable=gems", *$:.map {|l| "-I#{l}"})
         stdout, stderr, status = EnvUtil.invoke_ruby(args, src, capture_stdout, true, **opt)
+      ensure
         if res_c
           res_c.close
           res = res_p.read
@@ -294,6 +299,7 @@ eom
         else
           res = stdout
         end
+        raise if $!
         abort = status.coredump? || (status.signaled? && ABORT_SIGNALS.include?(status.termsig))
         assert(!abort, FailDesc[status, nil, stderr])
         self._assertions += res[/^assertions=(\d+)/, 1].to_i
@@ -448,6 +454,49 @@ eom
           block.binding.eval("proc{|_|$~=_}").call($~)
         end
         ex
+      end
+
+      # pattern_list is an array which contains regexp and :*.
+      # :* means any sequence.
+      #
+      # pattern_list is anchored.
+      # Use [:*, regexp, :*] for non-anchored match.
+      def assert_pattern_list(pattern_list, actual, message=nil)
+        rest = actual
+        anchored = true
+        pattern_list.each_with_index {|pattern, i|
+          if pattern == :*
+            anchored = false
+          else
+            if anchored
+              match = /\A#{pattern}/.match(rest)
+            else
+              match = pattern.match(rest)
+            end
+            unless match
+              msg = message(msg) {
+                expect_msg = "Expected #{mu_pp pattern}\n"
+                if /\n[^\n]/ =~ rest
+                  actual_mesg = +"to match\n"
+                  rest.scan(/.*\n+/) {
+                    actual_mesg << '  ' << $&.inspect << "+\n"
+                  }
+                  actual_mesg.sub!(/\+\n\z/, '')
+                else
+                  actual_mesg = "to match " + mu_pp(rest)
+                end
+                actual_mesg << "\nafter #{i} patterns with #{actual.length - rest.length} characters"
+                expect_msg + actual_mesg
+              }
+              assert false, msg
+            end
+            rest = match.post_match
+            anchored = true
+          end
+        }
+        if anchored
+          assert_equal("", rest)
+        end
       end
 
       def assert_warning(pat, msg = nil)
