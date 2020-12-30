@@ -1183,7 +1183,8 @@ module Net   #:nodoc:
     # The username of the proxy server, if one is configured.
     def proxy_user
       if ENVIRONMENT_VARIABLE_IS_MULTIUSER_SAFE && @proxy_from_env
-        proxy_uri&.user
+        user = proxy_uri&.user
+        unescape(user) if user
       else
         @proxy_user
       end
@@ -1192,7 +1193,8 @@ module Net   #:nodoc:
     # The password of the proxy server, if one is configured.
     def proxy_pass
       if ENVIRONMENT_VARIABLE_IS_MULTIUSER_SAFE && @proxy_from_env
-        proxy_uri&.password
+        pass = proxy_uri&.password
+        unescape(pass) if pass
       else
         @proxy_pass
       end
@@ -1202,6 +1204,11 @@ module Net   #:nodoc:
     alias proxyport proxy_port      #:nodoc: obsolete
 
     private
+
+    def unescape(value)
+      require 'cgi/util'
+      CGI.unescape(value)
+    end
 
     # without proxy, obsolete
 
