@@ -690,6 +690,7 @@ module Net   #:nodoc:
       @continue_timeout = nil
       @max_retries = 1
       @debug_output = nil
+      @force_response_body_encoding = false
 
       @proxy_from_env = false
       @proxy_uri      = nil
@@ -736,6 +737,11 @@ module Net   #:nodoc:
 
     # The local port used to establish the connection.
     attr_accessor :local_port
+
+    # Whether to force a response body encoding.  If true, tries to detect
+    # the response body encoding.  If String or Encoding, uses the specified
+    # encoding.
+    attr_accessor :force_response_body_encoding
 
     attr_writer :proxy_from_env
     attr_writer :proxy_address
@@ -1566,6 +1572,7 @@ module Net   #:nodoc:
           begin
             res = HTTPResponse.read_new(@socket)
             res.decode_content = req.decode_content
+            res.force_body_encoding = @force_response_body_encoding
           end while res.kind_of?(HTTPInformation)
 
           res.uri = req.uri
