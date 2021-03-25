@@ -14,7 +14,7 @@ GEM
       timeout
     power_assert (2.0.0)
     rake (13.0.1)
-    test-unit (3.3.5)
+    test-unit (3.4.0)
       power_assert
     timeout (0.1.1)
     uri (0.10.1)
