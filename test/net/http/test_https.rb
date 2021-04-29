@@ -1,10 +1,8 @@
 # frozen_string_literal: false
 require "test/unit"
+require_relative "utils"
 begin
   require 'net/https'
-  require 'stringio'
-  require 'timeout'
-  require File.expand_path("utils", File.dirname(__FILE__))
 rescue LoadError
   # should skip this test
 end
