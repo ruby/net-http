@@ -1,4 +1,4 @@
-# Net::Http
+# Net::HTTP
 
 Net::HTTP provides a rich library which can be used to build HTTP
 user-agents.  For more details about HTTP see
