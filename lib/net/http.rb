@@ -796,6 +796,12 @@ module Net   #:nodoc:
     #   headers = {'Content-type' => 'application/json; charset=UTF-8'}
     #   Net::HTTP.get(uri, headers)
     #
+    # Alternatively, +uri+ may be a String:
+    #
+    #   uri = 'https://jsonplaceholder.typicode.com/todos/1'
+    #   headers = {'Content-type' => 'application/json; charset=UTF-8'}
+    #   Net::HTTP.get(uri, headers)
+    #
     # Related:
     #
     # - Net::HTTP::Get: request class for \HTTP method +GET+.
@@ -820,6 +826,7 @@ module Net   #:nodoc:
         }
       else
         uri = uri_or_host
+        uri = URI(uri) if uri.is_a?(String)
         headers = path_or_headers
         start(uri.hostname, uri.port,
               :use_ssl => uri.scheme == 'https') {|http|

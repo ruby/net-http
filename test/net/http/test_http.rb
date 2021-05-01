@@ -303,6 +303,13 @@ module TestNetHTTP_version_1_1_methods
     assert_equal $test_net_http_data,
         Net::HTTP.get(config('host'), '/', config('port'))
 
+    assert_equal $test_net_http_data,
+        Net::HTTP.get("http://#{config('host')}:#{config('port')}")
+
+    assert_equal $test_net_http_data, Net::HTTP.get(
+      "http://#{config('host')}:#{config('port')}", "Accept" => "text/plain"
+    )
+
     assert_equal $test_net_http_data, Net::HTTP.get(
       URI.parse("http://#{config('host')}:#{config('port')}")
     )
@@ -311,7 +318,23 @@ module TestNetHTTP_version_1_1_methods
     )
   end
 
-  def test_s_get_response
+  def test_s_get_response_with_host
+    res = Net::HTTP.get_response(config('host'), '/', config('port'))
+    assert_equal "application/octet-stream", res["Content-Type"]
+    assert_equal $test_net_http_data, res.body
+  end
+
+  def test_s_get_response_with_uri_string
+    res = Net::HTTP.get_response("http://#{config('host')}:#{config('port')}")
+    assert_equal "application/octet-stream", res["Content-Type"]
+    assert_equal $test_net_http_data, res.body
+
+    res = Net::HTTP.get_response("http://#{config('host')}:#{config('port')}", "Accept" => "text/plain")
+    assert_equal "text/plain", res["Content-Type"]
+    assert_equal $test_net_http_data, res.body
+  end
+
+  def test_s_get_response_with_uri
     res = Net::HTTP.get_response(
       URI.parse("http://#{config('host')}:#{config('port')}")
     )
