@@ -99,7 +99,7 @@ class Net::HTTPGenericRequest
   #   Net::HTTP::Post.new(uri).inspect # => "#<Net::HTTP::Post POST>"
   #
   def inspect
-    "\#<#{self.class} #{@method}>"
+    "\#<#{self.class} #{@method} path=#{@path.inspect} headers=#{to_hash.inspect}>"
   end
 
   ##
