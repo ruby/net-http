@@ -62,7 +62,7 @@ class Net::HTTPGenericRequest
   attr_reader :decode_content
 
   def inspect
-    "\#<#{self.class} #{@method}>"
+    "\#<#{self.class} #{@method} path=#{@path.inspect} headers=#{to_hash.inspect}>"
   end
 
   ##
