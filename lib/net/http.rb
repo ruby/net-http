@@ -61,8 +61,7 @@ module Net   #:nodoc:
   #
   # === GET by URI
   #
-  #   uri = URI('http://example.com/index.html?count=10')
-  #   Net::HTTP.get(uri) # => String
+  #   Net::HTTP.get('http://example.com/index.html?count=10') # => String
   #
   # === GET with Dynamic Parameters
   #
@@ -75,13 +74,13 @@ module Net   #:nodoc:
   #
   # === POST
   #
-  #   uri = URI('http://www.example.com/search.cgi')
+  #   uri = 'http://www.example.com/search.cgi'
   #   res = Net::HTTP.post_form(uri, 'q' => 'ruby', 'max' => '50')
   #   puts res.body
   #
   # === POST with Multiple Values
   #
-  #   uri = URI('http://www.example.com/search.cgi')
+  #   uri = 'http://www.example.com/search.cgi'
   #   res = Net::HTTP.post_form(uri, 'q' => ['ruby', 'perl'], 'max' => '50')
   #   puts res.body
   #
@@ -117,8 +116,7 @@ module Net   #:nodoc:
   #
   # === Response Data
   #
-  #   uri = URI('http://example.com/index.html')
-  #   res = Net::HTTP.get_response(uri)
+  #   res = Net::HTTP.get_response('http://example.com/index.html')
   #
   #   # Headers
   #   res['Set-Cookie']            # => String
@@ -150,7 +148,7 @@ module Net   #:nodoc:
   #     # You should choose a better exception.
   #     raise ArgumentError, 'too many HTTP redirects' if limit == 0
   #
-  #     response = Net::HTTP.get_response(URI(uri_str))
+  #     response = Net::HTTP.get_response(uri_str)
   #
   #     case response
   #     when Net::HTTPSuccess then
@@ -261,12 +259,11 @@ module Net   #:nodoc:
   #     response = http.request request # Net::HTTPResponse object
   #   end
   #
-  # Or if you simply want to make a GET request, you may pass in an URI
-  # object that has an HTTPS URL. Net::HTTP automatically turns on TLS
-  # verification if the URI object has a 'https' URI scheme.
+  # Or if you simply want to make a GET request, you may pass in a HTTPS URL.
+  # Net::HTTP automatically turns on TLS verification if the URL has a 'https'
+  # scheme.
   #
-  #   uri = URI('https://example.com/')
-  #   Net::HTTP.get(uri) # => String
+  #   Net::HTTP.get('https://example.com/') # => String
   #
   # In previous versions of Ruby you would need to require 'net/https' to use
   # HTTPS. This is no longer true.
@@ -452,7 +449,7 @@ module Net   #:nodoc:
     # as a string.  The target can either be specified as
     # (+uri+, +headers+), or as (+host+, +path+, +port+ = 80); so:
     #
-    #    print Net::HTTP.get(URI('http://www.example.com/index.html'))
+    #    print Net::HTTP.get('http://www.example.com/index.html')
     #
     # or:
     #
@@ -470,7 +467,7 @@ module Net   #:nodoc:
     # as a Net::HTTPResponse object.  The target can either be specified as
     # (+uri+, +headers+), or as (+host+, +path+, +port+ = 80); so:
     #
-    #    res = Net::HTTP.get_response(URI('http://www.example.com/index.html'))
+    #    res = Net::HTTP.get_response('http://www.example.com/index.html')
     #    print res.body
     #
     # or:
@@ -480,7 +477,7 @@ module Net   #:nodoc:
     #
     # you can also specify request headers:
     #
-    #    Net::HTTP.get_response(URI('http://www.example.com/index.html'), { 'Accept' => 'text/html' })
+    #    Net::HTTP.get_response('http://www.example.com/index.html', { 'Accept' => 'text/html' })
     #
     def HTTP.get_response(uri_or_host, path_or_headers = nil, port = nil, &block)
       if path_or_headers && !path_or_headers.is_a?(Hash)
@@ -491,6 +488,7 @@ module Net   #:nodoc:
         }
       else
         uri = uri_or_host
+        uri = URI(uri) if uri.is_a?(String)
         headers = path_or_headers
         start(uri.hostname, uri.port,
               :use_ssl => uri.scheme == 'https') {|http|
@@ -499,25 +497,26 @@ module Net   #:nodoc:
       end
     end
 
-    # Posts data to the specified URI object.
+    # Posts data to the specified URI.
     #
     # Example:
     #
     #   require 'net/http'
     #   require 'uri'
     #
-    #   Net::HTTP.post URI('http://www.example.com/api/search'),
+    #   Net::HTTP.post 'http://www.example.com/api/search',
     #                  { "q" => "ruby", "max" => "50" }.to_json,
     #                  "Content-Type" => "application/json"
     #
     def HTTP.post(url, data, header = nil)
+      url = URI(url) if url.is_a?(String)
       start(url.hostname, url.port,
             :use_ssl => url.scheme == 'https' ) {|http|
         http.post(url, data, header)
       }
     end
 
-    # Posts HTML form data to the specified URI object.
+    # Posts HTML form data to the specified URI.
     # The form data must be provided as a Hash mapping from String to String.
     # Example:
     #
@@ -531,10 +530,11 @@ module Net   #:nodoc:
     #
     #   require 'net/http'
     #
-    #   Net::HTTP.post_form URI('http://www.example.com/search.cgi'),
+    #   Net::HTTP.post_form 'http://www.example.com/search.cgi',
     #                       { "q" => "ruby", "max" => "50" }
     #
     def HTTP.post_form(url, params)
+      url = URI(url) if url.is_a?(String)
       req = Post.new(url)
       req.form_data = params
       req.basic_auth url.user, url.password if url.user

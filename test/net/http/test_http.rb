@@ -301,6 +301,13 @@ module TestNetHTTP_version_1_1_methods
     assert_equal $test_net_http_data,
         Net::HTTP.get(config('host'), '/', config('port'))
 
+    assert_equal $test_net_http_data,
+        Net::HTTP.get("http://#{config('host')}:#{config('port')}")
+
+    assert_equal $test_net_http_data, Net::HTTP.get(
+      "http://#{config('host')}:#{config('port')}", "Accept" => "text/plain"
+    )
+
     assert_equal $test_net_http_data, Net::HTTP.get(
       URI.parse("http://#{config('host')}:#{config('port')}")
     )
@@ -309,7 +316,23 @@ module TestNetHTTP_version_1_1_methods
     )
   end
 
-  def test_s_get_response
+  def test_s_get_response_with_host
+    res = Net::HTTP.get_response(config('host'), '/', config('port'))
+    assert_equal "application/octet-stream", res["Content-Type"]
+    assert_equal $test_net_http_data, res.body
+  end
+
+  def test_s_get_response_with_uri_string
+    res = Net::HTTP.get_response("http://#{config('host')}:#{config('port')}")
+    assert_equal "application/octet-stream", res["Content-Type"]
+    assert_equal $test_net_http_data, res.body
+
+    res = Net::HTTP.get_response("http://#{config('host')}:#{config('port')}", "Accept" => "text/plain")
+    assert_equal "text/plain", res["Content-Type"]
+    assert_equal $test_net_http_data, res.body
+  end
+
+  def test_s_get_response_with_uri
     res = Net::HTTP.get_response(
       URI.parse("http://#{config('host')}:#{config('port')}")
     )
@@ -486,7 +509,26 @@ module TestNetHTTP_version_1_1_methods
     end
   end
 
-  def test_s_post
+  def test_s_post_with_uri_string
+    url = "http://#{config('host')}:#{config('port')}/?q=a"
+    res = assert_warning(/Content-Type did not set/) do
+      Net::HTTP.post(
+              url,
+              "a=x")
+    end
+    assert_equal "application/x-www-form-urlencoded", res["Content-Type"]
+    assert_equal "a=x", res.body
+    assert_equal url, res["X-request-uri"]
+
+    res = Net::HTTP.post(
+              url,
+              "hello world",
+              "Content-Type" => "text/plain; charset=US-ASCII")
+    assert_equal "text/plain; charset=US-ASCII", res["Content-Type"]
+    assert_equal "hello world", res.body
+  end
+
+  def test_s_post_with_uri
     url = "http://#{config('host')}:#{config('port')}/?q=a"
     res = assert_warning(/Content-Type did not set/) do
       Net::HTTP.post(
@@ -505,7 +547,34 @@ module TestNetHTTP_version_1_1_methods
     assert_equal "hello world", res.body
   end
 
-  def test_s_post_form
+  def test_s_post_form_with_uri_string
+    url = "http://#{config('host')}:#{config('port')}/"
+    res = Net::HTTP.post_form(
+              url,
+              "a" => "x")
+    assert_equal ["a=x"], res.body.split(/[;&]/).sort
+
+    res = Net::HTTP.post_form(
+              url,
+              "a" => "x",
+              "b" => "y")
+    assert_equal ["a=x", "b=y"], res.body.split(/[;&]/).sort
+
+    res = Net::HTTP.post_form(
+              url,
+              "a" => ["x1", "x2"],
+              "b" => "y")
+    assert_equal url, res['X-request-uri']
+    assert_equal ["a=x1", "a=x2", "b=y"], res.body.split(/[;&]/).sort
+
+    res = Net::HTTP.post_form(
+              url + '?a=x',
+              "b" => "y")
+    assert_equal url + '?a=x', res['X-request-uri']
+    assert_equal ["b=y"], res.body.split(/[;&]/).sort
+  end
+
+  def test_s_post_form_with_uri
     url = "http://#{config('host')}:#{config('port')}/"
     res = Net::HTTP.post_form(
               URI.parse(url),
