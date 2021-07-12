@@ -7,7 +7,7 @@ jobs:
     name: build (${{ matrix.ruby }} / ${{ matrix.os }})
     strategy:
       matrix:
-        ruby: [ '3.0', 2.7, 2.6, head ]
+        ruby: [ '3.0', 2.7, 2.6, 2.5, head ]
         os: [ ubuntu-latest, macos-latest ]
     runs-on: ${{ matrix.os }}
     steps:
@@ -19,4 +19,4 @@ jobs:
     - name: Install dependencies
       run: bundle install
     - name: Run test
-      run: rake test
+      run: bundle exec rake test

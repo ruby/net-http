@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{HTTP client api for Ruby.}
   spec.description   = %q{HTTP client api for Ruby.}
   spec.homepage      = "https://github.com/ruby/net-http"
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.6.0")
+  spec.required_ruby_version = Gem::Requirement.new(">= 2.5.0")
   spec.licenses      = ["Ruby", "BSD-2-Clause"]
 
   spec.metadata["homepage_uri"] = spec.homepage
