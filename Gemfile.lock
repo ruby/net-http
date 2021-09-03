@@ -9,19 +9,19 @@ GEM
   remote: https://rubygems.org/
   specs:
     io-wait (0.1.0)
-    net-protocol (0.1.0)
+    net-protocol (0.1.1)
       io-wait
       timeout
-    power_assert (1.1.5)
-    rake (13.0.1)
-    test-unit (3.3.5)
+    power_assert (2.0.1)
+    rake (13.0.6)
+    test-unit (3.4.4)
       power_assert
     timeout (0.1.1)
     uri (0.10.1)
     webrick (1.7.0)
 
 PLATFORMS
-  ruby
+  x86_64-linux
 
 DEPENDENCIES
   net-http!
@@ -30,4 +30,4 @@ DEPENDENCIES
   webrick
 
 BUNDLED WITH
-   2.1.4
+   2.2.26
