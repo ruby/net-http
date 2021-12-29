@@ -4,11 +4,17 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: build (${{ matrix.ruby }} / ${{ matrix.os }})
+    name: ${{ matrix.os }} ${{ matrix.ruby }}
     strategy:
+      fail-fast: false
       matrix:
-        ruby: [ '3.0', 2.7, 2.6, head ]
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-20.04, macos-10.15, windows-2019 ]
+        ruby: [ '3.0', 2.7, 2.6, 2.5, head ]
+        include:
+          - { os: windows-2019 , ruby: mingw }
+          - { os: windows-2019 , ruby: mswin }
+        exclude:
+          - { os: windows-2019 , ruby: head }
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -19,4 +25,4 @@ jobs:
     - name: Install dependencies
       run: bundle install
     - name: Run test
-      run: rake test
+      run: bundle exec rake test
