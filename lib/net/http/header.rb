@@ -218,7 +218,15 @@ module Net::HTTPHeader
   alias canonical_each each_capitalized
 
   def capitalize(name)
-    name.to_s.split(/-/).map {|s| s.capitalize }.join('-')
+    #Because in some applications the header is sensitive, 
+    #for this, if I pass an '@', I make the same value in header, without capitalize.
+    #For example, I have a request for API make in C#, him break if I pass 'Token' but
+    #worked if I pass 'token', because he not follow the RFC.
+    if(name[0] == '@')
+      name.gsub('@', '')
+    else
+      name.to_s.split(/-/).map {|s| s.capitalize }.join('-')
+    end
   end
   private :capitalize
 
