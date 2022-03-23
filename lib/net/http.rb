@@ -1078,7 +1078,10 @@ module Net   #:nodoc:
     rescue => exception
       if s
         debug "Conn close because of connect error #{exception}"
-        s.close
+        begin
+          s.close
+        rescue Errno::EBADF #Sometimes thrown on JRuby
+        end  
       end
       raise
     end
