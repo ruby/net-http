@@ -298,7 +298,10 @@ class Net::HTTPGenericRequest
 
   def supply_default_content_type
     return if content_type()
-    warn 'net/http: Content-Type did not set; using application/x-www-form-urlencoded', uplevel: 1 if $VERBOSE
+    if $VERBOSE
+      uplevel = caller_locations.find_index { |loc| not loc.absolute_path.match?(%r!net/http!) } || 0
+      warn 'net/http: Content-Type did not set; using application/x-www-form-urlencoded', uplevel: uplevel+1
+    end
     set_content_type 'application/x-www-form-urlencoded'
   end
 
