@@ -263,7 +263,6 @@ class Net::HTTPResponse
     case v&.downcase
     when 'deflate', 'gzip', 'x-gzip' then
       self.delete 'content-encoding'
-      had_content_length = self.delete 'content-length'
 
       inflate_body_io = Inflater.new(@socket)
 
@@ -273,7 +272,7 @@ class Net::HTTPResponse
       ensure
         begin
           inflate_body_io.finish
-          if had_content_length
+          if self['content-length']
             self['content-length'] = inflate_body_io.bytes_inflated.to_s
           end
         rescue => err
