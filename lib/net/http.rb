@@ -738,10 +738,17 @@ module Net   #:nodoc:
     # The local port used to establish the connection.
     attr_accessor :local_port
 
-    # The encoding to use for the response body.  If String or Encoding, uses
-    # the specified encoding.  If other true value, tries to detect the response
+    # The encoding to use for the response body.  If Encoding, uses the
+    # specified encoding.  If other true value, tries to detect the response
     # body encoding.
-    attr_accessor :response_body_encoding
+    attr_reader :response_body_encoding
+
+    # Set the encoding to use for the response body.  If given a String, find
+    # the related Encoding.
+    def response_body_encoding=(value)
+      value = Encoding.find(value) if value.is_a?(String)
+      @response_body_encoding = value
+    end
 
     attr_writer :proxy_from_env
     attr_writer :proxy_address

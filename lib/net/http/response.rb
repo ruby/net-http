@@ -107,10 +107,17 @@ class Net::HTTPResponse
   # Accept-Encoding header from the user.
   attr_accessor :decode_content
 
-  # Use the given encoding for the response body. If String or Encoding, use
-  # that encoding. If other true value, attempt to detect the appropriate
-  # encoding, and use that.
-  attr_accessor :body_encoding
+  # The encoding to use for the response body. If Encoding, use that encoding.
+  # If other true value, attempt to detect the appropriate encoding, and use
+  # that.
+  attr_reader :body_encoding
+
+  # Set the encoding to use for the response body.  If given a String, find
+  # the related Encoding.
+  def body_encoding=(value)
+    value = Encoding.find(value) if value.is_a?(String)
+    @body_encoding = value
+  end
 
   def inspect
     "#<#{self.class} #{@code} #{@message} readbody=#{@read}>"
@@ -221,8 +228,8 @@ class Net::HTTPResponse
     @read = true
 
     case enc = @body_encoding
-    when String, Encoding, false, nil
-      # String/Encoding: force given encoding
+    when Encoding, false, nil
+      # Encoding: force given encoding
       # false/nil: do not force encoding
     else
       # other value: detect encoding from body
