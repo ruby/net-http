@@ -84,7 +84,7 @@ class Net::HTTPResponse
     @read = false
     @uri  = nil
     @decode_content = false
-    @force_body_encoding = false
+    @body_encoding = false
   end
 
   # The HTTP version supported by the server.
@@ -107,9 +107,10 @@ class Net::HTTPResponse
   # Accept-Encoding header from the user.
   attr_accessor :decode_content
 
-  # Set to true to force body encoding to the encoding specified by the body
-  # (if true) or to the given encoding (if Encoding instance or string)
-  attr_accessor :force_body_encoding
+  # Use the given encoding for the response body. If String or Encoding, use
+  # that encoding. If other true value, attempt to detect the appropriate
+  # encoding, and use that.
+  attr_accessor :body_encoding
 
   def inspect
     "#<#{self.class} #{@code} #{@message} readbody=#{@read}>"
@@ -219,12 +220,12 @@ class Net::HTTPResponse
     end
     @read = true
 
-    case enc = @force_body_encoding
+    case enc = @body_encoding
     when String, Encoding, false, nil
-      # String/Encoding: will force directly
-      # false/nil: will not force encoding
+      # String/Encoding: force given encoding
+      # false/nil: do not force encoding
     else
-      # other value: will detect encoding from body
+      # other value: detect encoding from body
       enc = detect_encoding(@body)
     end
 

@@ -54,7 +54,7 @@ EOS
     assert_equal 'hello', body
   end
 
-  def test_read_body_force_body_encoding_false
+  def test_read_body_body_encoding_false
     body = "hello\u1234"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
@@ -76,7 +76,7 @@ EOS
     assert_equal Encoding::ASCII_8BIT, body.encoding
   end
 
-  def test_read_body_force_body_encoding_encoding
+  def test_read_body_body_encoding_encoding
     body = "hello\u1234"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
@@ -87,7 +87,7 @@ Content-Length: #{body.bytesize}
 EOS
 
     res = Net::HTTPResponse.read_new(io)
-    res.force_body_encoding = Encoding.find('utf-8')
+    res.body_encoding = Encoding.find('utf-8')
 
     body = nil
 
@@ -99,7 +99,7 @@ EOS
     assert_equal Encoding::UTF_8, body.encoding
   end
 
-  def test_read_body_force_body_encoding_string
+  def test_read_body_body_encoding_string
     body = "hello\u1234"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
@@ -110,7 +110,7 @@ Content-Length: #{body.bytesize}
 EOS
 
     res = Net::HTTPResponse.read_new(io)
-    res.force_body_encoding = 'utf-8'
+    res.body_encoding = 'utf-8'
 
     body = nil
 
@@ -122,7 +122,7 @@ EOS
     assert_equal Encoding::UTF_8, body.encoding
   end
 
-  def test_read_body_force_body_encoding_true_without_content_type_header
+  def test_read_body_body_encoding_true_without_content_type_header
     body = "hello\u1234"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
@@ -133,7 +133,7 @@ Content-Length: #{body.bytesize}
 EOS
 
     res = Net::HTTPResponse.read_new(io)
-    res.force_body_encoding = true
+    res.body_encoding = true
 
     body = nil
 
@@ -145,7 +145,7 @@ EOS
     assert_equal Encoding::ASCII_8BIT, body.encoding
   end
 
-  def test_read_body_force_body_encoding_true_with_utf8_content_type_header
+  def test_read_body_body_encoding_true_with_utf8_content_type_header
     body = "hello\u1234"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
@@ -157,7 +157,7 @@ Content-Type: text/plain; charset=utf-8
 EOS
 
     res = Net::HTTPResponse.read_new(io)
-    res.force_body_encoding = true
+    res.body_encoding = true
 
     body = nil
 
@@ -169,7 +169,7 @@ EOS
     assert_equal Encoding::UTF_8, body.encoding
   end
 
-  def test_read_body_force_body_encoding_true_with_iso_8859_1_content_type_header
+  def test_read_body_body_encoding_true_with_iso_8859_1_content_type_header
     body = "hello\u1234"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
@@ -181,7 +181,7 @@ Content-Type: text/plain; charset=iso-8859-1
 EOS
 
     res = Net::HTTPResponse.read_new(io)
-    res.force_body_encoding = true
+    res.body_encoding = true
 
     body = nil
 
@@ -193,7 +193,7 @@ EOS
     assert_equal Encoding::ISO_8859_1, body.encoding
   end
 
-  def test_read_body_force_body_encoding_true_with_utf8_meta_charset
+  def test_read_body_body_encoding_true_with_utf8_meta_charset
     res_body = "<html><meta charset=\"utf-8\">hello\u1234</html>"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
@@ -205,7 +205,7 @@ Content-Type: text/html
 EOS
 
     res = Net::HTTPResponse.read_new(io)
-    res.force_body_encoding = true
+    res.body_encoding = true
 
     body = nil
 
@@ -217,7 +217,7 @@ EOS
     assert_equal Encoding::UTF_8, body.encoding
   end
 
-  def test_read_body_force_body_encoding_true_with_iso8859_1_meta_charset
+  def test_read_body_body_encoding_true_with_iso8859_1_meta_charset
     res_body = "<html><meta charset=\"iso-8859-1\">hello\u1234</html>"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
@@ -229,7 +229,7 @@ Content-Type: text/html
 EOS
 
     res = Net::HTTPResponse.read_new(io)
-    res.force_body_encoding = true
+    res.body_encoding = true
 
     body = nil
 
@@ -241,7 +241,7 @@ EOS
     assert_equal Encoding::ISO_8859_1, body.encoding
   end
 
-  def test_read_body_force_body_encoding_true_with_utf8_meta_content_charset
+  def test_read_body_body_encoding_true_with_utf8_meta_content_charset
     res_body = "<meta http-equiv='content-type' content='text/html; charset=UTF-8'>hello\u1234</html>"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
@@ -253,7 +253,7 @@ Content-Type: text/html
 EOS
 
     res = Net::HTTPResponse.read_new(io)
-    res.force_body_encoding = true
+    res.body_encoding = true
 
     body = nil
 
@@ -265,7 +265,7 @@ EOS
     assert_equal Encoding::UTF_8, body.encoding
   end
 
-  def test_read_body_force_body_encoding_true_with_iso8859_1_meta_content_charset
+  def test_read_body_body_encoding_true_with_iso8859_1_meta_content_charset
     res_body = "<meta http-equiv='content-type' content='text/html; charset=ISO-8859-1'>hello\u1234</html>"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
@@ -277,7 +277,7 @@ Content-Type: text/html
 EOS
 
     res = Net::HTTPResponse.read_new(io)
-    res.force_body_encoding = true
+    res.body_encoding = true
 
     body = nil
 

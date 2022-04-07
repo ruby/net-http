@@ -1263,35 +1263,35 @@ class TestNetHTTPForceEncoding < Test::Unit::TestCase
     assert_not_nil(http.local_host)
     assert_nil(http.local_port)
 
-    http.force_response_body_encoding = force_enc
+    http.response_body_encoding = force_enc
     http.get('/fe')
   end
 
-  def test_force_response_body_encoding_false
+  def test_response_body_encoding_false
     res = fe_request(false)
     assert_equal("hello\u1234".b, res.body)
     assert_equal(Encoding::ASCII_8BIT, res.body.encoding)
   end
 
-  def test_force_response_body_encoding_true_without_content_type
+  def test_response_body_encoding_true_without_content_type
     res = fe_request(true)
     assert_equal("hello\u1234".b, res.body)
     assert_equal(Encoding::ASCII_8BIT, res.body.encoding)
   end
 
-  def test_force_response_body_encoding_true_with_content_type
+  def test_response_body_encoding_true_with_content_type
     res = fe_request(true, 'text/html; charset=utf-8')
     assert_equal("hello\u1234", res.body)
     assert_equal(Encoding::UTF_8, res.body.encoding)
   end
 
-  def test_force_response_body_encoding_string_without_content_type
+  def test_response_body_encoding_string_without_content_type
     res = fe_request('utf-8')
     assert_equal("hello\u1234", res.body)
     assert_equal(Encoding::UTF_8, res.body.encoding)
   end
 
-  def test_force_response_body_encoding_encoding_without_content_type
+  def test_response_body_encoding_encoding_without_content_type
     res = fe_request(Encoding::UTF_8)
     assert_equal("hello\u1234", res.body)
     assert_equal(Encoding::UTF_8, res.body.encoding)
