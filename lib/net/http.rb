@@ -36,7 +36,7 @@ module Net   #:nodoc:
   #
   # Net::HTTP provides a rich library which can be used to build HTTP
   # user-agents.  For more details about HTTP see
-  # [RFC2616](http://www.ietf.org/rfc/rfc2616.txt).
+  # {RFC2616}[https://datatracker.ietf.org/doc/html/rfc2616].
   #
   # Net::HTTP is designed to work closely with URI.  URI::HTTP#host,
   # URI::HTTP#port and URI::HTTP#request_uri are designed to work with
@@ -44,17 +44,21 @@ module Net   #:nodoc:
   #
   # If you are only performing a few GET requests you should try OpenURI.
   #
-  # == Simple Examples
+  # == About the Examples
+  #
+  # Many examples on this page refer to one of these two websites:
+  #
+  # - {Example Domain}[http://www.example.com].
+  # - {JSONPlaceholder}[https://jsonplaceholder.typicode.com].
   #
   # All examples assume you have loaded Net::HTTP with:
   #
   #   require 'net/http'
   #
-  # This will also require 'uri' so you don't need to require it separately.
+  # == Simple Examples
   #
-  # The Net::HTTP methods in the following section do not persist
-  # connections.  They are not recommended if you are performing many HTTP
-  # requests.
+  # The Net::HTTP methods in this section do not persist connections.
+  # They are not recommended if you are performing many HTTP requests.
   #
   # === GET
   #
@@ -433,20 +437,41 @@ module Net   #:nodoc:
     # short cut methods
     #
 
+    # Prints the body text from the target to <tt>$stdout</tt>;
+    # returns +nil+.
     #
-    # Gets the body text from the target and outputs it to $stdout.  The
-    # target can either be specified as
-    # (+uri+, +headers+), or as (+host+, +path+, +port+ = 80); so:
+    # The target may be specified either as:
     #
-    #    Net::HTTP.get_print URI('http://www.example.com/index.html')
+    # - A URI:
     #
-    # or:
+    #     uri = URI('https://jsonplaceholder.typicode.com/todos/1')
+    #     Net::HTTP.get_print(uri)
     #
-    #    Net::HTTP.get_print 'www.example.com', '/index.html'
+    #   With this form, you may specify a hash of headers:
     #
-    # you can also specify request headers:
+    #     headers = {Accept: 'text/json'}
+    #     Net::HTTP.get_print(uri, headers)
     #
-    #    Net::HTTP.get_print URI('http://www.example.com/index.html'), { 'Accept' => 'text/html' }
+    # - Host and path:
+    #
+    #     host = 'jsonplaceholder.typicode.com'
+    #     path = '/todos/1'
+    #     Net::HTTP.get_print(host, path)
+    #
+    #   With this form, you may specify an integer port:
+    #
+    #     Net::HTTP.get_print(host, path, 80)
+    #
+    # Any of the above prints:
+    #
+    #   {
+    #     "userId": 1,
+    #     "id": 1,
+    #     "title": "delectus aut autem",
+    #     "completed": false
+    #   }
+    #
+    # Related: HTTP.get, HTTP.get_response.
     #
     def HTTP.get_print(uri_or_host, path_or_headers = nil, port = nil)
       get_response(uri_or_host, path_or_headers, port) {|res|
@@ -457,39 +482,83 @@ module Net   #:nodoc:
       nil
     end
 
-    # Sends a GET request to the target and returns the HTTP response
-    # as a string.  The target can either be specified as
-    # (+uri+, +headers+), or as (+host+, +path+, +port+ = 80); so:
+    # Returns the body text (string) from the target to <tt>$stdout</tt>.
     #
-    #    print Net::HTTP.get(URI('http://www.example.com/index.html'))
+    # The target may be specified either as:
     #
-    # or:
+    # - A URI:
     #
-    #    print Net::HTTP.get('www.example.com', '/index.html')
+    #     uri = URI('https://jsonplaceholder.typicode.com/todos/1')
+    #     puts Net::HTTP.get(uri)
     #
-    # you can also specify request headers:
+    #   With this form, you may specify a hash of headers:
     #
-    #    Net::HTTP.get(URI('http://www.example.com/index.html'), { 'Accept' => 'text/html' })
+    #     headers = {Accept: 'text/json'}
+    #     puts Net::HTTP.get(uri, headers)
+    #
+    # - Host and path:
+    #
+    #     host = 'jsonplaceholder.typicode.com'
+    #     path = '/todos/1'
+    #     puts Net::HTTP.get(host, path)
+    #
+    #   With this form, you may specify an integer port:
+    #
+    #     puts Net::HTTP.get(host, path, 80)
+    #
+    # Any of the above prints (via +puts+):
+    #
+    #   {
+    #     "userId": 1,
+    #     "id": 1,
+    #     "title": "delectus aut autem",
+    #     "completed": false
+    #   }
+    #
+    # Related: HTTP.get_print, HTTP.get_response.
     #
     def HTTP.get(uri_or_host, path_or_headers = nil, port = nil)
       get_response(uri_or_host, path_or_headers, port).body
     end
 
-    # Sends a GET request to the target and returns the HTTP response
-    # as a Net::HTTPResponse object.  The target can either be specified as
-    # (+uri+, +headers+), or as (+host+, +path+, +port+ = 80); so:
+    # Gets the response from the target as an instance
+    # of a subclass of HTTPResponse (such as HTTPOK).
     #
-    #    res = Net::HTTP.get_response(URI('http://www.example.com/index.html'))
-    #    print res.body
+    # With no block given, returns the response;
+    # with a block given, calls the block with the response
+    # and returns the block's value.
     #
-    # or:
+    # The target may be specified either as:
     #
-    #    res = Net::HTTP.get_response('www.example.com', '/index.html')
-    #    print res.body
+    # - A URI:
     #
-    # you can also specify request headers:
+    #     uri = URI('https://jsonplaceholder.typicode.com/todos/1')
+    #     Net::HTTP.get_response(uri)
+    #     # => #<Net::HTTPOK 200 OK readbody=true>
+    #     Net::HTTP.get_response(uri) {|response| p response.class }
+    #     # Prints Net::HTTPOK
     #
-    #    Net::HTTP.get_response(URI('http://www.example.com/index.html'), { 'Accept' => 'text/html' })
+    #   With this form, you may specify a hash of headers:
+    #
+    #     headers = {Accept: 'text/json'}
+    #     Net::HTTP.get_response(uri, headers)
+    #     # => #<Net::HTTPOK 200 OK readbody=true>
+    #
+    # - Host and path:
+    #
+    #     host = 'jsonplaceholder.typicode.com'
+    #     path = '/todos/1'
+    #     Net::HTTP.get_response(host, path)
+    #     # => #<Net::HTTPOK 200 OK readbody=true>
+    #     Net::HTTP.get_response(host, path) {|response| p response.class }
+    #     # Prints Net::HTTPOK
+    #
+    #   With this form, you may specify an integer port:
+    #
+    #     Net::HTTP.get_response(host, path, 80)
+    #     # => #<Net::HTTPOK 200 OK readbody=true>
+    #
+    # Related: HTTP.get_print, HTTP.get.
     #
     def HTTP.get_response(uri_or_host, path_or_headers = nil, port = nil, &block)
       if path_or_headers && !path_or_headers.is_a?(Hash)
