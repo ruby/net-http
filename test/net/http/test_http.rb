@@ -1,5 +1,5 @@
 # coding: US-ASCII
-# frozen_string_literal: false
+# frozen_string_literal: true
 require 'test/unit'
 require 'net/http'
 require 'stringio'
@@ -362,7 +362,7 @@ module TestNetHTTP_version_1_1_methods
   end
 
   def _test_get__iter(http)
-    buf = ''
+    buf = +''
     res = http.get('/') {|s| buf << s }
     assert_kind_of Net::HTTPResponse, res
     # assert_kind_of String, res.body
@@ -378,7 +378,7 @@ module TestNetHTTP_version_1_1_methods
   end
 
   def _test_get__chunked(http)
-    buf = ''
+    buf = +''
     res = http.get('/') {|s| buf << s }
     assert_kind_of Net::HTTPResponse, res
     # assert_kind_of String, res.body
@@ -685,7 +685,7 @@ module TestNetHTTP_version_1_2_methods
         assert_not_nil res['content-length']
         assert_equal $test_net_http_data.size, res['content-length'].to_i
       end
-      f = StringIO.new("".force_encoding("ASCII-8BIT"))
+      f = StringIO.new("".b)
       res.read_body f
       assert_equal $test_net_http_data.bytesize, f.string.bytesize
       assert_equal $test_net_http_data.encoding, f.string.encoding
@@ -828,7 +828,7 @@ module TestNetHTTP_version_1_2_methods
       data = [
         ['name', 'Gonbei Nanashi'],
         ['name', "\u{540d}\u{7121}\u{3057}\u{306e}\u{6a29}\u{5175}\u{885b}"],
-        ['s"i\o', StringIO.new("\u{3042 3044 4e9c 925b}")],
+        ['s"i\o', StringIO.new(+"\u{3042 3044 4e9c 925b}")],
         ["file", file, filename: "ruby-test"]
       ]
       expected = <<"__EOM__".gsub(/\n/, "\r\n")
@@ -990,7 +990,7 @@ class TestNetHTTPContinue < Test::Unit::TestCase
   include TestNetHTTPUtils
 
   def logfile
-    @debug = StringIO.new('')
+    @debug = StringIO.new(+'')
   end
 
   def mount_proc(&block)
@@ -1090,7 +1090,7 @@ class TestNetHTTPSwitchingProtocols < Test::Unit::TestCase
   include TestNetHTTPUtils
 
   def logfile
-    @debug = StringIO.new('')
+    @debug = StringIO.new(+'')
   end
 
   def mount_proc(&block)

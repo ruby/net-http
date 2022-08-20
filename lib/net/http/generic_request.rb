@@ -1,4 +1,4 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 # HTTPGenericRequest is the parent of the Net::HTTPRequest class.
 # Do not use this directly; use a subclass of Net::HTTPRequest.
 #
@@ -110,7 +110,7 @@ class Net::HTTPGenericRequest
     raise ArgumentError, "both of body argument and HTTPRequest#body set" if str and (@body or @body_stream)
     self.body = str if str
     if @body.nil? && @body_stream.nil? && @body_data.nil? && request_body_permitted?
-      self.body = ''
+      self.body = +''
     end
   end
 
@@ -239,7 +239,7 @@ class Net::HTTPGenericRequest
     boundary ||= SecureRandom.urlsafe_base64(40)
     chunked_p = chunked?
 
-    buf = ''
+    buf = +''
     params.each do |key, value, h={}|
       key = quote_string(key, charset)
       filename =
@@ -324,7 +324,7 @@ class Net::HTTPGenericRequest
     if /[\r\n]/ =~ reqline
       raise ArgumentError, "A Request-Line must not contain CR or LF"
     end
-    buf = ""
+    buf = +""
     buf << reqline << "\r\n"
     each_capitalized do |k,v|
       buf << "#{k}: #{v}\r\n"

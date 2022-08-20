@@ -1,4 +1,4 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 # HTTP response class.
 #
 # This class wraps together the response header and the response body (the
@@ -513,7 +513,7 @@ class Net::HTTPResponse
     if block
       Net::ReadAdapter.new(block)
     else
-      dest || ''
+      dest || +''
     end
   end
 

@@ -1,5 +1,5 @@
 # coding: US-ASCII
-# frozen_string_literal: false
+# frozen_string_literal: true
 require 'net/http'
 require 'test/unit'
 require 'stringio'
@@ -189,12 +189,12 @@ EOS
       body = res.read_body
     end
 
-    assert_equal "hello\u1234".force_encoding("ISO-8859-1"), body
+    assert_equal (+"hello\u1234").force_encoding("ISO-8859-1"), body
     assert_equal Encoding::ISO_8859_1, body.encoding
   end
 
   def test_read_body_body_encoding_true_with_utf8_meta_charset
-    res_body = "<html><meta charset=\"utf-8\">hello\u1234</html>"
+    res_body = +"<html><meta charset=\"utf-8\">hello\u1234</html>"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
 Connection: close
@@ -218,7 +218,7 @@ EOS
   end
 
   def test_read_body_body_encoding_true_with_iso8859_1_meta_charset
-    res_body = "<html><meta charset=\"iso-8859-1\">hello\u1234</html>"
+    res_body = +"<html><meta charset=\"iso-8859-1\">hello\u1234</html>"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
 Connection: close
@@ -242,7 +242,7 @@ EOS
   end
 
   def test_read_body_body_encoding_true_with_utf8_meta_content_charset
-    res_body = "<meta http-equiv='content-type' content='text/html; charset=UTF-8'>hello\u1234</html>"
+    res_body = +"<meta http-equiv='content-type' content='text/html; charset=UTF-8'>hello\u1234</html>"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
 Connection: close
@@ -266,7 +266,7 @@ EOS
   end
 
   def test_read_body_body_encoding_true_with_iso8859_1_meta_content_charset
-    res_body = "<meta http-equiv='content-type' content='text/html; charset=ISO-8859-1'>hello\u1234</html>"
+    res_body = +"<meta http-equiv='content-type' content='text/html; charset=ISO-8859-1'>hello\u1234</html>"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
 Connection: close
@@ -300,7 +300,7 @@ EOS
 
     res = Net::HTTPResponse.read_new(io)
 
-    body = ''
+    body = +''
 
     res.reading_body io, true do
       res.read_body do |chunk|
@@ -580,7 +580,7 @@ EOS
 
     res = Net::HTTPResponse.read_new(io)
 
-    body = ''
+    body = +''
 
     res.reading_body io, true do
       res.read_body body
@@ -704,7 +704,7 @@ EOS
     assert_equal '#<Net::HTTPUnknownResponse ??? test response readbody=false>', res.inspect
 
     res = Net::HTTPUnknownResponse.new('1.0', '???', 'test response')
-    socket = Net::BufferedIO.new(StringIO.new('test body'))
+    socket = Net::BufferedIO.new(StringIO.new(+'test body'))
     res.reading_body(socket, true) {}
     assert_equal '#<Net::HTTPUnknownResponse ??? test response readbody=true>', res.inspect
   end

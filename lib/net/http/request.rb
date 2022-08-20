@@ -1,4 +1,4 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 # HTTP request class.
 # This class wraps together the request header and the request path.
 # You cannot use this class directly. Instead, you should use one of its
