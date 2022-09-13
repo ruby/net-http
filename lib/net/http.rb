@@ -1222,7 +1222,7 @@ module Net   #:nodoc:
     end
 
     # [Bug #12921]
-    if /linux|freebsd|darwin/ =~ RUBY_PLATFORM
+    if /linux|freebsd|darwin|java/ =~ RUBY_PLATFORM
       ENVIRONMENT_VARIABLE_IS_MULTIUSER_SAFE = true
     else
       ENVIRONMENT_VARIABLE_IS_MULTIUSER_SAFE = false
