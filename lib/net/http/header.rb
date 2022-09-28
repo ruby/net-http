@@ -1,15 +1,59 @@
 # frozen_string_literal: false
-# The HTTPHeader module defines methods for reading and writing
-# HTTP headers.
 #
-# It is used as a mixin by other classes, to provide hash-like
-# access to HTTP header values. Unlike raw hash access, HTTPHeader
-# provides access via case-insensitive keys. It also provides
-# methods for accessing commonly-used HTTP header values in more
-# convenient formats.
+# \Module \Net::HTTPHeader provides methods
+# for managing \HTTP headers.
+# It is included in classes Net::HTTPRequest and NET::HTTPResponse,
+# providing:
+#
+# - Hash-like access to header fields.
+#   (Note that keys are case-insensitive.)
+# - Convenience methods.
+#
+# Each stored field is a name/value pair, where:
+#
+# - The stored name is a string or symbol that has been
+#   {downcased}[https://docs.ruby-lang.org/en/master/String.html#method-i-downcase].
+# - Each stored value is a string that may have been
+#   {stripped}[https://docs.ruby-lang.org/en/master/String.html#method-i-strip]
+#   (depending on the method that set the value).
+#
+# Example:
+#
+#   req = Net::HTTP::Get.new('github.com')
+#   fields = {' Foo ' => ' Bar '}
+#   req.initialize_http_header(fields)
+#   req.to_hash # => {" foo "=>["Bar"]}
+#
 #
 module Net::HTTPHeader
 
+  # Initializes fields in +self+, after removing any existing fields;
+  # returns the argument:
+  #
+  # - Each name +name+ must be a string or a symbol;
+  #   stored as <tt>name.downcase</tt>.
+  # - Each value +value+ must be a string, and may not include newlines;
+  #   stored as <tt>value.strip</tt>.
+  #
+  # Argument +initheader+ may be either:
+  #
+  # - A hash of name/value pairs:
+  #
+  #     req = Net::HTTP::Get.new('github.com')
+  #     fields = {' Foo ' => ' Bar ', ' Baz ' => ' Bat '}
+  #     req.initialize_http_header(fields)
+  #     req.to_hash # => {" foo "=>["Bar"], " baz "=>["Bat"]}
+  #     fields = {' Bat ' => ' Bah '}
+  #     req.initialize_http_header(fields)
+  #     req.to_hash # => {" bat "=>["Bah"]}
+  #
+  # - An array of 2-element arrays, each element being a name/value pair:
+  #
+  #     req = Net::HTTP::Get.new('github.com')
+  #     fields = [[' Foo ', ' Bar '], [' Baz ', ' Bat ']]
+  #     req.initialize_http_header(fields)
+  #     req.to_hash # => {" foo "=>["Bar"], " baz "=>["Bat"]}
+  #
   def initialize_http_header(initheader)
     @header = {}
     return unless initheader
@@ -33,14 +77,60 @@ module Net::HTTPHeader
 
   alias length size   #:nodoc: obsolete
 
-  # Returns the header field corresponding to the case-insensitive key.
-  # For example, a key of "Content-Type" might return "text/html"
+  # Returns a string containing the comma-separated values
+  # of the field named <tt>key.downcase</tt>
+  # if the field exists, or +nil+ otherwise:
+  #
+  #   req = Net::HTTP::Get.new('github.com', ' Foo ' => ' Bar ')
+  #   req[' foo '] # => "Bar"
+  #   req[' Foo '] # => "Bar"
+  #   req.add_field(' Foo ', [' Baz ', ' Bat '])
+  #   req[' Foo '] # => "Bar,  Baz ,  Bat "
+  #   req['Foo'] # => nil
+  #
   def [](key)
     a = @header[key.downcase.to_s] or return nil
     a.join(', ')
   end
 
-  # Sets the header field corresponding to the case-insensitive key.
+  # Sets the given string values (not stripped)
+  # for the field named <tt>key.downcase</tt>,
+  # overwriting the old value if the field exists
+  # or creating the field if necessary; returns +val+.
+  #
+  # When +val+ is a string,
+  # sets the field value to <tt>val.strip</tt>:
+  #
+  #   req = Net::HTTP::Get.new('github.com')
+  #   req[' Foo '] = ' Bar '
+  #   req[' foo '] # => "Bar"
+  #   req[' foo '] = 'Baz'
+  #   req[' foo '] # => "Baz"
+  #
+  # When +val+ is +nil+, removes the field if it exists:
+  #
+  #   req.key?(' foo ') # => true
+  #   req[' foo '] = nil
+  #   req.key?(' foo ') # => false
+  #
+  # When +val+ is an
+  # {Enumerable}[https://docs.ruby-lang.org/en/master/Enumerable.html#module-Enumerable-label-Enumerable+in+Ruby+Classes],
+  # adds each element of +val+:
+  #
+  #   # Array.
+  #   req = Net::HTTP::Get.new('github.com')
+  #   req[' Foo '] = [' Bar ', ' Baz ']
+  #   req.get_fields(' foo ') # => [" Bar ", " Baz "]
+  #   req[' Foo '] = [' Bat ', ' Bag ']
+  #   req.get_fields(' foo ') # => [" Bat ", " Bag "]
+  #
+  #   # Hash.
+  #   req = Net::HTTP::Get.new('github.com')
+  #   req[' Foo '] = {' Bar ' => ' Baz '}
+  #   req.get_fields(' foo ') # => [" Bar ", " Baz "]
+  #   req[' Foo '] = {' Bat ' => ' Bag '}
+  #   req.get_fields(' foo ') # => [" Bat ", " Bag "]
+  #
   def []=(key, val)
     unless val
       @header.delete key.downcase.to_s
@@ -49,20 +139,36 @@ module Net::HTTPHeader
     set_field(key, val)
   end
 
-  # [Ruby 1.8.3]
-  # Adds a value to a named header field, instead of replacing its value.
-  # Second argument +val+ must be a String.
-  # See also #[]=, #[] and #get_fields.
+  # Adds the given string values (not stripped) to the existing values
+  # for the field named <tt>key.downcase</tt>; returns the argument.
   #
-  #   request.add_field 'X-My-Header', 'a'
-  #   p request['X-My-Header']              #=> "a"
-  #   p request.get_fields('X-My-Header')   #=> ["a"]
-  #   request.add_field 'X-My-Header', 'b'
-  #   p request['X-My-Header']              #=> "a, b"
-  #   p request.get_fields('X-My-Header')   #=> ["a", "b"]
-  #   request.add_field 'X-My-Header', 'c'
-  #   p request['X-My-Header']              #=> "a, b, c"
-  #   p request.get_fields('X-My-Header')   #=> ["a", "b", "c"]
+  # When +val+ is a string, adds the string:
+  #
+  #   req = Net::HTTP::Get.new('github.com')
+  #   req.add_field(' Foo ' , ' Bar ')
+  #   req.get_fields(' foo ') # => [" Bar "]
+  #   req.add_field(' Foo ', ' Baz ')
+  #   req.get_fields(' foo ') # => [" Bar ", " Baz "]
+  #
+  # When +val+ is an
+  # {Enumerable}[https://docs.ruby-lang.org/en/master/Enumerable.html#module-Enumerable-label-Enumerable+in+Ruby+Classes],
+  # adds each element:
+  #
+  #   # Array.
+  #   req = Net::HTTP::Get.new('github.com')
+  #   req.add_field(' Foo ', [' Bar ', ' Baz '])
+  #   req.get_fields(' foo ') # => [" Bar ", " Baz "]
+  #   req.add_field(' Foo ', [' Bat ', ' Bag '])
+  #   req.get_fields(' foo ') # => [" Bar ", " Baz ", " Bat ", " Bag "]
+  #
+  #   # Hash.
+  #   req = Net::HTTP::Get.new('github.com')
+  #   req.add_field(' Foo ', {' Bar ' => ' Baz '})
+  #   req.get_fields(' foo ') # => [" Bar ", " Baz "]
+  #   req.add_field(' Foo ', {' Bat ' => ' Bag '})
+  #   req.get_fields(' foo ') # => [" Bar ", " Baz ", " Bat ", " Bag "]
+  #
+  # Related: #get_fields.
   #
   def add_field(key, val)
     stringified_downcased_key = key.downcase.to_s
@@ -101,16 +207,17 @@ module Net::HTTPHeader
     end
   end
 
-  # [Ruby 1.8.3]
-  # Returns an array of header field strings corresponding to the
-  # case-insensitive +key+.  This method allows you to get duplicated
-  # header fields without any processing.  See also #[].
+
+  # Returns an array of the values
+  # for the field named <tt>key.downcase</tt>,
+  # or +nil+ if there is no such field:
   #
-  #   p response.get_fields('Set-Cookie')
-  #     #=> ["session=al98axx; expires=Fri, 31-Dec-1999 23:58:23",
-  #          "query=rubyscript; expires=Fri, 31-Dec-1999 23:58:23"]
-  #   p response['Set-Cookie']
-  #     #=> "session=al98axx; expires=Fri, 31-Dec-1999 23:58:23, query=rubyscript; expires=Fri, 31-Dec-1999 23:58:23"
+  #   req = Net::HTTP::Get.new('github.com')
+  #   req.add_field(' Foo ' , [' Bar ', ' Baz '])
+  #   req.get_fields(' foo ') # => [" Bar ", " Baz "]
+  #   req.get_fields('foo')   # => nil
+  #
+  # Related: #add_fields.
   #
   def get_fields(key)
     stringified_downcased_key = key.downcase.to_s
@@ -118,23 +225,44 @@ module Net::HTTPHeader
     @header[stringified_downcased_key].dup
   end
 
-  # Returns the header field corresponding to the case-insensitive key.
-  # Returns the default value +args+, or the result of the block, or
-  # raises an IndexError if there's no header field named +key+
-  # See Hash#fetch
+  # With no +args+ and no block given, behaves like #[],
+  # but raises an exception if the field does not exist:
+  #
+  #   req = Net::HTTP::Get.new('github.com', ' Foo ' => ' Bar ')
+  #   req.fetch(' foo ') # => "Bar"
+  #   req.add_field(' Foo ', [' Baz ', ' Bat '])
+  #   req.fetch(' foo ') # => "Bar,  Baz ,  Bat "
+  #   req.fetch('foo')   # Raises KeyError.
+  #
+  # With +args+ given and no block given, behaves like #[],
+  # but returns +args+ if the field does not exist:
+  #
+  #   req.fetch('foo', '') # => ""
+  #
+  # With a block given and no +args+ given, behaves like #[],
+  # but returns the called block's value if the field does not exist:
+  #
+  #   req.fetch('foo') { '' } # => ""
+  #
   def fetch(key, *args, &block)   #:yield: +key+
     a = @header.fetch(key.downcase.to_s, *args, &block)
     a.kind_of?(Array) ? a.join(', ') : a
   end
 
-  # Iterates through the header names and values, passing in the name
-  # and value to the code block supplied.
+  # Calls the given block with each field's name/value pair:
+  #
+  #   req = Net::HTTP::Get.new('github.com')
+  #   req.initialize_http_header('Foo' => 'Bar', 'Baz' => 'Bat')
+  #   req.each_header {|name, value| p "#{name}: #{value}" }
+  #
+  # Output:
+  #
+  #   "foo: Bar"
+  #   "baz: Bat"
   #
   # Returns an enumerator if no block is given.
   #
-  # Example:
-  #
-  #     response.header.each_header {|key,value| puts "#{key} = #{value}" }
+  # #each is an alias for #each_header.
   #
   def each_header   #:yield: +key+, +value+
     block_given? or return enum_for(__method__) { @header.size }
@@ -145,10 +273,21 @@ module Net::HTTPHeader
 
   alias each each_header
 
-  # Iterates through the header names in the header, passing
-  # each header name to the code block.
+  # Calls the given block with each field's name:
+  #
+  #   req = Net::HTTP::Get.new('github.com')
+  #   req.initialize_http_header('Foo' => 'Bar', 'Baz' => 'Bat')
+  #   req.each_header {|name| p name }
+  #
+  # Output:
+  #
+  #   "foo"
+  #   "baz"
   #
   # Returns an enumerator if no block is given.
+  #
+  # #each_key is an alias for #each_name.
+  #
   def each_name(&block)   #:yield: +key+
     block_given? or return enum_for(__method__) { @header.size }
     @header.each_key(&block)
@@ -156,14 +295,21 @@ module Net::HTTPHeader
 
   alias each_key each_name
 
-  # Iterates through the header names in the header, passing
-  # capitalized header names to the code block.
+  # Calls the given block with each field's capitalized name;
+  # note that capitalization is system-dependent,
+  # and so may differ between server and client:
   #
-  # Note that header names are capitalized systematically;
-  # capitalization may not match that used by the remote HTTP
-  # server in its response.
+  #   req = Net::HTTP::Get.new('github.com')
+  #   req.initialize_http_header('FOO' => 'Bar', 'BAZ' => 'Bat')
+  #   req.each_capitalized_name {|name| p name }
+  #
+  # Output:
+  #
+  #   "Foo"
+  #   "Baz"
   #
   # Returns an enumerator if no block is given.
+  #
   def each_capitalized_name  #:yield: +key+
     block_given? or return enum_for(__method__) { @header.size }
     @header.each_key do |k|
@@ -171,10 +317,19 @@ module Net::HTTPHeader
     end
   end
 
-  # Iterates through header values, passing each value to the
-  # code block.
+  # Calls the given block with each field's value:
+  #
+  #   req = Net::HTTP::Get.new('github.com')
+  #   req.initialize_http_header('Foo' => 'Bar', 'Baz' => 'Bat')
+  #   req.each_value {|value| p value }
+  #
+  # Output:
+  #
+  #   "Bar"
+  #   "Bat"
   #
   # Returns an enumerator if no block is given.
+  #
   def each_value   #:yield: +value+
     block_given? or return enum_for(__method__) { @header.size }
     @header.each_value do |va|
