@@ -595,7 +595,7 @@ module Net   #:nodoc:
     # _opt_ sets following values by its accessor.
     # The keys are ipaddr, ca_file, ca_path, cert, cert_store, ciphers, keep_alive_timeout,
     # close_on_empty_response, key, open_timeout, read_timeout, write_timeout, ssl_timeout,
-    # ssl_version, use_ssl, verify_callback, verify_depth and verify_mode.
+    # ssl_version, use_ssl, verify_callback, verify_depth, verify_mode and alpn_protocols.
     # If you set :use_ssl as true, you can use https and default value of
     # verify_mode is set as OpenSSL::SSL::VERIFY_PEER.
     #
@@ -886,6 +886,7 @@ module Net   #:nodoc:
       :@verify_depth,
       :@verify_mode,
       :@verify_hostname,
+      :@alpn_protocols,
     ]
     SSL_ATTRIBUTES = [
       :ca_file,
@@ -903,6 +904,7 @@ module Net   #:nodoc:
       :verify_depth,
       :verify_mode,
       :verify_hostname,
+      :alpn_protocols,
     ]
 
     # Sets path of a CA certification file in PEM format.
