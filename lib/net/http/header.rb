@@ -158,10 +158,12 @@ module Net::HTTPHeader
       else
         value = value.strip # raise error for invalid byte sequences
         if value.count("\r\n") > 0
-          raise ArgumentError, "header #{key} has field value #{value.inspect}, this cannot include CR/LF"
+          raise Net::HTTPHeaderSyntaxError, "header #{key} has field value #{value.inspect}, this cannot include CR/LF"
         end
         @header[key.downcase.to_s] = [value]
       end
+    rescue ArgumentError => e
+      raise Net::HTTPHeaderSyntaxError, e.message
     end
   end
 
@@ -234,7 +236,7 @@ module Net::HTTPHeader
     else
       val = val.to_s # for compatibility use to_s instead of to_str
       if val.b.count("\r\n") > 0
-        raise ArgumentError, 'header field value cannot include CR/LF'
+        raise Net::HTTPHeaderSyntaxError, 'header field value cannot include CR/LF'
       end
       @header[key.downcase.to_s] = [val]
     end
@@ -247,7 +249,7 @@ module Net::HTTPHeader
     else
       val = val.to_s
       if /[\r\n]/n.match?(val.b)
-        raise ArgumentError, 'header field value cannot include CR/LF'
+        raise Net::HTTPHeaderSyntaxError, 'header field value cannot include CR/LF'
       end
       ary.push val
     end
@@ -681,7 +683,7 @@ module Net::HTTPHeader
       /\Amultipart\/form-data\z/i
       self.content_type = enctype
     else
-      raise ArgumentError, "invalid enctype: #{enctype}"
+      raise Net::HTTPHeaderSyntaxError, "invalid enctype: #{enctype}"
     end
   end
 
