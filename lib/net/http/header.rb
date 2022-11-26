@@ -444,8 +444,6 @@ module Net::HTTPHeader
   end
 
   # Like #each_header, but the keys are returned in capitalized form.
-  # The capitalization is system-dependent;
-  # see {Case Mapping}[https://docs.ruby-lang.org/en/master/case_mapping_rdoc.html].
   #
   # Net::HTTPHeader#canonical_each is an alias for Net::HTTPHeader#each_capitalized.
   def each_capitalized
