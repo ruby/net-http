@@ -128,12 +128,11 @@
 #
 # === Setters
 #
-# \Method #[]= can set any field, but does little to validate
-# to validate the new value;
-# most of the other setter methods provides some validation:
+# \Method #[]= can set any field, but does little to validate the new value;
+# some of the other setter methods provide some validation:
 #
 # - #[]=: Sets the string or array value for the given key.
-# - #add_field: Creates or adds to the array value for the given kry.
+# - #add_field: Creates or adds to the array value for the given key.
 # - #basic_auth: Sets the string authorization header for <tt>'Authorization'</tt>.
 # - #content_length=: Sets the integer length for field <tt>'Content-Length</tt>.
 # - #content_type=: Sets the string value for field <tt>'Content-Type'</tt>.
@@ -149,15 +148,14 @@
 #
 # \Method #[] can retrieve the value of any field that exists,
 # but always as a string;
-# most of the other getter methods return something different
+# some of the other getter methods return something different
 # from the simple string value:
 #
 # - #[]: Returns the string field value for the given key.
 # - #content_length: Returns the integer value of field <tt>'Content-Length'</tt>.
 # - #content_range: Returns the Range value of field <tt>'Content-Range'</tt>.
 # - #content_type: Returns the string value of field <tt>'Content-Type'</tt>.
-# - #fetch: Returns the string field value for the given key,
-#   or passes it to the block, if given.
+# - #fetch: Returns the string field value for the given key.
 # - #get_fields: Returns the array field value for the given +key+.
 # - #main_type: Returns first part of the string value of field <tt>'Content-Type'</tt>.
 # - #sub_type: Returns second part of the string value of field <tt>'Content-Type'</tt>.
