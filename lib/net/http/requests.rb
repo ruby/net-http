@@ -6,18 +6,9 @@
 # {HTTP method GET}[https://en.wikipedia.org/w/index.php?title=Hypertext_Transfer_Protocol#GET_method]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#   hostname = uri.hostname # => "jsonplaceholder.typicode.com"
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   req = Net::HTTP::Get.new(uri) # => #<Net::HTTP::Get GET>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
-#
 #   res = Net::HTTP.start(hostname) do |http|
 #     http.request(req)
 #   end
@@ -45,18 +36,9 @@ end
 # {HTTP method HEAD}[https://en.wikipedia.org/w/index.php?title=Hypertext_Transfer_Protocol#HEAD_method]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#   hostname = uri.hostname # => "jsonplaceholder.typicode.com"
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   req = Net::HTTP::Head.new(uri) # => #<Net::HTTP::Head HEAD>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
-#
 #   res = Net::HTTP.start(hostname) do |http|
 #     http.request(req)
 #   end
@@ -84,19 +66,10 @@ end
 # {HTTP method POST}[https://en.wikipedia.org/w/index.php?title=Hypertext_Transfer_Protocol#POST_method]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#   hostname = uri.hostname # => "jsonplaceholder.typicode.com"
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   uri.path = '/posts'
 #   req = Net::HTTP::Post.new(uri) # => #<Net::HTTP::Post POST>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
-#
 #   req.body = '{"title": "foo","body": "bar","userId": 1}'
 #   req.content_type = 'application/json'
 #   res = Net::HTTP.start(hostname) do |http|
@@ -126,19 +99,10 @@ end
 # {HTTP method PUT}[https://en.wikipedia.org/w/index.php?title=Hypertext_Transfer_Protocol#PUT_method]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#   hostname = uri.hostname # => "jsonplaceholder.typicode.com"
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   uri.path = '/posts'
 #   req = Net::HTTP::Put.new(uri) # => #<Net::HTTP::Put PUT>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
-#
 #   req.body = '{"title": "foo","body": "bar","userId": 1}'
 #   req.content_type = 'application/json'
 #   res = Net::HTTP.start(hostname) do |http|
@@ -163,19 +127,10 @@ end
 # {HTTP method DELETE}[https://en.wikipedia.org/w/index.php?title=Hypertext_Transfer_Protocol#DELETE_method]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#   hostname = uri.hostname # => "jsonplaceholder.typicode.com"
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   uri.path = '/posts/1'
 #   req = Net::HTTP::Delete.new(uri) # => #<Net::HTTP::Delete DELETE>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
-#
 #   res = Net::HTTP.start(hostname) do |http|
 #     http.request(req)
 #   end
@@ -203,18 +158,9 @@ end
 # {HTTP method OPTIONS}[https://en.wikipedia.org/w/index.php?title=Hypertext_Transfer_Protocol#OPTIONS_method]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#   hostname = uri.hostname # => "jsonplaceholder.typicode.com"
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   req = Net::HTTP::Options.new(uri) # => #<Net::HTTP::Options OPTIONS>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
-#
 #   res = Net::HTTP.start(hostname) do |http|
 #     http.request(req)
 #   end
@@ -242,18 +188,9 @@ end
 # {HTTP method TRACE}[https://en.wikipedia.org/w/index.php?title=Hypertext_Transfer_Protocol#TRACE_method]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#   hostname = uri.hostname # => "jsonplaceholder.typicode.com"
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   req = Net::HTTP::Trace.new(uri) # => #<Net::HTTP::Trace TRACE>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
-#
 #   res = Net::HTTP.start(hostname) do |http|
 #     http.request(req)
 #   end
@@ -281,19 +218,10 @@ end
 # {HTTP method PATCH}[https://en.wikipedia.org/w/index.php?title=Hypertext_Transfer_Protocol#PATCH_method]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#   hostname = uri.hostname # => "jsonplaceholder.typicode.com"
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   uri.path = '/posts'
 #   req = Net::HTTP::Patch.new(uri) # => #<Net::HTTP::Patch PATCH>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
-#
 #   req.body = '{"title": "foo","body": "bar","userId": 1}'
 #   req.content_type = 'application/json'
 #   res = Net::HTTP.start(hostname) do |http|
@@ -327,16 +255,12 @@ end
 # {WebDAV method PROPFIND}[http://www.webdav.org/specs/rfc4918.html#METHOD_PROPFIND]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   req = Net::HTTP::Propfind.new(uri) # => #<Net::HTTP::Propfind PROPFIND>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
+#   res = Net::HTTP.start(hostname) do |http|
+#     http.request(req)
+#   end
 #
 # Related:
 #
@@ -352,16 +276,12 @@ end
 # {WebDAV method PROPPATCH}[http://www.webdav.org/specs/rfc4918.html#METHOD_PROPPATCH]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   req = Net::HTTP::Proppatch.new(uri) # => #<Net::HTTP::Proppatch PROPPATCH>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
+#   res = Net::HTTP.start(hostname) do |http|
+#     http.request(req)
+#   end
 #
 # Related:
 #
@@ -377,16 +297,12 @@ end
 # {WebDAV method MKCOL}[http://www.webdav.org/specs/rfc4918.html#METHOD_MKCOL]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   req = Net::HTTP::Mkcol.new(uri) # => #<Net::HTTP::Mkcol MKCOL>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
+#   res = Net::HTTP.start(hostname) do |http|
+#     http.request(req)
+#   end
 #
 # Related:
 #
@@ -402,16 +318,12 @@ end
 # {WebDAV method COPY}[http://www.webdav.org/specs/rfc4918.html#METHOD_COPY]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   req = Net::HTTP::Copy.new(uri) # => #<Net::HTTP::Copy COPY>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
+#   res = Net::HTTP.start(hostname) do |http|
+#     http.request(req)
+#   end
 #
 # Related:
 #
@@ -427,16 +339,12 @@ end
 # {WebDAV method MOVE}[http://www.webdav.org/specs/rfc4918.html#METHOD_MOVE]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   req = Net::HTTP::Move.new(uri) # => #<Net::HTTP::Move MOVE>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
+#   res = Net::HTTP.start(hostname) do |http|
+#     http.request(req)
+#   end
 #
 # Related:
 #
@@ -452,16 +360,12 @@ end
 # {WebDAV method LOCK}[http://www.webdav.org/specs/rfc4918.html#METHOD_LOCK]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   req = Net::HTTP::Lock.new(uri) # => #<Net::HTTP::Lock LOCK>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
+#   res = Net::HTTP.start(hostname) do |http|
+#     http.request(req)
+#   end
 #
 # Related:
 #
@@ -477,16 +381,12 @@ end
 # {WebDAV method UNLOCK}[http://www.webdav.org/specs/rfc4918.html#METHOD_UNLOCK]:
 #
 #   require 'net/http'
-#   uri = URI('https://jsonplaceholder.typicode.com')
-#
+#   uri = URI('http://example.com')
+#   hostname = uri.hostname # => "example.com"
 #   req = Net::HTTP::Unlock.new(uri) # => #<Net::HTTP::Unlock UNLOCK>
-#   # Default headers.
-#   req.to_hash
-#   # =>
-#   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
-#    "accept"=>["*/*"],
-#    "user-agent"=>["Ruby"],
-#    "host"=>["jsonplaceholder.typicode.com"]}
+#   res = Net::HTTP.start(hostname) do |http|
+#     http.request(req)
+#   end
 #
 # Related:
 #
