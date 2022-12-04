@@ -53,7 +53,6 @@ end
 #
 # Related:
 #
-# - Net::HTTP.head: sends +HEAD+ request, returns response object.
 # - Net::HTTP#head: sends +HEAD+ request, returns response object.
 #
 class Net::HTTP::Head < Net::HTTPRequest
@@ -145,7 +144,6 @@ end
 #
 # Related:
 #
-# - Net::HTTP.delete: sends +DELETE+ request, returns response object.
 # - Net::HTTP#delete: sends +DELETE+ request, returns response object.
 #
 class Net::HTTP::Delete < Net::HTTPRequest
@@ -175,7 +173,6 @@ end
 #
 # Related:
 #
-# - Net::HTTP.options: sends +OPTIONS+ request, returns response object.
 # - Net::HTTP#options: sends +OPTIONS+ request, returns response object.
 #
 class Net::HTTP::Options < Net::HTTPRequest
@@ -205,7 +202,6 @@ end
 #
 # Related:
 #
-# - Net::HTTP.trace: sends +TRACE+ request, returns response object.
 # - Net::HTTP#trace: sends +TRACE+ request, returns response object.
 #
 class Net::HTTP::Trace < Net::HTTPRequest
@@ -238,7 +234,6 @@ end
 #
 # Related:
 #
-# - Net::HTTP.patch: sends +PATCH+ request, returns response object.
 # - Net::HTTP#patch: sends +PATCH+ request, returns response object.
 #
 class Net::HTTP::Patch < Net::HTTPRequest
