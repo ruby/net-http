@@ -769,6 +769,8 @@ module Net   #:nodoc:
     #   http.proxy_user # => "pname"
     #   http.proxy_pass # => "ppass"
     #
+    # <b>Argument +p_no_proxy+</b>
+    #
     # You can use argument +p_no_proxy+ to reject certain proxies:
     #
     # - Reject a certain address:
