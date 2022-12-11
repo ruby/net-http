@@ -517,6 +517,9 @@ module Net   #:nodoc:
       }
     end
 
+    # :call-seq:
+    #   post_form(uri, params)
+    #
     # Posts data to a host; returns a Net::HTTPResponse object.
     #
     # Argument +uri+ must be a URI;
