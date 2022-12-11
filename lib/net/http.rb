@@ -517,9 +517,6 @@ module Net   #:nodoc:
       }
     end
 
-    # :call-seq:
-    #   Net::HTTP.post_form(uri, data) -> response
-    #
     # Posts data to a host; returns a Net::HTTPResponse object.
     #
     # Argument +uri+ must be a URI;
@@ -772,17 +769,6 @@ module Net   #:nodoc:
     #   http.proxy_user # => "pname"
     #   http.proxy_pass # => "ppass"
     #
-    # <b>Proxy Using Argument +p_addr+ as \Symbol <tt>:ENV</tt></b>
-    #
-    # When argument +p_addr+ is given as +:ENV+ (the default),
-    # the returned +http+ has a proxy:
-    #
-    #   ENV['http_proxy'] = 'http://example.com'
-    #   # => "http://example.com"
-    #   http = Net::HTTP.new(hostname, 8000, :ENV)
-    #   # => #<Net::HTTP jsonplaceholder.typicode.com:8000 open=false>
-    #   http.proxy_address # => "example.com"
-    #
     # You can use argument +p_no_proxy+ to reject certain proxies:
     #
     # - Reject a certain address:
@@ -795,7 +781,7 @@ module Net   #:nodoc:
     #     http = Net::HTTP.new('example.com', nil, 'my.proxy.example', 8000, 'pname', 'ppass', 'proxy.example')
     #     http.proxy_address # => nil
     #
-    # Reject certain addresses and port combinations:
+    # - Reject certain addresses and port combinations:
     #
     #     http = Net::HTTP.new('example.com', nil, 'proxy.example', 8000, 'pname', 'ppass', 'proxy.example:1234')
     #     http.proxy_address # => "proxy.example"
