@@ -207,9 +207,7 @@ module Net::HTTPHeader
   # or +nil+ if there is no such key;
   # see {Fields}[rdoc-ref:Net::HTTPHeader@Fields]:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res['Connection'] # => "keep-alive"
   #   res['Nosuch']     # => nil
   #
@@ -293,9 +291,7 @@ module Net::HTTPHeader
   # or +nil+ if there is no such field;
   # see {Fields}[rdoc-ref:Net::HTTPHeader@Fields]:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res.get_fields('Connection') # => ["keep-alive"]
   #   res.get_fields('Nosuch')     # => nil
   #
@@ -314,9 +310,7 @@ module Net::HTTPHeader
   # ignores the +default_val+;
   # see {Fields}[rdoc-ref:Net::HTTPHeader@Fields]:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #
   #   # Field exists; block not called.
   #   res.fetch('Connection') do |value|
@@ -343,9 +337,7 @@ module Net::HTTPHeader
 
   # Calls the block with each key/value pair:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res.each_header do |key, value|
   #     p [key, value] if key.start_with?('c')
   #   end
@@ -372,9 +364,7 @@ module Net::HTTPHeader
 
   # Calls the block with each field key:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res.each_key do |key|
   #     p key if key.start_with?('c')
   #   end
@@ -399,9 +389,7 @@ module Net::HTTPHeader
 
   # Calls the block with each capitalized field name:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res.each_capitalized_name do |key|
   #     p key if key.start_with?('C')
   #   end
@@ -427,9 +415,7 @@ module Net::HTTPHeader
 
   # Calls the block with each string field value:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res.each_value do |value|
   #     p value if value.start_with?('c')
   #   end
@@ -614,13 +600,9 @@ module Net::HTTPHeader
   # or +nil+ if there is no such field;
   # see {Content-Length request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-length-request-header]:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/nosuch/1')
-  #   end # => #<Net::HTTPNotFound 404 Not Found readbody=true>
+  #   res = Net::HTTP.get(hostname, '/nosuch/1')
   #   res.content_length # => 2
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end # => #<Net::HTTPOK 200 OK readbody=true>
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res.content_length # => nil
   #
   def content_length
@@ -652,14 +634,12 @@ module Net::HTTPHeader
     @header['content-length'] = [len.to_i.to_s]
   end
 
-  # Returns +true+ if field <tt>'Transfer-Encoding'
+  # Returns +true+ if field <tt>'Transfer-Encoding'</tt>
   # exists and has value <tt>'chunked'</tt>,
   # +false+ otherwise;
   # see {Transfer-Encoding response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#transfer-encoding-response-header]:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end # => #<Net::HTTPOK 200 OK readbody=true>
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res['Transfer-Encoding'] # => "chunked"
   #   res.chunked?             # => true
   #
@@ -673,9 +653,7 @@ module Net::HTTPHeader
   # <tt>'Content-Range'</tt>, or +nil+ if no such field exists;
   # see {Content-Range response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-range-response-header]:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end # => #<Net::HTTPOK 200 OK readbody=true>
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res['Content-Range'] # => nil
   #   res['Content-Range'] = 'bytes 0-499/1000'
   #   res['Content-Range'] # => "bytes 0-499/1000"
@@ -693,9 +671,7 @@ module Net::HTTPHeader
   # <tt>'Content-Range'</tt>, or +nil+ if no such field exists;
   # see {Content-Range response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-range-response-header]:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end # => #<Net::HTTPOK 200 OK readbody=true>
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res['Content-Range'] # => nil
   #   res['Content-Range'] = 'bytes 0-499/1000'
   #   res.range_length     # => 500
@@ -710,9 +686,7 @@ module Net::HTTPHeader
   # or +nil+ if no such field exists;
   # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end # => #<Net::HTTPOK 200 OK readbody=true>
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
   #   res.content_type    # => "application/json"
   #
@@ -730,9 +704,7 @@ module Net::HTTPHeader
   # or +nil+ if no such field exists;
   # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end # => #<Net::HTTPOK 200 OK readbody=true>
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
   #   res.main_type       # => "application"
   #
@@ -747,9 +719,7 @@ module Net::HTTPHeader
   # or +nil+ if no such field exists;
   # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end # => #<Net::HTTPOK 200 OK readbody=true>
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
   #   res.sub_type        # => "json"
   #
@@ -764,9 +734,7 @@ module Net::HTTPHeader
   # or +nil+ if no such field exists;
   # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
   #
-  #   res = Net::HTTP.start(hostname) do |http|
-  #     http.get('/todos/1')
-  #   end # => #<Net::HTTPOK 200 OK readbody=true>
+  #   res = Net::HTTP.get(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
   #   res.type_params     # => {"charset"=>"utf-8"}
   #
