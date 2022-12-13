@@ -1038,8 +1038,6 @@ module Net   #:nodoc:
     #
     #   http.max_retries = 2   # => 2
     #   http.max_retries       # => 2
-    #   http.max_retries = 2.9 # => 2.9
-    #   http.max_retries       # => 2
     #
     def max_retries=(retries)
       retries = retries.to_int
