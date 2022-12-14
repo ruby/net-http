@@ -74,7 +74,7 @@ module Net
     HAS_BODY = false
   end
 
-  # Response class for +Processing) responses (status code 102).
+  # Response class for +Processing+ responses (status code 102).
   #
   # The +Processing+ response indicates that the server has received
   # and is processing the request, but no response is available yet.
@@ -204,7 +204,7 @@ module Net
 
   # Response class for <tt>Moved Permanently</tt> responses (status code 301).
   #
-  # The <tt>Moved Permanently</tt> response indicates thatlinks or records
+  # The <tt>Moved Permanently</tt> response indicates that links or records
   # returning this response should be updated to use the given URL.
   # See {301 Moved Permanently}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#301].
   class HTTPMovedPermanently < HTTPRedirection
@@ -341,7 +341,7 @@ module Net
 
   # Response class for <tt>Conflict</tt> responses (status code 409).
   #
-  # The request could not be processed because of conflict in the current state of the resource/
+  # The request could not be processed because of conflict in the current state of the resource
   # See {409 Conflict}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#409].
   class HTTPConflict < HTTPClientError
     HAS_BODY = true
@@ -666,7 +666,6 @@ class Net::HTTPResponse
     '501' => Net::HTTPNotImplemented,
     '502' => Net::HTTPBadGateway,
     '503' => Net::HTTPServiceUnavailable,
-
     '504' => Net::HTTPGatewayTimeout,
     '505' => Net::HTTPVersionNotSupported,
     '506' => Net::HTTPVariantAlsoNegotiates,
