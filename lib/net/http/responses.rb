@@ -341,7 +341,7 @@ module Net
 
   # Response class for <tt>Conflict</tt> responses (status code 409).
   #
-  # The request could not be processed because of conflict in the current state of the resource
+  # The request could not be processed because of conflict in the current state of the resource.
   # See {409 Conflict}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#409].
   class HTTPConflict < HTTPClientError
     HAS_BODY = true
