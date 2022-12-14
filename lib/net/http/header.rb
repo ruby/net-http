@@ -301,7 +301,7 @@ module Net::HTTPHeader
     @header[stringified_downcased_key].dup
   end
 
-  # :call-seq:
+  # call-seq:
   #   fetch(key, default_val = nil) {|key| ... } -> object
   #   fetch(key, default_val = nil) -> value or default_val
   #
@@ -540,7 +540,7 @@ module Net::HTTPHeader
     result
   end
 
-  # :call-seq:
+  # call-seq:
   #   set_range(length) -> length
   #   set_range(offset, length) -> range
   #   set_range(begin..length) -> range
