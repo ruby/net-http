@@ -861,7 +861,7 @@ module Net
   #
   class HTTPServiceUnavailable < HTTPServerError
     HAS_BODY = true
-  end-
+  end
 
   # Response class for <tt>Gateway Timeout</tt> responses (status code 504).
   #
