@@ -117,6 +117,8 @@ module Net
   #
   # References:
   #
+  # - No Mozilla page.
+  # - {RFC 2518}[https://www.rfc-editor.org/rfc/rfc2518#section-10.1].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#102].
   #
   class HTTPProcessing < HTTPInformation
@@ -132,6 +134,7 @@ module Net
   # References:
   #
   # - {Mozilla}[https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/103].
+  # - {RFC 8297}[https://www.rfc-editor.org/rfc/rfc8297.html#section-2].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#103].
   #
   class HTTPEarlyHints < HTTPInformation
@@ -255,6 +258,8 @@ module Net
   #
   # References:
   #
+  # - No Mozilla page.
+  # - {RFC 4818}[https://www.rfc-editor.org/rfc/rfc4918#section-11.1].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#207].
   #
   class HTTPMultiStatus < HTTPSuccess
@@ -271,6 +276,8 @@ module Net
   #
   # References:
   #
+  # - No Mozilla page.
+  # - {RFC 5842}[https://www.rfc-editor.org/rfc/rfc5842.html#section-7.1].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#208].
   #
   class HTTPAlreadyReported < HTTPSuccess
@@ -285,6 +292,8 @@ module Net
   #
   # References:
   #
+  # - No Mozilla page.
+  # - {RFC 3229}[https://www.rfc-editor.org/rfc/rfc3229.html#section-10.4.1].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#226].
   #
   class HTTPIMUsed < HTTPSuccess
@@ -374,6 +383,7 @@ module Net
   #
   # References:
   #
+  # - No Mozilla page.
   # - {RFC 9110}[https://www.rfc-editor.org/rfc/rfc9110.html#name-305-use-proxy].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#305].
   #
@@ -683,6 +693,7 @@ module Net
   #
   # References:
   #
+  # - No Mozilla page.
   # - {RFC 9110}[https://www.rfc-editor.org/rfc/rfc9110.html#name-421-misdirected-request].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#421].
   #
@@ -710,6 +721,8 @@ module Net
   #
   # References:
   #
+  # - No Mozilla page.
+  # - {RFC 4918}[https://www.rfc-editor.org/rfc/rfc4918#section-11.3].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#423].
   #
   class HTTPLocked < HTTPClientError
@@ -723,6 +736,8 @@ module Net
   #
   # References:
   #
+  # - No Mozilla page.
+  # - {RFC 4918}[https://www.rfc-editor.org/rfc/rfc4918#section-11.4].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#424].
   #
   class HTTPFailedDependency < HTTPClientError
@@ -753,6 +768,7 @@ module Net
   # References:
   #
   # - {Mozilla}[https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/428].
+  # - {RFC 6585}[https://www.rfc-editor.org/rfc/rfc6585#section-3].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#428].
   #
   class HTTPPreconditionRequired < HTTPClientError
@@ -766,6 +782,7 @@ module Net
   # References:
   #
   # - {Mozilla}[https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429].
+  # - {RFC 6585}[https://www.rfc-editor.org/rfc/rfc6585#section-4].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#429].
   #
   class HTTPTooManyRequests < HTTPClientError
@@ -780,6 +797,7 @@ module Net
   # References:
   #
   # - {Mozilla}[https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/431].
+  # - {RFC 6585}[https://www.rfc-editor.org/rfc/rfc6585#section-5].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#431].
   #
   class HTTPRequestHeaderFieldsTooLarge < HTTPClientError
@@ -794,6 +812,7 @@ module Net
   # References:
   #
   # - {Mozilla}[https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/451].
+  # - {RFC 7725}[https://www.rfc-editor.org/rfc/rfc7725.html#section-3].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#451].
   #
   class HTTPUnavailableForLegalReasons < HTTPClientError
@@ -900,6 +919,7 @@ module Net
   # References:
   #
   # - {Mozilla}[https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/506].
+  # - {RFC 2295}[https://www.rfc-editor.org/rfc/rfc2295#section-8.1].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#506].
   #
   class HTTPVariantAlsoNegotiates < HTTPServerError
@@ -913,6 +933,7 @@ module Net
   # References:
   #
   # - {Mozilla}[https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/507].
+  # - {RFC 4918}[https://www.rfc-editor.org/rfc/rfc4918#section-11.5].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#507].
   #
   class HTTPInsufficientStorage < HTTPServerError
@@ -926,6 +947,7 @@ module Net
   # References:
   #
   # - {Mozilla}[https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/508].
+  # - {RFC 5942}[https://www.rfc-editor.org/rfc/rfc5842.html#section-7.2].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#508].
   #
   class HTTPLoopDetected < HTTPServerError
@@ -940,6 +962,7 @@ module Net
   # References:
   #
   # - {Mozilla}[https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/510].
+  # - {RFC 2774}[https://www.rfc-editor.org/rfc/rfc2774.html#section-7].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#510].
   #
   class HTTPNotExtended < HTTPServerError
@@ -953,6 +976,7 @@ module Net
   # References:
   #
   # - {Mozilla}[https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/511].
+  # - {RFC 6585}[https://www.rfc-editor.org/rfc/rfc6585#section-6].
   # - {Wikipedia}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#511].
   #
   class HTTPNetworkAuthenticationRequired < HTTPServerError
