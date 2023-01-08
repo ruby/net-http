@@ -9,7 +9,7 @@ class HTTPHeaderTest < Test::Unit::TestCase
     def initialize
       initialize_http_header({})
     end
-    attr_accessor :body
+    attr_accessor :body, :header
   end
 
   def setup
@@ -461,9 +461,23 @@ class HTTPHeaderTest < Test::Unit::TestCase
   end
 
   def test_basic_auth
+    @c.basic_auth("test", "test")
+    assert_equal(@c.header["authorization"], ["Basic dGVzdDp0ZXN0"])
+  end
+
+  def test_bearer_auth
+    @c.bearer_auth("dGVzdA==")
+    assert_equal(@c.header["authorization"], ["Bearer dGVzdA=="])
   end
 
   def test_proxy_basic_auth
+    @c.proxy_basic_auth("test", "test")
+    assert_equal(@c.header["proxy-authorization"], ["Basic dGVzdDp0ZXN0"])
+  end
+
+  def test_proxy_bearer_auth
+    @c.proxy_bearer_auth("dGVzdA==")
+    assert_equal(@c.header["proxy-authorization"], ["Bearer dGVzdA=="])
   end
 
 end
