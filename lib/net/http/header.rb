@@ -806,22 +806,7 @@ module Net::HTTPHeader
 
   alias form_data= set_form_data
 
-  # Stores form data to be included in the body of a +POST+ or +PUT+ request.
-  # When the request is sent, the data is URL-encoded
-  # (see {URI#encode_www_form}[https://docs.ruby-lang.org/en/master/URI.html#method-c-encode_www_form])
-  # and included in the request body.
-  #
-  # Note: There is no method to retrieve the form data directly;
-  # here we define a convenience method to do just that
-  # (its details are unimportant):
-  #
-  #   def get_form(req)
-  #     YAML.unsafe_load(req.to_yaml.lines[1..].join)['body_data']
-  #   end
-  #
-  # Any input referred to here as a _string_
-  # may actually be a
-  # {string-convertible object}[https://docs.ruby-lang.org/en/master/implicit_conversion_rdoc.html#label-String-Convertible+Objects].
+  # Stores form data to be used in a +POST+ or +PUT+ request.
   #
   # The form data given in +params+ consists of zero or more fields;
   # each field is:
@@ -855,26 +840,21 @@ module Net::HTTPHeader
   #
   #   # One-string fields.
   #   req.set_form([['foo'], ['bar'], ['baz']])
-  #   get_form(req) # => [["foo"], ["bar"], ["baz"]]
   #   # String to be included in request body: 'foo&bar&baz'
   #
   #   # Two-string fields.
   #   req.set_form([%w[foo 0], %w[bar 1], %w[baz 2]])
-  #   get_form(req) # => [["foo", "0"], ["bar", "1"], ["baz", "2"]]
   #   # String to be include in request body: 'foo=0&bar=1&baz=2'
   #
   #   # Field with string and IO stream.
   #   File.write('t.tmp', 'Ruby is cool.')
   #   file = File.open('t.tmp')
   #   req.set_form(['not used', file])
-  #   get_form(req) # => ["not used", #<File:0x0000027702b68e08>]
   #
   #   # Mixture of fields.
   #   req.set_form(['foo', %w[bar 1], ['not used', file]])
-  #   get_form(req) # => ["foo", ["bar", "1"], ["not used", #<File:0x0000027702962820>]]
   #
-  # <b>Argument +params+ As a Hash
-  # </b>
+  # <b>Argument +params+ As a Hash</b>
   #
   # When +params+ is a hash,
   # each of its entries is a name/value pair that defines a field:
@@ -890,22 +870,18 @@ module Net::HTTPHeader
   #
   #   # Nil-valued fields.
   #   req.set_form({foo: nil, bar: nil, baz: nil})
-  #   get_form(req) # => {:foo=>nil, :bar=>nil, :baz=>nil}
   #   # String to be included in request body: 'foo&bar&baz'
   #
-  #   # String-convertible-valued fields.
+  #   # String-valued fields.
   #   req.set_form({foo: 0, bar: 1, baz: 2})
-  #   get_form(req) # => {:foo=>0, :bar=>1, :baz=>2}
   #
   #   # IO-valued field.
   #   File.write('t.tmp', 'Ruby is cool.')
   #   file = File.open('t.tmp')
   #   req.set_form({not_used: file})
-  #   get_form(req) # => {"not used"=>#<File:0x0000027702a02c30>}
   #
   #   # Mixture of fields.
   #   req.set_form({foo: nil, bar: 1, not_used: file})
-  #   get_form(req) # => {:foo=>nil, :bar=>1, :not_used=>#<File:0x000002770272c0d8>}
   #
   # Set an HTML form data set.
   # +params+ :: The form data to set, which should be an enumerable.
