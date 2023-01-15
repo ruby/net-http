@@ -134,9 +134,11 @@
 # - #[]=: Sets the string or array value for the given key.
 # - #add_field: Creates or adds to the array value for the given key.
 # - #basic_auth: Sets the string authorization header for <tt>'Authorization'</tt>.
+# - #bearer_auth: Sets the string authorization header for <tt>'Authorization'</tt>.
 # - #content_length=: Sets the integer length for field <tt>'Content-Length</tt>.
 # - #content_type=: Sets the string value for field <tt>'Content-Type'</tt>.
 # - #proxy_basic_auth: Sets the string authorization header for <tt>'Proxy-Authorization'</tt>.
+# - #proxy_bearer_auth: Sets the string authorization header for <tt>'Proxy-Authorization'</tt>.
 # - #set_range: Sets the value for field <tt>'Range'</tt>.
 #
 # === Form Setters
@@ -871,20 +873,35 @@ module Net::HTTPHeader
     end
   end
 
-  # Set the Authorization: header for "Basic" authorization.
+  # Sets the Authorization: header for "Basic" authorization.
   def basic_auth(account, password)
     @header['authorization'] = [basic_encode(account, password)]
   end
 
-  # Set Proxy-Authorization: header for "Basic" authorization.
+  # Sets the Authorization: header for "Bearer" authorization.
+  def bearer_auth(access_token)
+    @header['authorization'] = [bearer_encode(access_token)]
+  end
+
+  # Sets the Proxy-Authorization: header for "Basic" authorization.
   def proxy_basic_auth(account, password)
     @header['proxy-authorization'] = [basic_encode(account, password)]
+  end
+
+  # Sets the Proxy-Authorization: header for "Bearer" authorization.
+  def proxy_bearer_auth(access_token)
+    @header['proxy-authorization'] = [bearer_encode(access_token)]
   end
 
   def basic_encode(account, password)
     'Basic ' + ["#{account}:#{password}"].pack('m0')
   end
   private :basic_encode
+
+  def bearer_encode(access_token)
+    "Bearer #{access_token}"
+  end
+  private :bearer_encode
 
   def connection_close?
     token = /(?:\A|,)\s*close\s*(?:\z|,)/i

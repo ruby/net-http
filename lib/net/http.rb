@@ -309,6 +309,21 @@ module Net   #:nodoc:
   #   }
   #   puts res.body
   #
+  # == Bearer Authentication
+  #
+  # Bearer authentication is performed according to
+  # [RFC8898](https://www.ietf.org/rfc/rfc8898.txt).
+  #
+  #   uri = URI('http://example.com/index.html?key=value')
+  #
+  #   req = Net::HTTP::Get.new(uri)
+  #   req.bearer_auth('access_token')
+  #
+  #   res = Net::HTTP.start(uri.hostname, uri.port) {|http|
+  #     http.request(req)
+  #   }
+  #   puts res.body
+  #
   # == Streaming Response Bodies
   #
   # By default Net::HTTP reads an entire response into memory.  If you are
