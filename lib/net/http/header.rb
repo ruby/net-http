@@ -908,55 +908,6 @@ module Net::HTTPHeader
   # - +:charset+: Value is the character set for the form submission.
   #   Field names and values of non-file fields should be encoded with this charset.
   #
-  # Set an HTML form data set.
-  # +params+ :: The form data to set, which should be an enumerable.
-  #             See below for more details.
-  # +enctype+ :: The content type to use to encode the form submission,
-  #              which should be application/x-www-form-urlencoded or
-  #              multipart/form-data.
-  # +formopt+ :: An options hash, supporting the following options:
-  #              :boundary :: The boundary of the multipart message. If
-  #                           not given, a random boundary will be used.
-  #              :charset :: The charset of the form submission. All
-  #                          field names and values of non-file fields
-  #                          should be encoded with this charset.
-  #
-  # Each item of params should respond to +each+ and yield 2-3 arguments,
-  # or an array of 2-3 elements. The arguments yielded should be:
-  #
-  # - The name of the field.
-  # - The value of the field, it should be a String or a File or IO-like.
-  # - An options hash, supporting the following options
-  #   (used only for file uploads); entries:
-  #
-  #   - +:filename+: The name of the file to use.
-  #   - +:content_type+: The content type of the uploaded file.
-  #
-  # Each item is a file field or a normal field.
-  # If +value+ is a File object or the +opt+ hash has a :filename key,
-  # the item is treated as a file field.
-  #
-  # If Transfer-Encoding is set as chunked, this sends the request using
-  # chunked encoding. Because chunked encoding is HTTP/1.1 feature,
-  # you should confirm that the server supports HTTP/1.1 before using
-  # chunked encoding.
-  #
-  # Example:
-  #
-  #    req.set_form([["q", "ruby"], ["lang", "en"]])
-  #
-  #    req.set_form({"f"=>File.open('/path/to/filename')},
-  #                 "multipart/form-data",
-  #                 charset: "UTF-8",
-  #    )
-  #
-  #    req.set_form([["f",
-  #                   File.open('/path/to/filename.bar'),
-  #                   {filename: "other-filename.foo"}
-  #                 ]],
-  #                 "multipart/form-data",
-  #    )
-  #
   def set_form(params, enctype='application/x-www-form-urlencoded', formopt={})
     @body_data = params
     @body = nil
