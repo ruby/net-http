@@ -835,20 +835,18 @@ module Net::HTTPHeader
   # - One string:
   #
   #     req.set_form([['foo'], ['bar'], ['baz']])
-  #     # String to be included in request body: 'foo&bar&baz'
   #
   # - Two strings:
   #
   #     req.set_form([%w[foo 0], %w[bar 1], %w[baz 2]])
-  #     # String to be include in request body: 'foo=0&bar=1&baz=2'
   #
-  # - A string (ignored) and an IO stream opened for reading:
+  # - A string name and an IO stream opened for reading:
   #
   #     File.write('t.tmp', 'Ruby is cool.')
   #     file = File.open('t.tmp')
   #     req.set_form([['not used', file]])
   #
-  # - A string (ignored), an IO stream opened for reading,
+  # - A string name, an IO stream opened for reading,
   #   and an options hash, which may contain these entries:
   #
   #   - +:filename+: The name of the file to use.
@@ -877,12 +875,10 @@ module Net::HTTPHeader
   # Examples:
   #
   #   # Nil-valued fields.
-  #   req.set_form({foo: nil, bar: nil, baz: nil})
-  #   # String to be included in request body: 'foo&bar&baz'
+  #   req.set_form({'foo' => nil, 'bar' => nil, 'baz' => nil})
   #
   #   # String-valued fields.
-  #   req.set_form({foo: 0, bar: 1, baz: 2})
-  #   # String to be include in request body: 'foo=0&bar=1&baz=2'
+  #   req.set_form({'foo' => 0, 'bar' => 1, 'baz' => 2})
   #
   #   # IO-valued field.
   #   File.write('t.tmp', 'Ruby is cool.')
@@ -890,7 +886,7 @@ module Net::HTTPHeader
   #   req.set_form({not_used: file})
   #
   #   # Mixture of fields.
-  #   req.set_form({foo: nil, bar: 1, not_used: file})
+  #   req.set_form({'foo' => nil, 'bar' => 1, 'not used' => file})
   #
   # Optional argument +enctype+ specifies the value to be given
   # to field <tt>'Content-Type'</tt>, and must be one of:
@@ -899,8 +895,10 @@ module Net::HTTPHeader
   # - <tt>'multipart/form-data'</tt>;
   #   see {RFC 7578}[https://www.rfc-editor.org/rfc/rfc7578].
   #
-  # Optional argument +formopt+ is a hash of options that may include
-  # the following entries:
+  # Optional argument +formopt+ is a hash of options
+  # (applicable only when header <tt>'Content-Type'</tt>
+  # is <tt>'multipart/form-data'</tt>)
+  # that may include the following entries:
   #
   # - +:boundary+: The value is the boundary string for the multipart message.
   #   If not given, the boundary is a random string.
