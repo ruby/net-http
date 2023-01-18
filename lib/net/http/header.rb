@@ -886,7 +886,7 @@ module Net::HTTPHeader
   #
   #   # IO-valued field.
   #   require 'stringio'
-  #   req.set_form({file: StringIO.new('Ruby is cool.')})
+  #   req.set_form({'file' => StringIO.new('Ruby is cool.')})
   #
   #   # Mixture of fields.
   #   req.set_form({'foo' => nil, 'bar' => 1, 'file' => file})
