@@ -873,7 +873,7 @@ module Net::HTTPHeader
   #   - +nil+.
   #   - Another string.
   #   - An IO stream opened for reading,
-  #     (only when argument +enctype+ (see below) is given as
+  #     (only when argument +enctype+ -- see below -- is given as
   #     <tt>'multipart/form-data'</tt>).
   #
   # Examples:
