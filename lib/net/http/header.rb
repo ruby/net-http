@@ -923,13 +923,22 @@ module Net::HTTPHeader
     end
   end
 
-  # Set the Authorization: header for "Basic" authorization.
+  # Sets header <tt>'Authorization'</tt> using the given
+  # +account+ and +password+ strings:
+  #
+  #   req.basic_auth('my_account', 'my_password')
+  #   # => ["Basic bXlfYWNjb3VudDpteV9wYXNzd29yZA=="]
+  #
   def basic_auth(account, password)
     @header['authorization'] = [basic_encode(account, password)]
   end
 
-  # Set Proxy-Authorization: header for "Basic" authorization.
-  def proxy_basic_auth(account, password)
+  # Sets header <tt>'Proxy-Authorization'</tt> using the given
+  # +account+ and +password+ strings:
+  #
+  #   req.proxy_basic_auth('my_account', 'my_password')
+  #   # => ["Basic bXlfYWNjb3VudDpteV9wYXNzd29yZA=="]
+  #
     @header['proxy-authorization'] = [basic_encode(account, password)]
   end
 
@@ -938,6 +947,7 @@ module Net::HTTPHeader
   end
   private :basic_encode
 
+# Returns whether the HTTP session is to be closed.
   def connection_close?
     token = /(?:\A|,)\s*close\s*(?:\z|,)/i
     @header['connection']&.grep(token) {return true}
@@ -945,6 +955,7 @@ module Net::HTTPHeader
     false
   end
 
+# Returns whether the HTTP session is to be kept alive.
   def connection_keep_alive?
     token = /(?:\A|,)\s*keep-alive\s*(?:\z|,)/i
     @header['connection']&.grep(token) {return true}
