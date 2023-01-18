@@ -840,25 +840,27 @@ module Net::HTTPHeader
   #
   #     req.set_form([%w[foo 0], %w[bar 1], %w[baz 2]])
   #
-  # - A string name and an IO stream opened for reading:
+  # - When argument +enctype+ (see below) is given as
+  #   <tt>'multipart/form-data'</tt>:
   #
-  #     File.write('t.tmp', 'Ruby is cool.')
-  #     file = File.open('t.tmp')
-  #     req.set_form([['not used', file]])
+  #   - A string name and an IO stream opened for reading:
   #
-  # - A string name, an IO stream opened for reading,
-  #   and an options hash, which may contain these entries:
+  #       require 'stringio'
+  #       req.set_form([['file', StringIO.new('Ruby is cool.')]])
   #
-  #   - +:filename+: The name of the file to use.
-  #   - +:content_type+: The content type of the uploaded file.
+  #   - A string name, an IO stream opened for reading,
+  #     and an options hash, which may contain these entries:
   #
-  #   Example:
+  #     - +:filename+: The name of the file to use.
+  #     - +:content_type+: The content type of the uploaded file.
   #
-  #     req.set_form([['not used', file, {filename: "other-filename.foo"}]]
+  #     Example:
+  #
+  #       req.set_form([['file', file, {filename: "other-filename.foo"}]]
   #
   # The various forms may be mixed:
   #
-  #   req.set_form(['foo', %w[bar 1], ['not used', file]])
+  #   req.set_form(['foo', %w[bar 1], ['file', file]])
   #
   # <b>Argument +params+ As a Hash</b>
   #
@@ -870,7 +872,9 @@ module Net::HTTPHeader
   #
   #   - +nil+.
   #   - Another string.
-  #   - An IO stream opened for reading.
+  #   - An IO stream opened for reading,
+  #     (only when argument +enctype+ (see below) is given as
+  #     <tt>'multipart/form-data'</tt>).
   #
   # Examples:
   #
@@ -881,12 +885,11 @@ module Net::HTTPHeader
   #   req.set_form({'foo' => 0, 'bar' => 1, 'baz' => 2})
   #
   #   # IO-valued field.
-  #   File.write('t.tmp', 'Ruby is cool.')
-  #   file = File.open('t.tmp')
-  #   req.set_form({not_used: file})
+  #   require 'stringio'
+  #   req.set_form({file: StringIO.new('Ruby is cool.')})
   #
   #   # Mixture of fields.
-  #   req.set_form({'foo' => nil, 'bar' => 1, 'not used' => file})
+  #   req.set_form({'foo' => nil, 'bar' => 1, 'file' => file})
   #
   # Optional argument +enctype+ specifies the value to be given
   # to field <tt>'Content-Type'</tt>, and must be one of:
@@ -896,7 +899,7 @@ module Net::HTTPHeader
   #   see {RFC 7578}[https://www.rfc-editor.org/rfc/rfc7578].
   #
   # Optional argument +formopt+ is a hash of options
-  # (applicable only when header <tt>'Content-Type'</tt>
+  # (applicable only when argument +enctype+
   # is <tt>'multipart/form-data'</tt>)
   # that may include the following entries:
   #
