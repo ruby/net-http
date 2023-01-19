@@ -927,7 +927,8 @@ module Net::HTTPHeader
   # +account+ and +password+ strings:
   #
   #   req.basic_auth('my_account', 'my_password')
-  #   req['Authorization'] # => ["Basic bXlfYWNjb3VudDpteV9wYXNzd29yZA=="]
+  #   req['Authorization']
+  #   # => "Basic bXlfYWNjb3VudDpteV9wYXNzd29yZA=="
   #
   def basic_auth(account, password)
     @header['authorization'] = [basic_encode(account, password)]
@@ -937,7 +938,8 @@ module Net::HTTPHeader
   # +account+ and +password+ strings:
   #
   #   req.proxy_basic_auth('my_account', 'my_password')
-  #   req['Proxy-Authorization'] # => ["Basic bXlfYWNjb3VudDpteV9wYXNzd29yZA=="]
+  #   req['Proxy-Authorization']
+  #   # => "Basic bXlfYWNjb3VudDpteV9wYXNzd29yZA=="
   #
   def proxy_basic_auth(account, password)
     @header['proxy-authorization'] = [basic_encode(account, password)]
