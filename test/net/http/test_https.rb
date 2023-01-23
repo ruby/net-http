@@ -307,4 +307,14 @@ class TestNetHTTPS < Test::Unit::TestCase
     assert_match(re_msg, ex.message)
   end
 
+  def test_ssl_options
+    http = Net::HTTP.new(HOST, config("port"))
+    http.use_ssl = true
+    http.ssl_options = OpenSSL::SSL::OP_LEGACY_SERVER_CONNECT
+    http.cert_store = TEST_STORE
+    http.request_get("/") {|res|
+      assert_equal($test_net_http_data, res.body)
+    }
+  end
+
 end if defined?(OpenSSL::SSL)

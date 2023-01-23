@@ -658,6 +658,7 @@ module Net   #:nodoc:
     # - #open_timeout
     # - #read_timeout
     # - #ssl_timeout
+    # - #ssl_options
     # - #ssl_version
     # - +use_ssl+ (calls #use_ssl=)
     # - #verify_callback
@@ -1132,6 +1133,7 @@ module Net   #:nodoc:
       :@extra_chain_cert,
       :@key,
       :@ssl_timeout,
+      :@ssl_options,
       :@ssl_version,
       :@min_version,
       :@max_version,
@@ -1149,6 +1151,7 @@ module Net   #:nodoc:
       :extra_chain_cert,
       :key,
       :ssl_timeout,
+      :options,
       :ssl_version,
       :min_version,
       :max_version,
@@ -1187,6 +1190,9 @@ module Net   #:nodoc:
 
     # Sets the SSL timeout seconds.
     attr_accessor :ssl_timeout
+
+    # Sets the SSL options. See OpenSSL::SSL::SSLContext#ssl_options=
+    attr_accessor :ssl_options
 
     # Sets the SSL version.  See OpenSSL::SSL::SSLContext#ssl_version=
     attr_accessor :ssl_version
