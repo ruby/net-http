@@ -43,8 +43,8 @@ module Net   #:nodoc:
   #
   # - If you will make only a few GET requests,
   #   consider using {OpenURI}[https://docs.ruby-lang.org/en/master/OpenURI.html].
-  # - If performance is _not_ important,
-  #   consider using various convenience methods in this class.
+  # - If you will make only a few requests of all kinds,
+  #   consider using the various singleton convenience methods in this class.
   #   Each of the following methods automatically starts and finishes
   #   a {session}[rdoc-ref:Net::HTTP@Sessions] that sends a single request:
   #
@@ -62,43 +62,34 @@ module Net   #:nodoc:
   #     Net::HTTP.post(uri, data, headers = {})
   #     Net::HTTP.post_form(uri, params)
   #
-  # - If performance _is_ important, consider using sessions, which lower request overhead:
+  # - If performance is important, consider using sessions, which lower request overhead.
+  #   This {session}[rdoc-ref:Net::HTTP@Sessions] has multiple requests for
+  #   {HTTP methods}[https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods]
+  #   and {WebDAV methods}[https://en.wikipedia.org/wiki/WebDAV#Implementation]:
   #
-  #   - {Session}[rdoc-ref:Net::HTTP@Sessions] with multiple requests for
-  #     {HTTP methods}[https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods]:
+  #     Net::HTTP.start(hostname) do |http|
+  #       # Session started automatically before block execution.
+  #       http.get(path_or_uri, headers = {})
+  #       http.head(path_or_uri, headers = {})
+  #       http.post(path_or_uri, body, headers = {})  # Can also have a block.
+  #       http.put(path_or_uri, body, headers = {})
+  #       http.delete(path_or_uri, headers = {Depth: 'Infinity'})
+  #       http.options(path_or_uri, headers = {})
+  #       http.trace(path_or_uri, headers = {})
+  #       http.patch(path_or_uri, body, headers = {}) # Can also have a block.
+  #       http.copy(path_or_uri, headers = {})
+  #       http.lock(path_or_uri, body, headers = {})
+  #       http.mkcol(path_or_uri, body = nil, headers = {})
+  #       http.move(path_or_uri, headers = {})
+  #       http.propfind(path_or_uri, body = nil, headers = {'Depth' => '0'})
+  #       http.proppatch(path_or_uri, body, headers = {})
+  #       http.unlock(path_or_uri, body, headers = {})
+  #       # Session finished automatically at block exit.
+  #     end
   #
-  #       Net::HTTP.start(hostname) do |http|
-  #         # Session started automatically before block execution.
-  #         http.get(path_or_uri, headers = {})
-  #         http.head(path_or_uri, headers = {})
-  #         http.post(path_or_uri, body, headers = {})  # Can also have a block.
-  #         http.put(path_or_uri, body, headers = {})
-  #         http.delete(path_or_uri, headers = {Depth: 'Infinity'})
-  #         http.options(path_or_uri, headers = {})
-  #         http.trace(path_or_uri, headers = {})
-  #         http.patch(path_or_uri, body, headers = {}) # Can also have a block.
-  #         # Session finished automatically at block exit.
-  #       end
-  #
-  #   - {Session}[rdoc-ref:Net::HTTP@Sessions] with multiple requests for
-  #     {WebDAV methods}[https://en.wikipedia.org/wiki/WebDAV#Implementation]:
-  #
-  #       Net::HTTP.start(hostname) do |http|
-  #         # Session started automatically before block execution.
-  #         http.copy(path_or_uri, headers = {})
-  #         http.lock(path_or_uri, body, headers = {})
-  #         http.mkcol(path_or_uri, body = nil, headers = {})
-  #         http.move(path_or_uri, headers = {})
-  #         http.propfind(path_or_uri, body = nil, headers = {'Depth' => '0'})
-  #         http.proppatch(path_or_uri, body, headers = {})
-  #         http.unlock(path_or_uri, body, headers = {})
-  #         # Session finished automatically at block exit.
-  #       end
-  #
-  #   The methods cited above are convenience methods that, via their few arguments,
-  #   allow minimal control over the requests.
-  #   For greater control, consider using {request objects}[rdoc-ref:Net::HTTPRequest].
-  #
+  # The methods cited above are convenience methods that, via their few arguments,
+  # allow minimal control over the requests.
+  # For greater control, consider using {request objects}[rdoc-ref:Net::HTTPRequest].
   #
   # == About the Examples
   #
