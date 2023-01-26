@@ -4,8 +4,10 @@
 #
 # The module is included in:
 #
-# - Net::HTTPGenericRequest (and therefore Net::HTTPRequest).
-# - Net::HTTPResponse.
+# - HTTPGenericRequest (and therefore also in
+#
+# HTTPRequest).
+# - HTTPResponse.
 #
 # The headers are a hash-like collection of key/value pairs called _fields_.
 #
@@ -13,15 +15,15 @@
 #
 # Headers may be included in:
 #
-# - A Net::HTTPRequest object:
+# - An HTTPRequest object:
 #   the object's headers will be sent with the request.
 #   Any fields may be defined in the request;
-#   see {Setters}[rdoc-ref:Net::HTTPHeader@Setters].
-# - A Net::HTTPResponse object:
+#   see {Setters}[rdoc-ref:HTTPHeader@Setters].
+# - An HTTPResponse object:
 #   the objects headers are usually those returned from the host.
 #   Fields may be retrieved from the object;
-#   see {Getters}[rdoc-ref:Net::HTTPHeader@Getters]
-#   and {Iterators}[rdoc-ref:Net::HTTPHeader@Iterators].
+#   see {Getters}[rdoc-ref:HTTPHeader@Getters]
+#   and {Iterators}[rdoc-ref:HTTPHeader@Iterators].
 #
 # Exactly which fields should be sent or expected depends on the host;
 # see:
@@ -48,7 +50,7 @@
 #
 # Examples:
 #
-#   req = Net::HTTP::Get.new(uri)
+#   req = HTTP::Get.new(uri)
 #   req[:accept]  # => "*/*"
 #   req['Accept'] # => "*/*"
 #   req['ACCEPT'] # => "*/*"
@@ -205,14 +207,14 @@ module Net::HTTPHeader
 
   # Returns the string field value for the case-insensitive field +key+,
   # or +nil+ if there is no such key;
-  # see {Fields}[rdoc-ref:Net::HTTPHeader@Fields]:
+  # see {Fields}[rdoc-ref:HTTPHeader@Fields]:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res['Connection'] # => "keep-alive"
   #   res['Nosuch']     # => nil
   #
   # Note that some field values may be retrieved via convenience methods;
-  # see {Getters}[rdoc-ref:Net::HTTPHeader@Getters].
+  # see {Getters}[rdoc-ref:HTTPHeader@Getters].
   def [](key)
     a = @header[key.downcase.to_s] or return nil
     a.join(', ')
@@ -220,15 +222,15 @@ module Net::HTTPHeader
 
   # Sets the value for the case-insensitive +key+ to +val+,
   # overwriting the previous value if the field exists;
-  # see {Fields}[rdoc-ref:Net::HTTPHeader@Fields]:
+  # see {Fields}[rdoc-ref:HTTPHeader@Fields]:
   #
-  #   req = Net::HTTP::Get.new(uri)
+  #   req = HTTP::Get.new(uri)
   #   req['Accept'] # => "*/*"
   #   req['Accept'] = 'text/html'
   #   req['Accept'] # => "text/html"
   #
   # Note that some field values may be set via convenience methods;
-  # see {Setters}[rdoc-ref:Net::HTTPHeader@Setters].
+  # see {Setters}[rdoc-ref:HTTPHeader@Setters].
   def []=(key, val)
     unless val
       @header.delete key.downcase.to_s
@@ -239,9 +241,9 @@ module Net::HTTPHeader
 
   # Adds value +val+ to the value array for field +key+ if the field exists;
   # creates the field with the given +key+ and +val+ if it does not exist.
-  # see {Fields}[rdoc-ref:Net::HTTPHeader@Fields]:
+  # see {Fields}[rdoc-ref:HTTPHeader@Fields]:
   #
-  #   req = Net::HTTP::Get.new(uri)
+  #   req = HTTP::Get.new(uri)
   #   req.add_field('Foo', 'bar')
   #   req['Foo']            # => "bar"
   #   req.add_field('Foo', 'baz')
@@ -289,9 +291,9 @@ module Net::HTTPHeader
 
   # Returns the array field value for the given +key+,
   # or +nil+ if there is no such field;
-  # see {Fields}[rdoc-ref:Net::HTTPHeader@Fields]:
+  # see {Fields}[rdoc-ref:HTTPHeader@Fields]:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res.get_fields('Connection') # => ["keep-alive"]
   #   res.get_fields('Nosuch')     # => nil
   #
@@ -308,9 +310,9 @@ module Net::HTTPHeader
   # With a block, returns the string value for +key+ if it exists;
   # otherwise returns the value of the block;
   # ignores the +default_val+;
-  # see {Fields}[rdoc-ref:Net::HTTPHeader@Fields]:
+  # see {Fields}[rdoc-ref:HTTPHeader@Fields]:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #
   #   # Field exists; block not called.
   #   res.fetch('Connection') do |value|
@@ -337,7 +339,7 @@ module Net::HTTPHeader
 
   # Calls the block with each key/value pair:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res.each_header do |key, value|
   #     p [key, value] if key.start_with?('c')
   #   end
@@ -352,7 +354,7 @@ module Net::HTTPHeader
   #
   # Returns an enumerator if no block is given.
   #
-  # Net::HTTPHeader#each is an alias for Net::HTTPHeader#each_header.
+  # HTTPHeader#each is an alias for HTTPHeader#each_header.
   def each_header   #:yield: +key+, +value+
     block_given? or return enum_for(__method__) { @header.size }
     @header.each do |k,va|
@@ -364,7 +366,7 @@ module Net::HTTPHeader
 
   # Calls the block with each field key:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res.each_key do |key|
   #     p key if key.start_with?('c')
   #   end
@@ -379,7 +381,7 @@ module Net::HTTPHeader
   #
   # Returns an enumerator if no block is given.
   #
-  # Net::HTTPHeader#each_name is an alias for Net::HTTPHeader#each_key.
+  # HTTPHeader#each_name is an alias for HTTPHeader#each_key.
   def each_name(&block)   #:yield: +key+
     block_given? or return enum_for(__method__) { @header.size }
     @header.each_key(&block)
@@ -389,7 +391,7 @@ module Net::HTTPHeader
 
   # Calls the block with each capitalized field name:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res.each_capitalized_name do |key|
   #     p key if key.start_with?('C')
   #   end
@@ -415,7 +417,7 @@ module Net::HTTPHeader
 
   # Calls the block with each string field value:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res.each_value do |value|
   #     p value if value.start_with?('c')
   #   end
@@ -435,10 +437,10 @@ module Net::HTTPHeader
   end
 
   # Removes the header for the given case-insensitive +key+
-  # (see {Fields}[rdoc-ref:Net::HTTPHeader@Fields]);
+  # (see {Fields}[rdoc-ref:HTTPHeader@Fields]);
   # returns the deleted value, or +nil+ if no such field exists:
   #
-  #   req = Net::HTTP::Get.new(uri)
+  #   req = HTTP::Get.new(uri)
   #   req.delete('Accept') # => ["*/*"]
   #   req.delete('Nosuch') # => nil
   #
@@ -448,7 +450,7 @@ module Net::HTTPHeader
 
   # Returns +true+ if the field for the case-insensitive +key+ exists, +false+ otherwise:
   #
-  #   req = Net::HTTP::Get.new(uri)
+  #   req = HTTP::Get.new(uri)
   #   req.key?('Accept') # => true
   #   req.key?('Nosuch') # => false
   #
@@ -458,7 +460,7 @@ module Net::HTTPHeader
 
   # Returns a hash of the key/value pairs:
   #
-  #   req = Net::HTTP::Get.new(uri)
+  #   req = HTTP::Get.new(uri)
   #   req.to_hash
   #   # =>
   #   {"accept-encoding"=>["gzip;q=1.0,deflate;q=0.6,identity;q=0.3"],
@@ -472,7 +474,7 @@ module Net::HTTPHeader
 
   # Like #each_header, but the keys are returned in capitalized form.
   #
-  # Net::HTTPHeader#canonical_each is an alias for Net::HTTPHeader#each_capitalized.
+  # HTTPHeader#canonical_each is an alias for HTTPHeader#each_capitalized.
   def each_capitalized
     block_given? or return enum_for(__method__) { @header.size }
     @header.each do |k,v|
@@ -492,7 +494,7 @@ module Net::HTTPHeader
   # or +nil+ if there is no such field;
   # see {Range request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#range-request-header]:
   #
-  #   req = Net::HTTP::Get.new(uri)
+  #   req = HTTP::Get.new(uri)
   #   req['Range'] = 'bytes=0-99,200-299,400-499'
   #   req.range # => [0..99, 200..299, 400..499]
   #   req.delete('Range')
@@ -550,7 +552,7 @@ module Net::HTTPHeader
   #
   # With argument +length+:
   #
-  #   req = Net::HTTP::Get.new(uri)
+  #   req = HTTP::Get.new(uri)
   #   req.set_range(100)      # => 100
   #   req['Range']            # => "bytes=0-99"
   #
@@ -564,7 +566,7 @@ module Net::HTTPHeader
   #   req.set_range(100..199) # => 100..199
   #   req['Range']            # => "bytes=100-199"
   #
-  # Net::HTTPHeader#range= is an alias for Net::HTTPHeader#set_range.
+  # HTTPHeader#range= is an alias for HTTPHeader#set_range.
   def set_range(r, e = nil)
     unless r
       @header.delete 'range'
@@ -600,9 +602,9 @@ module Net::HTTPHeader
   # or +nil+ if there is no such field;
   # see {Content-Length request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-length-request-header]:
   #
-  #   res = Net::HTTP.get_response(hostname, '/nosuch/1')
+  #   res = HTTP.get_response(hostname, '/nosuch/1')
   #   res.content_length # => 2
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res.content_length # => nil
   #
   def content_length
@@ -618,11 +620,11 @@ module Net::HTTPHeader
   #   _uri = uri.dup
   #   hostname = _uri.hostname           # => "jsonplaceholder.typicode.com"
   #   _uri.path = '/posts'               # => "/posts"
-  #   req = Net::HTTP::Post.new(_uri)    # => #<Net::HTTP::Post POST>
+  #   req = HTTP::Post.new(_uri)    # => #<Net::HTTP::Post POST>
   #   req.body = '{"title": "foo","body": "bar","userId": 1}'
   #   req.content_length = req.body.size # => 42
   #   req.content_type = 'application/json'
-  #   res = Net::HTTP.start(hostname) do |http|
+  #   res = HTTP.start(hostname) do |http|
   #     http.request(req)
   #   end # => #<Net::HTTPCreated 201 Created readbody=true>
   #
@@ -639,7 +641,7 @@ module Net::HTTPHeader
   # +false+ otherwise;
   # see {Transfer-Encoding response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#transfer-encoding-response-header]:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res['Transfer-Encoding'] # => "chunked"
   #   res.chunked?             # => true
   #
@@ -653,7 +655,7 @@ module Net::HTTPHeader
   # <tt>'Content-Range'</tt>, or +nil+ if no such field exists;
   # see {Content-Range response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-range-response-header]:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res['Content-Range'] # => nil
   #   res['Content-Range'] = 'bytes 0-499/1000'
   #   res['Content-Range'] # => "bytes 0-499/1000"
@@ -671,7 +673,7 @@ module Net::HTTPHeader
   # <tt>'Content-Range'</tt>, or +nil+ if no such field exists;
   # see {Content-Range response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-range-response-header]:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res['Content-Range'] # => nil
   #   res['Content-Range'] = 'bytes 0-499/1000'
   #   res.range_length     # => 500
@@ -686,7 +688,7 @@ module Net::HTTPHeader
   # or +nil+ if no such field exists;
   # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
   #   res.content_type    # => "application/json"
   #
@@ -704,7 +706,7 @@ module Net::HTTPHeader
   # or +nil+ if no such field exists;
   # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
   #   res.main_type       # => "application"
   #
@@ -719,7 +721,7 @@ module Net::HTTPHeader
   # or +nil+ if no such field exists;
   # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
   #   res.sub_type        # => "json"
   #
@@ -734,7 +736,7 @@ module Net::HTTPHeader
   # or +nil+ if no such field exists;
   # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
   #
-  #   res = Net::HTTP.get_response(hostname, '/todos/1')
+  #   res = HTTP.get_response(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
   #   res.type_params     # => {"charset"=>"utf-8"}
   #
@@ -753,10 +755,10 @@ module Net::HTTPHeader
   # returns the new value;
   # see {Content-Type request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-request-header]:
   #
-  #   req = Net::HTTP::Get.new(uri)
+  #   req = HTTP::Get.new(uri)
   #   req.set_content_type('application/json') # => ["application/json"]
   #
-  # Net::HTTPHeader#content_type= is an alias for Net::HTTPHeader#set_content_type.
+  # HTTPHeader#content_type= is an alias for HTTPHeader#set_content_type.
   def set_content_type(type, params = {})
     @header['content-type'] = [type + params.map{|k,v|"; #{k}=#{v}"}.join('')]
   end
@@ -775,7 +777,7 @@ module Net::HTTPHeader
   # With only argument +params+ given,
   # sets the body to a URL-encoded string with the default separator <tt>'&'</tt>:
   #
-  #   req = Net::HTTP::Post.new('example.com')
+  #   req = HTTP::Post.new('example.com')
   #
   #   req.set_form_data(q: 'ruby', lang: 'en')
   #   req.body            # => "q=ruby&lang=en"
@@ -796,7 +798,7 @@ module Net::HTTPHeader
   #   req.set_form_data({q: 'ruby', lang: 'en'}, '|')
   #   req.body # => "q=ruby|lang=en"
   #
-  # Net::HTTPHeader#form_data= is an alias for Net::HTTPHeader#set_form_data.
+  # HTTPHeader#form_data= is an alias for HTTPHeader#set_form_data.
   def set_form_data(params, sep = '&')
     query = URI.encode_www_form(params)
     query.gsub!(/&/, sep) if sep != '&'
@@ -824,7 +826,7 @@ module Net::HTTPHeader
   #
   #   _uri = uri.dup
   #   _uri.path ='/posts'
-  #   req = Net::HTTP::Post.new(_uri)
+  #   req = HTTP::Post.new(_uri)
   #
   # <b>Argument +params+ As an Array</b>
   #

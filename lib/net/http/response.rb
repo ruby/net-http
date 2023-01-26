@@ -1,6 +1,6 @@
 # frozen_string_literal: false
 
-# This class is the base class for \Net::HTTP request classes.
+# This class is the base class for \Net::HTTP response classes.
 #
 # == About the Examples
 #
@@ -8,22 +8,22 @@
 #
 # == Returned Responses
 #
-# \Method Net::HTTP.get_response returns
-# an instance of one of the subclasses of \Net::HTTPResponse:
+# \Method HTTP.get_response returns
+# an instance of one of the subclasses of \HTTPResponse:
 #
-#   Net::HTTP.get_response(uri)
+#   HTTP.get_response(uri)
 #   # => #<Net::HTTPOK 200 OK readbody=true>
-#   Net::HTTP.get_response(hostname, '/nosuch')
+#   HTTP.get_response(hostname, '/nosuch')
 #   # => #<Net::HTTPNotFound 404 Not Found readbody=true>
 #
-# As does method Net::HTTP#request:
+# As does method HTTP#request:
 #
-#   req = Net::HTTP::Get.new(uri)
-#   Net::HTTP.start(hostname) do |http|
+#   req = HTTP::Get.new(uri)
+#   HTTP.start(hostname) do |http|
 #     http.request(req)
 #   end # => #<Net::HTTPOK 200 OK readbody=true>
 #
-# \Class \Net::HTTPResponse includes module Net::HTTPHeader,
+# \Class \HTTPResponse includes module Net::HTTPHeader,
 # which provides access to response header values via (among others):
 #
 # - \Hash-like method <tt>[]</tt>.
@@ -31,24 +31,24 @@
 #
 # Examples:
 #
-#   res = Net::HTTP.get_response(uri) # => #<Net::HTTPOK 200 OK readbody=true>
+#   res = HTTP.get_response(uri)      # => #<Net::HTTPOK 200 OK readbody=true>
 #   res['Content-Type']               # => "text/html; charset=UTF-8"
 #   res.content_type                  # => "text/html"
 #
 # == Response Subclasses
 #
-# \Class \Net::HTTPResponse has a subclass for each
+# \Class \HTTPResponse has a subclass for each
 # {HTTP status code}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes].
 # You can look up the response class for a given code:
 #
-#   Net::HTTPResponse::CODE_TO_OBJ['200'] # => Net::HTTPOK
-#   Net::HTTPResponse::CODE_TO_OBJ['400'] # => Net::HTTPBadRequest
-#   Net::HTTPResponse::CODE_TO_OBJ['404'] # => Net::HTTPNotFound
+#   HTTPResponse::CODE_TO_OBJ['200'] # => Net::HTTPOK
+#   HTTPResponse::CODE_TO_OBJ['400'] # => Net::HTTPBadRequest
+#   HTTPResponse::CODE_TO_OBJ['404'] # => Net::HTTPNotFound
 #
 # And you can retrieve the status code for a response object:
 #
-#   Net::HTTP.get_response(uri).code                 # => "200"
-#   Net::HTTP.get_response(hostname, '/nosuch').code # => "404"
+#   HTTP.get_response(uri).code                 # => "200"
+#   HTTP.get_response(hostname, '/nosuch').code # => "404"
 #
 # The response subclasses (indentation shows class hierarchy):
 #

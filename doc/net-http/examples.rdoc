@@ -1,7 +1,8 @@
 Examples here assume that <tt>net/http</tt> has been required
-(which also requires +uri+):
+(which also requires +uri+), and that <tt>Net</tt> has been included.
 
-  require 'net/http'
+  require 'net/http' # Defines Net::HTTP.
+  include Net        # Allows abbreviating Net::HTTP to HTTP.
 
 Many code examples here use these example websites:
 
@@ -10,16 +11,17 @@ Many code examples here use these example websites:
 
 Some examples also assume these variables:
 
-  uri = URI('https://jsonplaceholder.typicode.com')
+  uri = URI('https://jsonplaceholder.typicode.com/')
   uri.freeze # Examples may not modify.
   hostname = uri.hostname # => "jsonplaceholder.typicode.com"
+  path = uri.path         # => "/"
   port = uri.port         # => 443
 
 So that example requests may be written as:
 
-  Net::HTTP.get(uri)
-  Net::HTTP.get(hostname, '/index.html')
-  Net::HTTP.start(hostname) do |http|
+  HTTP.get(uri)
+  HTTP.get(hostname, '/index.html')
+  HTTP.start(hostname) do |http|
     http.get('/todos/1')
     http.get('/todos/2')
   end
