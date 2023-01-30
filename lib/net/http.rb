@@ -267,7 +267,7 @@ module Net   #:nodoc:
   # For example, all 2XX responses are instances of a Net::HTTPSuccess
   # subclass, a 3XX response is an instance of a Net::HTTPRedirection
   # subclass and a 200 response is an instance of the Net::HTTPOK class.
-  #  For details, see HTTPResponse.
+  # For details, see HTTPResponse.
   #
   # Using a case statement you can handle various types of responses properly:
   #
