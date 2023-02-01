@@ -57,7 +57,7 @@ class Net::HTTPGenericRequest
     @body_data = nil
   end
 
-  # Returns the symbol method for the request:
+  # Returns the string method name for the request:
   #
   #   Net::HTTP::Get.new(uri).method  # => "GET"
   #   Net::HTTP::Post.new(uri).method # => "POST"
