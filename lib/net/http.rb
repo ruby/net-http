@@ -1061,8 +1061,7 @@ module Net   #:nodoc:
     #   http.post(_uri.path, data, headers)
     #   # => #<Net::HTTPCreated 201 Created readbody=true>
     #   http.write_timeout = 0
-    #   http.post(_uri.path, data, headers)
-    #   # => #<Net::HTTPCreated 201 Created readbody=true>
+    #   http.post(_uri.path, data, headers) # Raises Net::WriteTimeout.
     #
     def write_timeout=(sec)
       @socket.write_timeout = sec if @socket
