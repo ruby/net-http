@@ -1074,16 +1074,10 @@ module Net   #:nodoc:
     #
     attr_reader :continue_timeout
 
-    # Sets the continue-timeout value,
+    # Sets the continue timeout value,
     # which is the number of seconds to wait for an expected 100 Continue response.
     # If the \HTTP object does not receive a response in this many seconds
-    # it sends the request body:
-    #
-    #   http = Net::HTTP.new(hostname)
-    #   http.continue_timeout # => nil
-    #   http.continue_timeout = 2
-    #   http.continue_timeout # => 2
-    #
+    # it sends the request body.
     def continue_timeout=(sec)
       @socket.continue_timeout = sec if @socket
       @continue_timeout = sec
@@ -1107,6 +1101,7 @@ module Net   #:nodoc:
     #   http.started? # => true
     #   http.finish # => nil
     #   http.started? # => false
+    #
     #   Net::HTTP.start(hostname) do |http|
     #     http.started?
     #   end # => true
@@ -1121,29 +1116,17 @@ module Net   #:nodoc:
     attr_accessor :close_on_empty_response
 
     # Returns +true+ if +self+ uses SSL, +false+ otherwise.
-    # See use_ssl=.
+    # See Net::HTTP#use_ssl=.
     def use_ssl?
       @use_ssl
     end
 
     # Sets whether a new session is to use
-    # {Secure Socket Layer}[https://en.wikipedia.org/wiki/Transport_Layer_Security]:
-    #
-    #   port          # => 443 # The HTTPS port
-    #   http = Net::HTTP.new(hostname, port)
-    #   http.use_ssl? # => false
-    #   http.use_ssl = true
-    #   http.use_ssl? # => true
-    #   http.start do |http|
-    #     http.use_ssl?
-    #   end           # => true
+    # {Transport Layer Security}[https://en.wikipedia.org/wiki/Transport_Layer_Security]:
     #
     # Raises IOError if attempting to change during a session.
     #
     # Raises OpenSSL::SSL::SSLError if the port is not an HTTPS port.
-    #
-    # The setting may not be changed in an active session (raises IOError).
-    #
     def use_ssl=(flag)
       flag = flag ? true : false
       if started? and @use_ssl != flag
