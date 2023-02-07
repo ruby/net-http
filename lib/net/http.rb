@@ -338,17 +338,10 @@ module Net   #:nodoc:
   # a {proxy server}[https://en.wikipedia.org/wiki/Proxy_server].
   #
   # You can create an \HTTP object with a proxy server
-  # using method Net::HTTP.new or method net::HTTP.start.
-  # The two methods differ only in that:
-  #
-  # - Net::HTTP.new has +p_no_proxy+ as its last argument
-  #   (see {Filtering Proxies}[rdoc-ref:Net::HTTP@Filtering+Proxies] below),
-  #   and does not take a block (ignored if given).
-  # - Net::HTTP.start has +opts+ as its last argument (see Net::HTTP.start),
-  #   and may take a block.
+  # using method Net::HTTP.new or method Net::HTTP.start.
   #
   # The proxy may be defined either by argument +p_addr+
-  # or by an environment variable.
+  # or by environment variable <tt>'http_proxy'</tt>.
   #
   # === Proxy Using Argument +p_addr+ as a \String
   #
@@ -784,7 +777,7 @@ module Net   #:nodoc:
     #   # => #<Net::HTTP jsonplaceholder.typicode.com:8000 open=false>
     #   http.port # => 8000
     #
-    # For proxy-defining arguments +p_addr+ through +p_pass+,
+    # For proxy-defining arguments +p_addr+ through +p_no_proxy+,
     # see {Proxy Server}[rdoc-ref:Net::HTTP@Proxy+Server].
     #
     def HTTP.new(address, port = nil, p_addr = :ENV, p_port = nil, p_user = nil, p_pass = nil, p_no_proxy = nil)
