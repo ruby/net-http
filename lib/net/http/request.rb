@@ -45,7 +45,11 @@
 #
 #   #   res = Net::HTTP::Get.new(uri, {'foo' => '0', 'bar' => '1'})
 #
-# :include: doc/net-http/included_setters.rdoc
+# This class (and therefore its subclasses) also includes (indirectly)
+# module Net::HTTPHeader, which gives access to its
+# {methods for setting headers}[rdoc-ref:Net::HTTPHeader@Setters].
+#
+# == Request Subclasses
 #
 # Subclasses for HTTP requests:
 #
