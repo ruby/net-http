@@ -1595,19 +1595,24 @@ module Net   #:nodoc:
     # :call-seq:
     #    get(path, initheader = nil) {|res| ... }
     #
-    # Sends a GET request to the server.
+    # Sends a GET request to the server;
+    # returns a Net::HTTPResponse object,
+    # which actually will be an instance of a subclass of that class:
+    #
     # The request is based on the Net::HTTP::Get object
     # created from string +path+ and initial headers hash +initheader+.
     #
-    # With a block given, returns a Net::HTTPResponse object,
-    # which actually will be an instance of a subclass of that class:
+    # With a block given, calls the block with the response body:
     #
-    #   http = Net::HTTP.new(hostname)
-    #   http.get('/') do |res|
-    #     res
+    #   http.get('/todos/1') do |res|
+    #     p res
     #   end # => #<Net::HTTPOK 200 OK readbody=true>
     #
-    # With no block given, returns the response object:
+    # Output:
+    #
+    #   "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"delectus aut autem\",\n  \"completed\": false\n}"
+    #
+    # With no block given, simply returns the response object:
     #
     #   http.get('/') # => #<Net::HTTPOK 200 OK readbody=true>
     #
