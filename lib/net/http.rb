@@ -1596,8 +1596,7 @@ module Net   #:nodoc:
     #    get(path, initheader = nil) {|res| ... }
     #
     # Sends a GET request to the server;
-    # returns a Net::HTTPResponse object,
-    # which actually will be an instance of a subclass of that class:
+    # returns an instance of a subclass of Net::HTTPResponse.
     #
     # The request is based on the Net::HTTP::Get object
     # created from string +path+ and initial headers hash +initheader+.
@@ -1632,8 +1631,7 @@ module Net   #:nodoc:
     end
 
     # Sends a HEAD request to the server;
-    # returns a Net::HTTPResponse object,
-    # which actually will be an instance of a subclass of that class:
+    # returns an instance of a subclass of Net::HTTPResponse.
     #
     # The request is based on the Net::HTTP::Head object
     # created from string +path+ and initial headers hash +initheader+.
@@ -1654,8 +1652,7 @@ module Net   #:nodoc:
     #    post(path, data, initheader = nil) {|res| ... }
     #
     # Sends a POST request to the server;
-    # returns a Net::HTTPResponse object,
-    # which actually will be an instance of a subclass of that class:
+    # returns an instance of a subclass of Net::HTTPResponse.
     #
     # The request is based on the Net::HTTP::Post object
     # created from string +path+, string +data+, and initial headers hash +initheader+.
@@ -1688,8 +1685,7 @@ module Net   #:nodoc:
     #    patch(path, data, initheader = nil) {|res| ... }
     #
     # Sends a PATCH request to the server;
-    # returns a Net::HTTPResponse object,
-    # which actually will be an instance of a subclass of that class:
+    # returns an instance of a subclass of Net::HTTPResponse.
     #
     # The request is based on the Net::HTTP::Patch object
     # created from string +path+, string +data+, and initial headers hash +initheader+.
