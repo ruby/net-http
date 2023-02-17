@@ -1713,7 +1713,7 @@ module Net   #:nodoc:
     # returns an instance of a subclass of Net::HTTPResponse.
     #
     # The request is based on the Net::HTTP::Put object
-    # created from string +path+ and initial headers hash +initheader+.
+    # created from string +path+, string +data+, and initial headers hash +initheader+.
     #
     #   data = '{"userId": 1, "id": 1, "title": "delectus aut autem", "completed": false}'
     #   http.put('/todos/1', data) # => #<Net::HTTPOK 200 OK readbody=true>
@@ -1726,7 +1726,7 @@ module Net   #:nodoc:
     # returns an instance of a subclass of Net::HTTPResponse.
     #
     # The request is based on the Net::HTTP::Proppatch object
-    # created from string +path+ and initial headers hash +initheader+.
+    # created from string +path+, string +body+, and initial headers hash +initheader+.
     #
     #   data = '{"userId": 1, "id": 1, "title": "delectus aut autem", "completed": false}'
     #   http.proppatch('/todos/1', data)
@@ -1739,7 +1739,7 @@ module Net   #:nodoc:
     # returns an instance of a subclass of Net::HTTPResponse.
     #
     # The request is based on the Net::HTTP::Lock object
-    # created from string +path+ and initial headers hash +initheader+.
+    # created from string +path+, string +body+, and initial headers hash +initheader+.
     #
     #   data = '{"userId": 1, "id": 1, "title": "delectus aut autem", "completed": false}'
     #   http.lock('/todos/1', data)
@@ -1752,7 +1752,7 @@ module Net   #:nodoc:
     # returns an instance of a subclass of Net::HTTPResponse.
     #
     # The request is based on the Net::HTTP::Unlock object
-    # created from string +path+ and initial headers hash +initheader+.
+    # created from string +path+, string +body+, and initial headers hash +initheader+.
     #
     #   data = '{"userId": 1, "id": 1, "title": "delectus aut autem", "completed": false}'
     #   http.unlock('/todos/1', data)
@@ -1777,7 +1777,7 @@ module Net   #:nodoc:
     # returns an instance of a subclass of Net::HTTPResponse.
     #
     # The request is based on the Net::HTTP::Propfind object
-    # created from string +path+ and initial headers hash +initheader+.
+    # created from string +path+, string +body+, and initial headers hash +initheader+.
     #
     #   data = '{"userId": 1, "id": 1, "title": "delectus aut autem", "completed": false}'
     #   http.propfind('/todos/1', data)
@@ -1826,7 +1826,7 @@ module Net   #:nodoc:
     # returns an instance of a subclass of Net::HTTPResponse.
     #
     # The request is based on the Net::HTTP::Mkcol object
-    # created from string +path+ and initial headers hash +initheader+.
+    # created from string +path+, string +body+, and initial headers hash +initheader+.
     #
     #   data = '{"userId": 1, "id": 1, "title": "delectus aut autem", "completed": false}'
     #   http.mkcol('/todos/1', data)
