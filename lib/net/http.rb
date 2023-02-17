@@ -1644,7 +1644,6 @@ module Net   #:nodoc:
     #    ["content-type", ["application/json; charset=utf-8"]],
     #    ["connection", ["close"]]]
     #
-    #
     def head(path, initheader = nil)
       request(Head.new(path, initheader))
     end
