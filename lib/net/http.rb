@@ -1090,7 +1090,7 @@ module Net   #:nodoc:
     end
 
     # Returns the continue timeout value.
-    # See Net::HTTP.continue_timeout=. 
+    # See Net::HTTP.continue_timeout=.
     #
     attr_reader :continue_timeout
 
@@ -1853,14 +1853,13 @@ module Net   #:nodoc:
     # The request is based on the Net::HTTP::Get object
     # created from string +path+ and initial headers hash +initheader+.
     #
-    # With no block given, returns the response object (with the body already read):
+    # With no block given, returns the response object:
     #
     #   http = Net::HTTP.new(hostname)
     #   http.request_get('/todos') # => #<Net::HTTPOK 200 OK readbody=true>
     #
     # With a block given, calls the block with the response object
-    # (with the body _not_ already read),
-    # and returns the response object (_with_ the body already read):
+    # and returns the response object:
     #
     #   http.request_get('/todos') do |res|
     #     p res
