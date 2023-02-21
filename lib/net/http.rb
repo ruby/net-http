@@ -1855,6 +1855,7 @@ module Net   #:nodoc:
     #
     # With no block given, returns the response object (with the body already read):
     #
+    #   http = Net::HTTP.new(hostname)
     #   http.request_get('/todos') # => #<Net::HTTPOK 200 OK readbody=true>
     #
     # With a block given, calls the block with the response object
