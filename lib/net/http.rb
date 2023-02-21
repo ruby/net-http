@@ -1090,7 +1090,7 @@ module Net   #:nodoc:
     end
 
     # Returns the continue timeout value.
-    # See Net::HTTP.continue_timeout=.
+    # See Net::HTTP.continue_timeout=. 
     #
     attr_reader :continue_timeout
 
@@ -1847,30 +1847,27 @@ module Net   #:nodoc:
       request(Trace.new(path, initheader))
     end
 
-    # Sends a GET request to the +path+.
-    # Returns the response as a Net::HTTPResponse object.
+    # Sends a GET request to the server;
+    # forms the response into a Net::HTTPResponse object.
     #
-    # When called with a block, passes an HTTPResponse object to the block.
-    # The body of the response will not have been read yet;
-    # the block can process it using HTTPResponse#read_body,
-    # if desired.
+    # The request is based on the Net::HTTP::Get object
+    # created from string +path+ and initial headers hash +initheader+.
     #
-    # Returns the response.
+    # With no block given, returns the response object (with the body already read):
     #
-    # This method never raises Net::* exceptions.
+    #   http.request_get('/todos') # => #<Net::HTTPOK 200 OK readbody=true>
     #
-    #     response = http.request_get('/index.html')
-    #     # The entity body is already read in this case.
-    #     p response['content-type']
-    #     puts response.body
+    # With a block given, calls the block with the response object
+    # (with the body _not_ already read),
+    # and returns the response object (_with_ the body already read):
     #
-    #     # Using a block
-    #     http.request_get('/index.html') {|response|
-    #       p response['content-type']
-    #       response.read_body do |str|   # read body now
-    #         print str
-    #       end
-    #     }
+    #   http.request_get('/todos') do |res|
+    #     p res
+    #   end # => #<Net::HTTPOK 200 OK readbody=true>
+    #
+    # Output:
+    #
+    #   #<Net::HTTPOK 200 OK readbody=false>
     #
     def request_get(path, initheader = nil, &block) # :yield: +response+
       request(Get.new(path, initheader), &block)
