@@ -1894,7 +1894,7 @@ module Net   #:nodoc:
     # created from string +path+ and initial headers hash +initheader+.
     #
     #   http = Net::HTTP.new(hostname)
-    #   http.head('/todos/1')
+    #   http.head('/todos/1') # => #<Net::HTTPOK 200 OK readbody=true>
     #
     def request_head(path, initheader = nil, &block)
       request(Head.new(path, initheader), &block)
@@ -1957,10 +1957,6 @@ module Net   #:nodoc:
     # which must be
     # an {HTTP request method}[https://en.wikipedia.org/wiki/HTTP#Request_methods]
     # or a {WebDAV request method}[https://en.wikipedia.org/wiki/WebDAV#Implementation].
-    #
-    # Argument +data+ is ignored unless:
-    #
-    #   %w[POST PATCH PUT PROPPATCH LOCK UNLOCK].include?(name)
     #
     # Examples:
     #
