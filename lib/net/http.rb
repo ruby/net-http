@@ -1,3 +1,4 @@
+
 # frozen_string_literal: false
 #
 # = net/http.rb
@@ -1212,21 +1213,17 @@ module Net   #:nodoc:
     ] # :nodoc:
 
     # Sets or returns the path to a CA certification file in PEM format.
-    # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html]
     attr_accessor :ca_file
 
     # Sets or returns the path of to CA directory
     # containing certification files in PEM format.
-    # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html]
     attr_accessor :ca_path
 
     # Sets or returns the OpenSSL::X509::Certificate object
     # to be used for client certification.
-    # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html]
     attr_accessor :cert
 
     # Sets or returns the X509::Store to be used for verifying peer certificate.
-    # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html]
     attr_accessor :cert_store
 
     # Sets or returns the available SSL ciphers.
@@ -1238,11 +1235,9 @@ module Net   #:nodoc:
     attr_accessor :extra_chain_cert
 
     # Sets or returns the OpenSSL::PKey::RSA or OpenSSL::PKey::DSA object.
-    # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html]
     attr_accessor :key
 
     # Sets or returns the SSL timeout seconds.
-    # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html]
     attr_accessor :ssl_timeout
 
     # Sets or returns the SSL version.
@@ -1258,17 +1253,14 @@ module Net   #:nodoc:
     attr_accessor :max_version
 
     # Sets or returns the callback for the server certification verification.
-    # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html]
     attr_accessor :verify_callback
 
     # Sets or returns the maximum depth for the certificate chain verification.
-    # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html]
     attr_accessor :verify_depth
 
     # Sets or returns the flags for server the certification verification
     # at the beginning of the SSL/TLS session.
     # OpenSSL::SSL::VERIFY_NONE or OpenSSL::SSL::VERIFY_PEER are acceptable.
-    # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html]
     attr_accessor :verify_mode
 
     # Sets or returns whether to verify that the server certificate is valid
@@ -1279,7 +1271,6 @@ module Net   #:nodoc:
     # Returns the X509 certificate chain (an array of strings)
     # for the session's socket peer,
     # or +nil+ if none.
-    # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html].
     def peer_cert
       if not use_ssl? or not @socket
         return nil
