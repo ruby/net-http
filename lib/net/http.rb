@@ -1235,7 +1235,7 @@ module Net   #:nodoc:
 
     # Sets or returns the extra X509 certificates to be added to the certificate chain.
     # See {OpenSSL::SSL::SSLContext#add_certificate}[https://docs.ruby-lang.org/en/master/OpenSSL/SSL/SSLContext.html#method-i-add_certificate].
-      attr_accessor :extra_chain_cert
+    attr_accessor :extra_chain_cert
 
     # Sets or returns the OpenSSL::PKey::RSA or OpenSSL::PKey::DSA object.
     # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html]
