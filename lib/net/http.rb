@@ -926,7 +926,7 @@ module Net   #:nodoc:
       @debug_output = output
     end
 
-    # Returns the string host name or host IPA given as argument +address+ in ::new.
+    # Returns the string host name or host IP given as argument +address+ in ::new.
     attr_reader :address
 
     # Returns the integer port number given as argument +port+ in ::new.
