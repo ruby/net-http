@@ -1521,7 +1521,7 @@ module Net   #:nodoc:
       # see -Net::HTTP@Proxy+Server.
       attr_reader :proxy_user
 
-      # Returns the password for accessing the proxy, or +nil+ if none.
+      # Returns the password for accessing the proxy, or +nil+ if none;
       # see -Net::HTTP@Proxy+Server.
       attr_reader :proxy_pass
     end
