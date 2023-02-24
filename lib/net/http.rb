@@ -1129,7 +1129,7 @@ module Net   #:nodoc:
 
     # Sets or returns whether to ignore end-of-file when reading a response body
     # with <tt>Content-Length</tt> headers;
-    # initially +true+
+    # initially +true+.
     attr_accessor :ignore_eof
 
     # Returns +true+ if the \HTTP session has been started:
