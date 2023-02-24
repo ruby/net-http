@@ -1221,7 +1221,7 @@ module Net   #:nodoc:
     attr_accessor :ca_path
 
     # Sets or returns the OpenSSL::X509::Certificate object
-    # to be used for  client certification.
+    # to be used for client certification.
     # See {OpenSSL}[https://docs.ruby-lang.org/en/master/OpenSSL.html]
     attr_accessor :cert
 
