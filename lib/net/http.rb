@@ -1510,7 +1510,7 @@ module Net   #:nodoc:
       end
 
       # Returns the address of the proxy host, or +nil+ if none;
-      # see -Net::HTTP@Proxy+Server.
+      # see Net::HTTP@Proxy+Server.
       attr_reader :proxy_address
 
       # Returns the port number of the proxy host, or +nil+ if none;.
