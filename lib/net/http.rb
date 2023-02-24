@@ -1517,7 +1517,7 @@ module Net   #:nodoc:
       # see -Net::HTTP@Proxy+Server.
       attr_reader :proxy_port
 
-      # Returns the user name for accessing the proxy, or +nil+ if none.
+      # Returns the user name for accessing the proxy, or +nil+ if none;
       # see -Net::HTTP@Proxy+Server.
       attr_reader :proxy_user
 
