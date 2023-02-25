@@ -1,4 +1,3 @@
-
 # frozen_string_literal: false
 #
 # = net/http.rb
@@ -1505,15 +1504,15 @@ module Net   #:nodoc:
       attr_reader :proxy_address
 
       # Returns the port number of the proxy host, or +nil+ if none;
-      # see -Net::HTTP@Proxy+Server.
+      # see Net::HTTP@Proxy+Server.
       attr_reader :proxy_port
 
       # Returns the user name for accessing the proxy, or +nil+ if none;
-      # see -Net::HTTP@Proxy+Server.
+      # see Net::HTTP@Proxy+Server.
       attr_reader :proxy_user
 
       # Returns the password for accessing the proxy, or +nil+ if none;
-      # see -Net::HTTP@Proxy+Server.
+      # see Net::HTTP@Proxy+Server.
       attr_reader :proxy_pass
     end
 
