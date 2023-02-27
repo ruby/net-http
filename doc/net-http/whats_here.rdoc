@@ -1,0 +1,263 @@
+== What's Here
+
+This is a categorized summary of methods and attributes.
+
+=== \Net::HTTP Objects
+
+Methods:
+
+- {::new}[rdoc-ref:Net::HTTP.new]:
+  Creates a new instance.
+- {#inspect}[rdoc-ref:Net::HTTP#inspect]:
+  Returns a string representation of +self+.
+
+=== Sessions
+
+Methods:
+
+- {::start}[rdoc-ref:Net::HTTP.start]:
+  Begins a new session in a new \Net::HTTP object.
+- {#started?}[rdoc-ref:Net::HTTP#started?]
+  (aliased as {#active?}[rdoc-ref:Net::HTTP#active?]):
+  Returns whether in a session.
+- {#finish}[rdoc-ref:Net::HTTP#finish]:
+  Ends an active session.
+- {#start}[rdoc-ref:Net::HTTP#start]:
+  Begins a new session in an existing \Net::HTTP object (+self+).
+
+=== Connections
+
+Methods:
+
+- {#continue_timeout=}[rdoc-ref:Net::HTTP#continue_timeout=]:
+  Sets the continue timeout seconds.
+- {#max_retries=}[rdoc-ref:Net::HTTP#max_retries=]:
+  Sets the maximum retries.
+- {#read_timeout=}[rdoc-ref:Net::HTTP#read_timeout=]:
+  Sets the read timeout.
+- {write_timeout=}[rdoc-ref:Net::HTTP#write_timeout=]:
+  Sets the write timeout.
+
+Attributes:
+
+- {:continue_timeout}[../../Net/HTTP#attribute-i-continue_timeout]:
+  Returns the continue timeout.
+- {:keep_alive_timeout}[../../Net/HTTP.html#attribute-i-keep_alive_timeout]:
+  Returns the keep-alive timeout.
+- {:max_retries}[../../Net/HTTP.html#attribute-i-max_retries]:
+  Returns the maximum retries.
+- {:open_timeout}[../../Net/HTTP.html#attribute-i-open_timeout]:
+  Sets or returns the open timeout.
+- {:read_timeout}[../../Net/HTTP.html#attribute-i-read_timeout]:
+  Returns the open timeout.
+- {:ssl_timeout}[../../Net/HTTP.html#attribute-i-ssl_timeout]:
+  Returns the ssl timeout.
+- {:write_timeout}[../../Net/HTTP.html#attribute-i-write_timeout]:
+  Returns the write timeout.
+
+=== Requests
+
+Methods:
+
+- {::get}[rdoc-ref:Net::HTTP.get]:
+  Sends a GET request and returns the string response body.
+- {::get_print}[rdoc-ref:Net::HTTP.get_print]:
+  Sends a GET request and write the string response body to $stdout.
+- {::get_response}[rdoc-ref:Net::HTTP.get_response]:
+  Sends a GET request and returns a response object.
+- {::post_form}[rdoc-ref:Net::HTTP.post_form]:
+  Sends a POST request with form data and returns a response object.
+- {::post}[rdoc-ref:Net::HTTP.post]:
+  Sends a POST request with data and returns a response object.
+- {#copy}[rdoc-ref:Net::HTTP#copy]:
+  Sends a COPY request and returns a response object.
+- {#delete}[rdoc-ref:Net::HTTP#delete]:
+  Sends a DELETE request and returns a response object.
+- {#get}[rdoc-ref:Net::HTTP#get]:
+  Sends a GET request and returns a response object.
+- {#head}[rdoc-ref:Net::HTTP#head]:
+  Sends a HEAD request and returns a response object.
+- {#lock}[rdoc-ref:Net::HTTP#lock]:
+  Sends a LOCK request and returns a response object.
+- {#mkcol}[rdoc-ref:Net::HTTP#mkcol]:
+  Sends a MKCOL request and returns a response object.
+- {#move}[rdoc-ref:Net::HTTP#move]:
+  Sends a MOVE request and returns a response object.
+- {#options}[rdoc-ref:Net::HTTP#options]:
+  Sends a OPTIONS request and returns a response object.
+- {#patch}[rdoc-ref:Net::HTTP#patch]:
+  Sends a PATCH request and returns a response object.
+- {#post}[rdoc-ref:Net::HTTP#post]:
+  Sends a POST request and returns a response object.
+- {#propfind}[rdoc-ref:Net::HTTP#propfind]:
+  Sends a PROPFIND request and returns a response object.
+- {#proppatch}[rdoc-ref:Net::HTTP#proppatch]:
+  Sends a PROPPATCH request and returns a response object.
+- {#put}[rdoc-ref:Net::HTTP#put]:
+  Sends a PUT request and returns a response object.
+- {#request}[rdoc-ref:Net::HTTP#request]:
+  Sends a request and returns a response object.
+- {#request_get}[rdoc-ref:Net::HTTP#request_get]
+  (aliased as {#get2}[rdoc-ref:Net::HTTP#get2]):
+  Sends a GET request and forms a response object;
+  if a block given, calls the block with the object,
+  otherwise returns the object.
+- {#request_head}[rdoc-ref:Net::HTTP#request_head]
+  (aliased as {#head2}[rdoc-ref:Net::HTTP#head2]):
+  Sends a HEAD request and forms a response object;
+  if a block given, calls the block with the object,
+  otherwise returns the object.
+- {#request_post}[rdoc-ref:Net::HTTP#request_post]
+  (aliased as {#post2}[rdoc-ref:Net::HTTP#post2]):
+  Sends a POST request and forms a response object;
+  if a block given, calls the block with the object,
+  otherwise returns the object.
+- {#send_request}[rdoc-ref:Net::HTTP#send_request]:
+  Sends a request and returns a response object.
+- {#trace}[rdoc-ref:Net::HTTP#trace]:
+  Sends a TRACE request and returns a response object.
+- {#unlock}[rdoc-ref:Net::HTTP#unlock]:
+  Sends an UNLOCK request and returns a response object.
+
+=== Responses
+
+Methods:
+
+- {#response_body_encoding=}[rdoc-ref:Net::HTTP#response_body_encoding=]:
+  Sets the response body encoding.
+
+Attributes:
+
+- {:close_on_empty_response}[../../Net/HTTP.html#attribute-i-close_on_empty_response]:
+  Sets or returns whether to close connection on empty response.
+- {:ignore_eof}[../../Net/HTTP.html#attribute-i-ignore_eof]:
+  Sets or returns whether to ignore end-of-file when reading a response body
+  with <tt>Content-Length</tt> headers.
+- {:response_body_encoding}[../../Net/HTTP.html#attribute-i-response_body_encoding]:
+  Returns the encoding to use for the response body.
+
+=== Proxies
+
+Methods:
+
+- {::proxy_class?}[rdoc-ref:Net::HTTP.proxy_class?]:
+  Returns whether +self+ is a proxy class.
+- {#proxy?}[rdoc-ref:Net::HTTP#proxy?]:
+  Returns whether +self+ has a proxy.
+- {#proxy_address}[rdoc-ref:Net::HTTP#proxy_address]
+  (aliased as {#proxyaddr}[rdoc-ref:Net::HTTP#proxyaddr]):
+  Returns the proxy address.
+- {#proxy_from_env?}[rdoc-ref:Net::HTTP#proxy_from_env?]:
+  Returns whether the proxy is taken from an environment variable.
+- {#proxy_pass}[rdoc-ref:Net::HTTP#proxy_pass]:
+  Returns the proxy password.
+- {#proxy_port}[rdoc-ref:Net::HTTP#proxy_port]
+  (aliased as {#proxyport}[rdoc-ref:Net:HTTP#proxyport]):
+  Returns the proxy port number.
+- {#proxy_user}[rdoc-ref:Net::HTTP#proxy_user]:
+  Returns the proxy user name.
+
+Attributes:
+
+- {:proxy_address}[../../Net/HTTP.html#attribute-c-proxy_address]:
+  Returns the proxy address.
+- {:proxy_address}[../../Net/HTTP.html#attribute-i-proxy_address]:
+  Sets the proxy address.
+- {:proxy_from_env}[../../Net/HTTP.html#attribute-i-proxy_from_env]:
+  Sets whether the proxy is to be taken from an environment variable.
+- {:proxy_pass}[../../Net/HTTP.html#attribute-c-proxy_pass]:
+  Returns the proxy password.
+- {:proxy_pass}[../../Net/HTTP.html#attribute-i-proxy_pass]:
+  Sets the proxy password.
+- {:proxy_port}[../../Net/HTTP.html#attribute-c-proxy_port]:
+  Returns the proxy port.
+- {:proxy_port}[../../Net/HTTP.html#attribute-i-proxy_port]:
+  Sets the proxy port.
+- {:proxy_user}[../../Net/HTTP.html#attribute-c-proxy_user]:
+  Returns the proxy user.
+- {:proxy_user}[../../Net/HTTP.html#attribute-i-proxy_user]:
+  Sets the proxy user.
+
+=== Security
+
+Methods:
+
+- {#peer_cert}[rdoc-ref:Net::HTTP#peer_cert]:
+  Returns the X509 certificate chain for the session’s socket peer.
+- {#use_ssl=}[rdoc-ref:Net::HTTP#use_ssl=]:
+  Sets whether a new session is to use Transport Layer Security.
+- {#use_ssl?}[rdoc-ref:Net::HTTP#use_ssl?]:
+  Returns whether +self+ uses SSL.
+
+Attributes:
+
+- {:ca_file}[../../Net/HTTP.html#attribute-i-ca_file]:
+  Sets or returns the path to a CA certification file.
+- {:ca_path}[../../Net/HTTP.html#attribute-i-ca_path]:
+  Sets or returns the path of to CA directory containing certification files.
+- {:cert}[../../Net/HTTP.html#attribute-i-cert]:
+  Sets or returns the OpenSSL::X509::Certificate object to be used for client certification.
+- {:cert_store}[../../Net/HTTP.html#attribute-i-cert_store]:
+  Sets or returns the X509::Store to be used for verifying peer certificate.
+- {:ciphers}[../../Net/HTTP.html#attribute-i-ciphers]:
+  Sets or returns the available SSL ciphers.
+- {:extra_chain_cert}[../../Net/HTTP.html#attribute-i-extra_chain_cert]:
+  Sets or returns the extra X509 certificates to be added to the certificate chain.
+- {:key}[../../Net/HTTP.html#attribute-i-key]:
+  Sets or returns the OpenSSL::PKey::RSA or OpenSSL::PKey::DSA object.
+- {:max_version}[../../Net/HTTP.html#attribute-i-max_version]:
+  Sets or returns the maximum SSL version.
+- {:min_version}[../../Net/HTTP.html#attribute-i-min_version]:
+  Sets or returns the minimum SSL version.
+- {:ssl_version}[../../Net/HTTP.html#attribute-i-ssl_version]:
+  Sets or returns the SSL version.
+- {:verify_callback}[../../Net/HTTP.html#attribute-i-verify_callback]:
+  Sets or returns the callback for the server certification verification.
+- {:verify_depth}[../../Net/HTTP.html#attribute-i-verify_depth]:
+  Sets or returns the maximum depth for the certificate chain verification.
+- {:verify_hostname}[../../Net/HTTP.html#attribute-i-verify_hostname]:
+  Sets or returns the flags for server the certification verification at the beginning of the SSL/TLS session.
+- {:verify_mode}[../../Net/HTTP.html#attribute-i-verify_mode]:
+  Sets or returns the flags for server the certification verification at the beginning of the SSL/TLS session.
+
+=== Addresses and Ports
+
+Methods:
+
+- {::default_port}[rdoc-ref:Net::HTTP.default_port]:
+  Returns integer 80, the default port to use for HTTP requests.
+- {::http_default_port}[rdoc-ref:Net::HTTP.http_default_port]:
+  Returns integer 80, the default port to use for HTTP requests.
+- {::https_default_port}[rdoc-ref:Net::HTTP.https_default_port]:
+  Returns integer 443, the default port to use for HTTPS requests.
+- {#ipaddr}[rdoc-ref:Net::HTTP#ipaddr]:
+  Returns the IP address for the connection.
+- {#ipaddr=}[rdoc-ref:Net::HTTP#ipaddr=]:
+  Sets the IP address for the connection.
+
+Attributes:
+
+- {:address}[../../Net/HTTP.html#attribute-i-address]:
+  Returns the string host name or host IP.
+- {:port}[../../Net/HTTP.html#attribute-i-port]:
+  Returns the integer port number.
+- {:local_host}[../../Net/HTTP.html#attribute-i-local_host]:
+  Sets or returns the string local host used to establish the connection.
+- {:local_port}[../../Net/HTTP.html#attribute-i-local_port]:
+  Sets or returns the integer local port used to establish the connection.
+
+=== \HTTP Version
+
+Methods:
+
+- {::version_1_2?}[rdoc-ref:Net::HTTP.version_1_2?]
+  (aliased as {::is_version_1_2?}[rdoc-ref:Net::HTTP.is_version_1_2?]
+  and {::version_1_2}[rdoc-ref:Net::HTTP.version_1_2]):
+  Returns true; retained for compatibility.
+
+=== Debugging
+
+Methods:
+
+- {#set_debug_output}[rdoc-ref:Net::HTTP#set_debug_output]:
+  Sets the output stream for debugging.
