@@ -1494,7 +1494,7 @@ module Net   #:nodoc:
     end
 
     class << HTTP
-      # returns true if self is a class which was created by HTTP::Proxy.
+      # Returns true if self is a class which was created by HTTP::Proxy.
       def proxy_class?
         defined?(@is_proxy_class) ? @is_proxy_class : false
       end
