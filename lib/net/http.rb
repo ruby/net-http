@@ -173,7 +173,7 @@ module Net   #:nodoc:
   # {Request Fields}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Request_fields].
   # A host may also accept other custom fields.
   #
-  # == Sessions
+  # == \HTTP Sessions
   #
   # A _session_ is a connection between a server (host) and a client that:
   #
@@ -453,6 +453,8 @@ module Net   #:nodoc:
   #   does not decompress the body, but deletes the header.
   # - Any other value:
   #   leaves the body and header unchanged.
+  #
+  # :include: doc/net-http/whats_here.rdoc
   #
   class HTTP < Protocol
 
