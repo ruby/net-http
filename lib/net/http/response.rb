@@ -384,16 +384,12 @@ class Net::HTTPResponse
   #   Net::HTTP.start(hostname) do |http|
   #     res = http.get(path)
   #     p res.body
-  #     p res.body.object_id
-  #     p res.body.object_id
   #     p http.head(path).body # No body.
   #   end
   #
   # Output:
   #
   #   "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"delectus aut autem\",\n  \"completed\": false\n}"
-  #   13456920
-  #   13456920
   #   nil
   #
   def body
