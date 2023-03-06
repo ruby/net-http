@@ -20,3 +20,7 @@ jobs:
       run: bundle install
     - name: Run test
       run: rake test
+    - name: Build
+      run: rake build
+      env:
+        LANG: C
