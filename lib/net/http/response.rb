@@ -238,14 +238,18 @@ class Net::HTTPResponse
   #
   # Examples:
   #
-  #   res = Net::HTTP.get_response(hostname, '/')
-  #   # => #<Net::HTTPOK 200 OK readbody=true>
-  #   res.body_encoding # => false
-  #   res.body_encoding = Encoding::US_ASCII
-  #   res.body_encoding # => #<Encoding:US-ASCII>
-  #   res.body_encoding = 'US-ASCII'
-  #   res.body_encoding # => #<Encoding:US-ASCII>
-   #
+  #   http = Net::HTTP.new(hostname)
+  #   req = Net::HTTP::Get.new('/')
+  #
+  #   http.request(req) do |res|
+  #     p res.body.encoding # => #<Encoding:ASCII-8BIT>
+  #   end
+  #
+  #   http.request(req) do |res|
+  #     res.body_encoding = "UTF-8"
+  #     p res.body.encoding # => #<Encoding:UTF-8>
+  #   end  #   res.body_encoding # => false
+  #
   def body_encoding=(value)
     value = Encoding.find(value) if value.is_a?(String)
     @body_encoding = value
