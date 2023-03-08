@@ -248,7 +248,7 @@ class Net::HTTPResponse
   #   http.request(req) do |res|
   #     res.body_encoding = "UTF-8"
   #     p res.body.encoding # => #<Encoding:UTF-8>
-  #   end  #   res.body_encoding # => false
+  #   end
   #
   def body_encoding=(value)
     value = Encoding.find(value) if value.is_a?(String)
