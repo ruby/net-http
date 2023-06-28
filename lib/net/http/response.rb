@@ -519,19 +519,16 @@ class Net::HTTPResponse
     case ss.peek(1)
     when '"'
       ss.getch
-      value = ss.scan(/[^"]+/)
-      value.downcase!
+      value = ss.scan(/[^"]+/)&.downcase
       ss.getch
     when "'"
       ss.getch
-      value = ss.scan(/[^']+/)
-      value.downcase!
+      value = ss.scan(/[^']+/)&.downcase
       ss.getch
     when '>'
       value = ''
     else
-      value = ss.scan(/[^\t\n\f\r >]+/)
-      value.downcase!
+      value = ss.scan(/[^\t\n\f\r >]+/)&.downcase
     end
     [name, value]
   end
