@@ -1583,11 +1583,15 @@ module Net   #:nodoc:
     end
     private :do_start
 
+    def ssl_context=(context)
+      @user_provided_ssl_context = context
+    end
+
     def connect
       if use_ssl?
         # reference early to load OpenSSL before connecting,
         # as OpenSSL may take time to load.
-        @ssl_context = OpenSSL::SSL::SSLContext.new
+        @ssl_context ||= prepare_ssl_context(@user_provided_ssl_context)
       end
 
       if proxy? then
@@ -1627,41 +1631,7 @@ module Net   #:nodoc:
           # assuming nothing left in buffers after successful CONNECT response
         end
 
-        ssl_parameters = Hash.new
-        iv_list = instance_variables
-        SSL_IVNAMES.each_with_index do |ivname, i|
-          if iv_list.include?(ivname)
-            value = instance_variable_get(ivname)
-            unless value.nil?
-              ssl_parameters[SSL_ATTRIBUTES[i]] = value
-            end
-          end
-        end
-        @ssl_context.set_params(ssl_parameters)
-        unless @ssl_context.session_cache_mode.nil? # a dummy method on JRuby
-          @ssl_context.session_cache_mode =
-              OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
-                  OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
-        end
-        if @ssl_context.respond_to?(:session_new_cb) # not implemented under JRuby
-          @ssl_context.session_new_cb = proc {|sock, sess| @ssl_session = sess }
-        end
-
-        # Still do the post_connection_check below even if connecting
-        # to IP address
-        verify_hostname = @ssl_context.verify_hostname
-
-        # Server Name Indication (SNI) RFC 3546/6066
-        case @address
-        when Resolv::IPv4::Regex, Resolv::IPv6::Regex
-          # don't set SNI, as IP addresses in SNI is not valid
-          # per RFC 6066, section 3.
-
-          # Avoid openssl warning
-          @ssl_context.verify_hostname = false
-        else
-          ssl_host_address = @address
-        end
+        ssl_host_address = @address if !address_is_ip?
 
         debug "starting SSL for #{conn_addr}:#{conn_port}..."
         s = OpenSSL::SSL::SSLSocket.new(s, @ssl_context)
@@ -1673,7 +1643,7 @@ module Net   #:nodoc:
           s.session = @ssl_session
         end
         ssl_socket_connect(s, @open_timeout)
-        if (@ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE) && verify_hostname
+        if (@ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE) && @verify_hostname
           s.post_connection_check(@address)
         end
         debug "SSL established, protocol: #{s.ssl_version}, cipher: #{s.cipher[0]}"
@@ -1692,6 +1662,49 @@ module Net   #:nodoc:
       raise
     end
     private :connect
+
+    def prepare_ssl_context(context)
+      context ||= OpenSSL::SSL::SSLContext.new
+      ssl_parameters = Hash.new
+      iv_list = instance_variables
+      SSL_IVNAMES.each_with_index do |ivname, i|
+        if iv_list.include?(ivname)
+          value = instance_variable_get(ivname)
+          unless value.nil?
+            ssl_parameters[SSL_ATTRIBUTES[i]] = value
+          end
+        end
+      end
+      context.set_params(ssl_parameters)
+
+      unless context.session_cache_mode.nil? # a dummy method on JRuby
+        context.session_cache_mode =
+            OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
+                OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
+      end
+      if context.respond_to?(:session_new_cb) # not implemented under JRuby
+        context.session_new_cb = proc {|sock, sess| @ssl_session = sess }
+      end
+
+      # Still do the post_connection_check below even if connecting
+      # to IP address
+      @verify_hostname = context.verify_hostname
+
+      # Server Name Indication (SNI) RFC 3546/6066
+      if address_is_ip?
+        # don't set SNI, as IP addresses in SNI is not valid
+        # per RFC 6066, section 3.
+
+        # Avoid openssl warning
+        context.verify_hostname = false
+      end
+
+      context
+    end
+
+    def address_is_ip?
+      Resolv::IPv4::Regex.match(@address) || Resolv::IPv6::Regex.match(@address)
+    end
 
     def on_connect
     end
