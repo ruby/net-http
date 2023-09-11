@@ -1,4 +1,4 @@
-name: ubuntu
+name: test
 
 on: [push, pull_request]
 
@@ -9,9 +9,9 @@ jobs:
       engine: cruby
       min_version: 2.6
 
-  build:
+  test:
     needs: ruby-versions
-    name: build (${{ matrix.ruby }} / ${{ matrix.os }})
+    name: test (${{ matrix.ruby }} / ${{ matrix.os }})
     strategy:
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
