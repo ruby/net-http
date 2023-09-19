@@ -89,5 +89,27 @@ class HTTPRequestTest < Test::Unit::TestCase
                          'Bug #7831 - do not decode content if the user overrides'
   end if Net::HTTP::HAVE_ZLIB
 
+  def test_ipv6_address_as_host_header
+    req = Net::HTTP::Get.new(URI.parse("http://[::1]"))
+    assert_equal "[::1]", req["host"]
+  end
+
+  def test_ipv6_address_as_host_header_with_port
+    req = Net::HTTP::Get.new(URI.parse("http://[::1]:2020"))
+    assert_equal "[::1]:2020", req["host"]
+  end
+
+  def test_ipv6_address_on_update_uri
+    req = Net::HTTP::Get.new(URI.parse("http://[::1]"))
+    req.send(:update_uri, "[::1]", 80, false)
+    assert_equal  "[::1]", req.instance_variable_get(:@uri).host
+  end
+
+  def test_ipv6_address_with_port_on_update_uri
+    req = Net::HTTP::Get.new(URI.parse("http://[::1]:7777"))
+    req.send(:update_uri, "[::1]", 2020, false)
+    assert_equal "[::1]", req.instance_variable_get(:@uri).host
+    assert_equal 2020, req.instance_variable_get(:@uri).port
+  end
 end
 
