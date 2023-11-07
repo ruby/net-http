@@ -55,7 +55,7 @@ class Net::HTTPGenericRequest
     @body = nil
     @body_stream = nil
     @body_data = nil
-    @preserve_headers = false
+    @capitalize_headers = true
   end
 
   # Returns the string method name for the request:
@@ -95,8 +95,8 @@ class Net::HTTPGenericRequest
   #
   attr_reader :decode_content
 
-  # Sets if will preserve case from headers
-  attr_accessor :preserve_headers
+  # Sets if will capitalize headers
+  attr_accessor :capitalize_headers
 
   # Returns a string representation of the request:
   #
@@ -407,12 +407,12 @@ class Net::HTTPGenericRequest
     end
     buf = +''
     buf << reqline << "\r\n"
-    if preserve_headers
-      each_header do |k,v|
+    if capitalize_headers
+      each_capitalized do |k,v|
         buf << "#{k}: #{v}\r\n"
       end
     else
-      each_capitalized do |k,v|
+      each_header do |k,v|
         buf << "#{k}: #{v}\r\n"
       end
     end

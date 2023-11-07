@@ -1368,7 +1368,7 @@ class TestNetHTTPPartialResponse < Test::Unit::TestCase
     assert_raise(EOFError) {http.get('/')}
   end
 
-  def test_no_preserved_headers
+  def test_capitalized_headers
     headers = { accept: '*/*' }
     expected_raw_header = "Accept: */*\r\n"
     @server.mount_proc('/') do |req, _res|
@@ -1379,7 +1379,7 @@ class TestNetHTTPPartialResponse < Test::Unit::TestCase
     http.get('/', headers)
   end
 
-  def test_preserved_headers
+  def test_no_capitalized_headers
     headers = { accept: '*/*' }
     expected_raw_header = "accept: */*\r\n"
     @server.mount_proc('/') do |req, _res|
@@ -1387,7 +1387,7 @@ class TestNetHTTPPartialResponse < Test::Unit::TestCase
     end
 
     http = Net::HTTP.new(config('host'), config('port'))
-    http.preserve_headers = true
+    http.capitalize_headers = false
     http.get('/', headers)
   end
 end
