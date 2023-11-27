@@ -1668,7 +1668,9 @@ module Net   #:nodoc:
         s.hostname = ssl_host_address if s.respond_to?(:hostname=) && ssl_host_address
 
         if @ssl_session and
-           Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + @ssl_session.timeout
+          # @ssl_session.timeout is not reliable due to signed/unsigned issues with OpenSSL 3,
+          # use only if s.context.timeout is nil
+          Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + (s.context.timeout || @ssl_session.timeout)
           s.session = @ssl_session
         end
         ssl_socket_connect(s, @open_timeout)
