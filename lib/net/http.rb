@@ -502,7 +502,7 @@ module Net   #:nodoc:
   # - {:ssl_timeout}[rdoc-ref:Net::HTTP#ssl_timeout]:
   #   Returns the ssl timeout.
   # - {:ssl_timeout=}[rdoc-ref:Net::HTTP#ssl_timeout=]:
-  #   Sets the ssl timeout.
+  #   Sets the client ssl session timeout. A zero or negative value will disable client session reuse.
   # - {:write_timeout}[rdoc-ref:Net::HTTP#write_timeout]:
   #   Returns the write timeout.
   # - {write_timeout=}[rdoc-ref:Net::HTTP#write_timeout=]:
