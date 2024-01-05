@@ -2,7 +2,8 @@
 
 Net::HTTP provides a rich library which can be used to build HTTP
 user-agents.  For more details about HTTP see
-[RFC2616](http://www.ietf.org/rfc/rfc2616.txt).
+[RFC9110 HTTP Semantics](https://www.ietf.org/rfc/rfc9110.html) and
+[RFC9112 HTTP/1.1](https://www.ietf.org/rfc/rfc9112.html).
 
 Net::HTTP is designed to work closely with URI.  URI::HTTP#host,
 URI::HTTP#port and URI::HTTP#request_uri are designed to work with
