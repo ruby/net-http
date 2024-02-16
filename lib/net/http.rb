@@ -918,6 +918,14 @@ module Net   #:nodoc:
       443
     end
 
+    def HTTP.default_ssl_options
+      defined?(@@default_ssl_options) ? @@default_ssl_options : nil
+    end
+
+    def HTTP.default_ssl_options=(opt)
+      @@default_ssl_options = opt
+    end
+
     def HTTP.socket_type   #:nodoc: obsolete
       BufferedIO
     end
@@ -1122,6 +1130,7 @@ module Net   #:nodoc:
 
       @use_ssl = false
       @ssl_context = nil
+      @ssl_options = HTTP.default_ssl_options
       @ssl_session = nil
       @sspi_enabled = false
       SSL_IVNAMES.each do |ivname|
