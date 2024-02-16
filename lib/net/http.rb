@@ -921,6 +921,14 @@ module Net   #:nodoc:
       443
     end
 
+    def HTTP.default_ssl_options
+      defined?(@@default_ssl_options) ? @@default_ssl_options : nil
+    end
+
+    def HTTP.default_ssl_options=(opt)
+      @@default_ssl_options = opt
+    end
+
     def HTTP.socket_type   #:nodoc: obsolete
       BufferedIO
     end
@@ -1001,6 +1009,7 @@ module Net   #:nodoc:
     # - #open_timeout
     # - #read_timeout
     # - #ssl_timeout
+    # - #ssl_options
     # - #ssl_version
     # - +use_ssl+ (calls #use_ssl=)
     # - #verify_callback
@@ -1124,6 +1133,7 @@ module Net   #:nodoc:
 
       @use_ssl = false
       @ssl_context = nil
+      @ssl_options = HTTP.default_ssl_options
       @ssl_session = nil
       @sspi_enabled = false
       SSL_IVNAMES.each do |ivname|
@@ -1453,6 +1463,7 @@ module Net   #:nodoc:
       :@extra_chain_cert,
       :@key,
       :@ssl_timeout,
+      :@ssl_options,
       :@ssl_version,
       :@min_version,
       :@max_version,
@@ -1470,6 +1481,7 @@ module Net   #:nodoc:
       :extra_chain_cert,
       :key,
       :ssl_timeout,
+      :options,
       :ssl_version,
       :min_version,
       :max_version,
@@ -1506,6 +1518,9 @@ module Net   #:nodoc:
 
     # Sets or returns the SSL timeout seconds.
     attr_accessor :ssl_timeout
+
+    # Sets the SSL options. See OpenSSL::SSL::SSLContext#ssl_options=
+    attr_accessor :ssl_options
 
     # Sets or returns the SSL version.
     # See {OpenSSL::SSL::SSLContext#ssl_version=}[https://docs.ruby-lang.org/en/master/OpenSSL/SSL/SSLContext.html#method-i-ssl_version-3D].
