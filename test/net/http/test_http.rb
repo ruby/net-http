@@ -522,6 +522,25 @@ module TestNetHTTP_version_1_1_methods
     assert_equal ["b=y"], res.body.split(/[;&]/).sort
   end
 
+  def test_s_put
+    url = "http://#{config('host')}:#{config('port')}/?q=a"
+    res = assert_warning(/Content-Type did not set/) do
+      Net::HTTP.put(
+              URI.parse(url),
+              "a=x")
+    end
+    assert_equal "application/x-www-form-urlencoded", res["Content-Type"]
+    assert_equal "a=x", res.body
+    assert_equal url, res["X-request-uri"]
+
+    res = Net::HTTP.put(
+              URI.parse(url),
+              "hello world",
+              "Content-Type" => "text/plain; charset=US-ASCII")
+    assert_equal "text/plain; charset=US-ASCII", res["Content-Type"]
+    assert_equal "hello world", res.body
+  end
+
   def test_patch
     start {|http|
       _test_patch__base http
