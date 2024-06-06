@@ -242,7 +242,31 @@ EOS
   end
 
   def test_read_body_body_encoding_true_with_utf8_meta_content_charset
-    res_body = "<meta http-equiv='content-type' content='text/html; charset=UTF-8'>hello\u1234</html>"
+    res_body = "<meta http-equiv='content-type' content='text/html; charset=UTF-8'>hello</html>"
+    io = dummy_io(<<EOS)
+HTTP/1.1 200 OK
+Connection: close
+Content-Length: #{res_body.bytesize}
+Content-Type: text/html
+
+#{res_body}
+EOS
+
+    res = Net::HTTPResponse.read_new(io)
+    res.body_encoding = true
+
+    body = nil
+
+    res.reading_body io, true do
+      body = res.read_body
+    end
+
+    assert_equal res_body, body
+    assert_equal Encoding::UTF_8, body.encoding
+  end
+
+  def test_read_body_body_encoding_true_with_empty_meta_content
+    res_body = "<meta name='keywords' content=''><meta http-equiv='content-type' content='text/html; charset=UTF-8'>"
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
 Connection: close
