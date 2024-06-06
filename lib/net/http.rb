@@ -513,6 +513,10 @@ module Net   #:nodoc:
   #   Returns the write timeout.
   # - {write_timeout=}[rdoc-ref:Net::HTTP#write_timeout=]:
   #   Sets the write timeout.
+  # - {:capitalize_headers}[rdoc-ref:Net::HTTP#capitalize_headers]:
+  #   Returns the capitalize_headers config.
+  # - {:capitalize_headers=}[rdoc-ref:Net::HTTP#capitalize_headers=]:
+  #   Sets the capitalize_headers config.
   #
   # === Requests
   #
@@ -1163,6 +1167,7 @@ module Net   #:nodoc:
       @ssl_context = nil
       @ssl_session = nil
       @sspi_enabled = false
+      @capitalize_headers = true
       SSL_IVNAMES.each do |ivname|
         instance_variable_set ivname, nil
       end
@@ -1571,6 +1576,9 @@ module Net   #:nodoc:
     # for the hostname.
     # See {OpenSSL::SSL::SSLContext#verify_hostname=}[https://docs.ruby-lang.org/en/master/OpenSSL/SSL/SSLContext.html#attribute-i-verify_mode].
     attr_accessor :verify_hostname
+
+    # Sets or returns whether to capitalize the headers
+    attr_accessor :capitalize_headers
 
     # Returns the X509 certificate chain (an array of strings)
     # for the session's socket peer,
@@ -2345,6 +2353,7 @@ module Net   #:nodoc:
           return request(req, body, &block)
         }
       end
+      req.capitalize_headers = capitalize_headers
       if proxy_user()
         req.proxy_basic_auth proxy_user(), proxy_pass() unless use_ssl?
       end
