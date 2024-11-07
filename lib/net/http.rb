@@ -2373,7 +2373,6 @@ module Net   #:nodoc:
     def request(req, body = nil, &block)  # :yield: +response+
       unless started?
         start {
-          req['connection'] ||= 'close'
           return request(req, body, &block)
         }
       end
