@@ -85,7 +85,7 @@ module Net
   #
   # A +Continue+ response indicates that the server has received the request headers.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -102,7 +102,7 @@ module Net
   # The <tt>Switching Protocol<tt> response indicates that the server has received
   # a request to switch protocols, and has agreed to do so.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -119,7 +119,7 @@ module Net
   # The +Processing+ response indicates that the server has received
   # and is processing the request, but no response is available yet.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -136,7 +136,7 @@ module Net
   # and is processing the request, and contains certain headers;
   # the final response is not available yet.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -153,7 +153,7 @@ module Net
   # The +OK+ response indicates that the server has received
   # a request and has responded successfully.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -170,7 +170,7 @@ module Net
   # The +Created+ response indicates that the server has received
   # and has fulfilled a request to create a new resource.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -187,7 +187,7 @@ module Net
   # The +Accepted+ response indicates that the server has received
   # and is processing a request, but the processing has not yet been completed.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -206,7 +206,7 @@ module Net
   # that received a 200 OK response from its origin,
   # and is returning a modified version of the origin's response.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -223,7 +223,7 @@ module Net
   # The <tt>No Content</tt> response indicates that the server
   # successfully processed the request, and is not returning any content.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -241,7 +241,7 @@ module Net
   # successfully processed the request,
   # asks that the client reset its document view, and is not returning any content.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -259,7 +259,7 @@ module Net
   # only part of the resource (byte serving)
   # due to a Range header in the request.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -277,7 +277,7 @@ module Net
   # has received the request,
   # and that the message body can contain a number of separate response codes.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -296,7 +296,7 @@ module Net
   # in a preceding part of the (multi-status) response,
   # and are not being included again.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -313,7 +313,7 @@ module Net
   # for the resource, and the response is a representation of the result
   # of one or more instance-manipulations applied to the current instance.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -329,7 +329,7 @@ module Net
   # The <tt>Multiple Choices</tt> response indicates that the server
   # offers multiple options for the resource from which the client may choose.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -347,7 +347,7 @@ module Net
   # The <tt>Moved Permanently</tt> response indicates that links or records
   # returning this response should be updated to use the given URL.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -364,7 +364,7 @@ module Net
   # The <tt>Found</tt> response indicates that the client
   # should look at (browse to) another URL.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -381,7 +381,7 @@ module Net
   #
   # The response to the request can be found under another URI using the GET method.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -398,7 +398,7 @@ module Net
   # Indicates that the resource has not been modified since the version
   # specified by the request headers.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -415,7 +415,7 @@ module Net
   # The requested resource is available only through a proxy,
   # whose address is provided in the response.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -431,7 +431,7 @@ module Net
   # The request should be repeated with another URI;
   # however, future requests should still use the original URI.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -447,7 +447,7 @@ module Net
   #
   # This and all future requests should be directed to the given URI.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -463,7 +463,7 @@ module Net
   #
   # The server cannot or will not process the request due to an apparent client error.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -479,7 +479,7 @@ module Net
   #
   # Authentication is required, but either was not provided or failed.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -495,7 +495,7 @@ module Net
   #
   # Reserved for future use.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -512,7 +512,7 @@ module Net
   # The request contained valid data and was understood by the server,
   # but the server is refusing action.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -528,7 +528,7 @@ module Net
   #
   # The requested resource could not be found but may be available in the future.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -544,7 +544,7 @@ module Net
   #
   # The request method is not supported for the requested resource.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -561,7 +561,7 @@ module Net
   # The requested resource is capable of generating only content
   # that not acceptable according to the Accept headers sent in the request.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -577,7 +577,7 @@ module Net
   #
   # The client must first authenticate itself with the proxy.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -593,7 +593,7 @@ module Net
   #
   # The server timed out waiting for the request.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -610,7 +610,7 @@ module Net
   #
   # The request could not be processed because of conflict in the current state of the resource.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -627,7 +627,7 @@ module Net
   # The resource requested was previously in use but is no longer available
   # and will not be available again.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -644,7 +644,7 @@ module Net
   # The request did not specify the length of its content,
   # which is required by the requested resource.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -661,7 +661,7 @@ module Net
   # The server does not meet one of the preconditions
   # specified in the request headers.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -677,7 +677,7 @@ module Net
   #
   # The request is larger than the server is willing or able to process.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -694,7 +694,7 @@ module Net
   #
   # The URI provided was too long for the server to process.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -712,7 +712,7 @@ module Net
   #
   # The request entity has a media type which the server or resource does not support.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -728,7 +728,7 @@ module Net
   #
   # The request entity has a media type which the server or resource does not support.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -745,7 +745,7 @@ module Net
   #
   # The server cannot meet the requirements of the Expect request-header field.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -766,7 +766,7 @@ module Net
   #
   # The request was directed at a server that is not able to produce a response.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -781,7 +781,7 @@ module Net
   #
   # The request was well-formed but had semantic errors.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -797,7 +797,7 @@ module Net
   #
   # The requested resource is locked.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -813,7 +813,7 @@ module Net
   # The request failed because it depended on another request and that request failed.
   # See {424 Failed Dependency (WebDAV)}[https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#424].
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -831,7 +831,7 @@ module Net
   #
   # The client should switch to the protocol given in the Upgrade header field.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -847,7 +847,7 @@ module Net
   #
   # The origin server requires the request to be conditional.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -863,7 +863,7 @@ module Net
   #
   # The user has sent too many requests in a given amount of time.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -880,7 +880,7 @@ module Net
   # An individual header field is too large,
   # or all the header fields collectively, are too large.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -897,7 +897,7 @@ module Net
   # A server operator has received a legal demand to deny access to a resource or to a set of resources
   # that includes the requested resource.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -917,7 +917,7 @@ module Net
   #
   # An unexpected condition was encountered and no more specific message is suitable.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -934,7 +934,7 @@ module Net
   # The server either does not recognize the request method,
   # or it lacks the ability to fulfil the request.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -951,7 +951,7 @@ module Net
   # The server was acting as a gateway or proxy
   # and received an invalid response from the upstream server.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -968,7 +968,7 @@ module Net
   # The server cannot handle the request
   # (because it is overloaded or down for maintenance).
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -985,7 +985,7 @@ module Net
   # The server was acting as a gateway or proxy
   # and did not receive a timely response from the upstream server.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -1002,7 +1002,7 @@ module Net
   #
   # The server does not support the HTTP version used in the request.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -1018,7 +1018,7 @@ module Net
   #
   # Transparent content negotiation for the request results in a circular reference.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -1034,7 +1034,7 @@ module Net
   #
   # The server is unable to store the representation needed to complete the request.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -1050,7 +1050,7 @@ module Net
   #
   # The server detected an infinite loop while processing the request.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -1067,7 +1067,7 @@ module Net
   #
   # Further extensions to the request are required for the server to fulfill it.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #
@@ -1083,7 +1083,7 @@ module Net
   #
   # The client needs to authenticate to gain network access.
   #
-  # :include: doc/net-http/included_getters.rdoc
+  # :include: ../../../doc/net-http/included_getters.rdoc
   #
   # References:
   #

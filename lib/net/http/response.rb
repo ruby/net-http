@@ -4,7 +4,7 @@
 #
 # == About the Examples
 #
-# :include: doc/net-http/examples.rdoc
+# :include: ../../../doc/net-http/examples.rdoc
 #
 # == Returned Responses
 #
