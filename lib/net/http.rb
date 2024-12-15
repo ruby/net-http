@@ -475,8 +475,7 @@ module Net   #:nodoc:
   #
   # - {::start}[rdoc-ref:Net::HTTP.start]:
   #   Begins a new session in a new \Net::HTTP object.
-  # - {#started?}[rdoc-ref:Net::HTTP#started?]
-  #   (aliased as {#active?}[rdoc-ref:Net::HTTP#active?]):
+  # - {#started?}[rdoc-ref:Net::HTTP#started?]:
   #   Returns whether in a session.
   # - {#finish}[rdoc-ref:Net::HTTP#finish]:
   #   Ends an active session.
@@ -556,18 +555,15 @@ module Net   #:nodoc:
   #   Sends a PUT request and returns a response object.
   # - {#request}[rdoc-ref:Net::HTTP#request]:
   #   Sends a request and returns a response object.
-  # - {#request_get}[rdoc-ref:Net::HTTP#request_get]
-  #   (aliased as {#get2}[rdoc-ref:Net::HTTP#get2]):
+  # - {#request_get}[rdoc-ref:Net::HTTP#request_get]:
   #   Sends a GET request and forms a response object;
   #   if a block given, calls the block with the object,
   #   otherwise returns the object.
-  # - {#request_head}[rdoc-ref:Net::HTTP#request_head]
-  #   (aliased as {#head2}[rdoc-ref:Net::HTTP#head2]):
+  # - {#request_head}[rdoc-ref:Net::HTTP#request_head]:
   #   Sends a HEAD request and forms a response object;
   #   if a block given, calls the block with the object,
   #   otherwise returns the object.
-  # - {#request_post}[rdoc-ref:Net::HTTP#request_post]
-  #   (aliased as {#post2}[rdoc-ref:Net::HTTP#post2]):
+  # - {#request_post}[rdoc-ref:Net::HTTP#request_post]:
   #   Sends a POST request and forms a response object;
   #   if a block given, calls the block with the object,
   #   otherwise returns the object.
@@ -605,8 +601,7 @@ module Net   #:nodoc:
   #   Returns whether +self+ is a proxy class.
   # - {#proxy?}[rdoc-ref:Net::HTTP#proxy?]:
   #   Returns whether +self+ has a proxy.
-  # - {#proxy_address}[rdoc-ref:Net::HTTP#proxy_address]
-  #   (aliased as {#proxyaddr}[rdoc-ref:Net::HTTP#proxyaddr]):
+  # - {#proxy_address}[rdoc-ref:Net::HTTP#proxy_address]:
   #   Returns the proxy address.
   # - {#proxy_from_env?}[rdoc-ref:Net::HTTP#proxy_from_env?]:
   #   Returns whether the proxy is taken from an environment variable.
@@ -718,8 +713,7 @@ module Net   #:nodoc:
   # === \HTTP Version
   #
   # - {::version_1_2?}[rdoc-ref:Net::HTTP.version_1_2?]
-  #   (aliased as {::is_version_1_2?}[rdoc-ref:Net::HTTP.is_version_1_2?]
-  #   and {::version_1_2}[rdoc-ref:Net::HTTP.version_1_2]):
+  #   (aliased as {::version_1_2}[rdoc-ref:Net::HTTP.version_1_2]):
   #   Returns true; retained for compatibility.
   #
   # === Debugging
