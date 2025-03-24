@@ -1,4 +1,4 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 
 # HTTP/1.1 methods --- RFC2616
 
@@ -123,6 +123,11 @@ end
 # - {Safe}[https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Safe_methods]: no.
 # - {Idempotent}[https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Idempotent_methods]: yes.
 # - {Cacheable}[https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Cacheable_methods]: no.
+#
+# Related:
+#
+# - Net::HTTP.put: sends +PUT+ request, returns response object.
+# - Net::HTTP#put: sends +PUT+ request, returns response object.
 #
 class Net::HTTP::Put < Net::HTTPRequest
   METHOD = 'PUT'
