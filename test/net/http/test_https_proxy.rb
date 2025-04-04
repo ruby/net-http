@@ -49,7 +49,7 @@ class HTTPSProxyTest < Test::Unit::TestCase
     File.read(File.expand_path("../fixtures/#{key}", __dir__))
   end
 
-  def test_https_proxy_ssl_connection
+  def test_https_proxy_ssl_connection_tunneled_https
     begin
       OpenSSL
     rescue LoadError
@@ -84,6 +84,50 @@ class HTTPSProxyTest < Test::Unit::TestCase
             "\r\n",
             proxy_request,
             "[ruby-core:96672]")
+        ensure
+          sock.close
+        end
+      }
+      assert_join_threads([client_thread, server_thread])
+    }
+  end
+
+  def test_https_proxy_ssl_connection_tunneled_http
+    begin
+      OpenSSL
+    rescue LoadError
+      omit 'autoload problem. see [ruby-dev:45021][Bug #5786]'
+    end
+
+    TCPServer.open("127.0.0.1", 0) {|tcpserver|
+      ctx = OpenSSL::SSL::SSLContext.new
+      ctx.key = OpenSSL::PKey.read(read_fixture("server.key"))
+      ctx.cert = OpenSSL::X509::Certificate.new(read_fixture("server.crt"))
+      serv = OpenSSL::SSL::SSLServer.new(tcpserver, ctx)
+
+      _, port, _, _ = serv.addr
+      client_thread = Thread.new {
+        proxy = Net::HTTP.Proxy("127.0.0.1", port, 'user', 'password', true)
+        http = proxy.new("foo.example.org", 8000)
+        begin
+          http.start
+          http.get('/')
+        rescue OpenSSL::SSL::SSLError
+        end
+      }
+      server_thread = Thread.new {
+        sock = serv.accept
+        begin
+          proxy_request = sock.gets("\r\n\r\n")
+          assert_equal(
+            "GET http://foo.example.org:8000/ HTTP/1.1\r\n" +
+            "Accept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3\r\n" +
+            "Accept: */*\r\n" +
+            "User-Agent: Ruby\r\n" +
+            "Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA==\r\n" +
+            "Host: foo.example.org:8000\r\n" +
+            "\r\n",
+            proxy_request)
         ensure
           sock.close
         end
