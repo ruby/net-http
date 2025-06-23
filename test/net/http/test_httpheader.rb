@@ -40,6 +40,20 @@ class HTTPHeaderTest < Test::Unit::TestCase
     assert_equal "abc", @c["foo"]
   end
 
+  def test_initialize_with_max_header_length_exceeded
+    field_value = 'x' * (Net::HTTPHeader::MAX_FIELD_LENGTH - 100)
+    num_headers = (Net::HTTPHeader::MAX_HEADER_LENGTH / Net::HTTPHeader::MAX_FIELD_LENGTH) + 2
+
+    large_headers = {}
+    num_headers.times do |i|
+      large_headers["Header#{i}"] = field_value
+    end
+
+    assert_raise(ArgumentError) do
+      @c.initialize_http_header(large_headers)
+    end
+  end
+
   def test_size
     assert_equal 0, @c.size
     @c['a'] = 'a'
