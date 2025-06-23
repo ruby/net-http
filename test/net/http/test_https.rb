@@ -286,6 +286,24 @@ class TestNetHTTPS < Test::Unit::TestCase
     assert_match(re_msg, ex.message)
   end
 
+  def test_ssl_options
+    ssl_options = OpenSSL::SSL::OP_NO_TLSv1 |
+                  OpenSSL::SSL::OP_NO_TLSv1_1 |
+                  OpenSSL::SSL::OP_NO_TLSv1_2 |
+                  OpenSSL::SSL::OP_NO_TLSv1_3
+    http = Net::HTTP.new(HOST, config("port"))
+    http.use_ssl = true
+    http.ssl_options = ssl_options
+    http.cert_store = TEST_STORE
+    ex = assert_raise(OpenSSL::SSL::SSLError){
+      http.request_get("/") {|res| }
+    }
+    re_msg = /\ASSL_connect returned=1 errno=0 |no protocols available/
+    assert_match(re_msg, ex.message)
+    ssl_context = http.instance_variable_get(:@ssl_context)
+    assert_equal(ssl_options, ssl_context.options & ssl_options)
+  end
+
 end if defined?(OpenSSL::SSL)
 
 class TestNetHTTPSIdentityVerifyFailure < Test::Unit::TestCase
