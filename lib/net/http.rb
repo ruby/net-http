@@ -660,6 +660,10 @@ module Net   #:nodoc:
   #   Sets the minimum SSL version.
   # - {#peer_cert}[rdoc-ref:Net::HTTP#peer_cert]:
   #   Returns the X509 certificate chain for the session's socket peer.
+  # - {:security_level}[rdoc-ref:Net::HTTP#security_level]:
+  #   Returns the SSL security level.
+  # - {:security_level=}[rdoc-ref:Net::HTTP#security_level=]:
+  #   Sets the SSL security level.
   # - {:ssl_version}[rdoc-ref:Net::HTTP#ssl_version]:
   #   Returns the SSL version.
   # - {:ssl_version=}[rdoc-ref:Net::HTTP#ssl_version=]:
@@ -1031,6 +1035,7 @@ module Net   #:nodoc:
     # - #key
     # - #open_timeout
     # - #read_timeout
+    # - #security_level
     # - #ssl_timeout
     # - #ssl_version
     # - +use_ssl+ (calls #use_ssl=)
@@ -1519,6 +1524,7 @@ module Net   #:nodoc:
       :ciphers,
       :extra_chain_cert,
       :key,
+      :security_level,
       :ssl_timeout,
       :ssl_version,
       :min_version,
@@ -1555,6 +1561,10 @@ module Net   #:nodoc:
 
     # Sets or returns the OpenSSL::PKey::RSA or OpenSSL::PKey::DSA object.
     attr_accessor :key
+
+    # Sets or returns the SSL security level.
+    # See {OpenSSL::SSL::SSLContext#security_level=}[OpenSSL::SSL::SSL::Context#security_level=].
+    attr_accessor :security_level
 
     # Sets or returns the SSL timeout seconds.
     attr_accessor :ssl_timeout
