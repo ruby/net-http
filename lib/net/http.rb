@@ -902,7 +902,7 @@ module Net   #:nodoc:
 
     # Sends a PUT request to the server; returns a Net::HTTPResponse object.
     #
-    # Argument +url+ must be a URL;
+    # Argument +url+ must be a URL object or a URI string;
     # argument +data+ must be a string:
     #
     #   _uri = uri.dup
@@ -927,6 +927,7 @@ module Net   #:nodoc:
     # - Net::HTTP#put: convenience method for \HTTP method +PUT+.
     #
     def HTTP.put(url, data, header = nil)
+      url = URI(url) if url.is_a?(String)
       start(url.hostname, url.port,
             :use_ssl => url.scheme == 'https' ) {|http|
         http.put(url, data, header)
