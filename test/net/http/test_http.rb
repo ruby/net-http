@@ -246,8 +246,8 @@ class TestNetHTTP < Test::Unit::TestCase
     # hostname to be included in the error message
     host = Struct.new(:to_s).new("<example>")
     port = 2119
-    # hack to let TCPSocket.open fail
-    def host.to_str; raise SocketError, "open failure"; end
+    # hack to let Socket.tcp fail
+    def host.match?(_); raise SocketError, "open failure"; end
     uri = Struct.new(:scheme, :hostname, :port).new("http", host, port)
     assert_raise_with_message(SocketError, /#{host}:#{port}/) do
       TestNetHTTPUtils.clean_http_proxy_env{ Net::HTTP.get(uri) }

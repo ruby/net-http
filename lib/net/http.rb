@@ -1654,14 +1654,20 @@ module Net   #:nodoc:
       end
 
       debug "opening connection to #{conn_addr}:#{conn_port}..."
-      s = Timeout.timeout(@open_timeout, Net::OpenTimeout) {
-        begin
-          TCPSocket.open(conn_addr, conn_port, @local_host, @local_port)
-        rescue => e
-          raise e, "Failed to open TCP connection to " +
-            "#{conn_addr}:#{conn_port} (#{e.message})"
+      begin
+        # Use built-in timeout in Socket.tcp if available
+        s = if Socket.method(:tcp).parameters.any? {|param| param[0] == :key && param[1] == :open_timeout }
+          Socket.tcp(conn_addr, conn_port, @local_host, @local_port, open_timeout: @open_timeout)
+        else
+          Timeout.timeout(@open_timeout, Net::OpenTimeout) {
+            TCPSocket.open(conn_addr, conn_port, @local_host, @local_port)
+          }
         end
-      }
+      rescue => e
+        e = Net::OpenTimeout.new(e) if e.is_a?(Errno::ETIMEDOUT) # for compatibility with previous versions
+        raise e, "Failed to open TCP connection to " +
+          "#{conn_addr}:#{conn_port} (#{e.message})"
+      end
       s.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
       debug "opened"
       if use_ssl?
