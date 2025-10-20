@@ -2464,7 +2464,7 @@ module Net   #:nodoc:
           connect
         end
         while @socket.io.to_io.wait_readable(0)
-          if @socket.io.to_io.read_nonblock(1, exception: false) == nil
+          if @socket.io.read_nonblock(1, exception: false) == nil
             debug "Conn close because of EOF"
             @socket.close
             connect
