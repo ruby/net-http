@@ -2462,10 +2462,13 @@ module Net   #:nodoc:
           debug 'Conn close because of keep_alive_timeout'
           @socket.close
           connect
-        elsif @socket.io.to_io.wait_readable(0) && @socket.eof?
-          debug "Conn close because of EOF"
-          @socket.close
-          connect
+        end
+        while @socket.io.to_io.wait_readable(0)
+          if @socket.io.read_nonblock(1, exception: false) == nil
+            debug "Conn close because of EOF"
+            @socket.close
+            connect
+          end
         end
       end
 
