@@ -1620,23 +1620,20 @@ module Net   #:nodoc:
     #
     def start  # :yield: http
       raise IOError, 'HTTP session already opened' if @started
+
+      @started = true
+      connect
+
       if block_given?
         begin
-          do_start
           return yield(self)
         ensure
-          do_finish
+          finish
         end
       end
-      do_start
+
       self
     end
-
-    def do_start
-      connect
-      @started = true
-    end
-    private :do_start
 
     def connect
       if use_ssl?
@@ -1744,7 +1741,6 @@ module Net   #:nodoc:
                                continue_timeout: @continue_timeout,
                                debug_output: @debug_output)
       @last_communicated = nil
-      on_connect
     rescue => exception
       if s
         debug "Conn close because of connect error #{exception}"
@@ -1753,10 +1749,6 @@ module Net   #:nodoc:
       raise
     end
     private :connect
-
-    def on_connect
-    end
-    private :on_connect
 
     # Finishes the \HTTP session:
     #
@@ -1769,15 +1761,10 @@ module Net   #:nodoc:
     # Raises IOError if not in a session.
     def finish
       raise IOError, 'HTTP session not yet started' unless started?
-      do_finish
-    end
-
-    def do_finish
       @started = false
       @socket.close if @socket
       @socket = nil
     end
-    private :do_finish
 
     #
     # proxy
