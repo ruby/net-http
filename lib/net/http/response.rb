@@ -235,7 +235,7 @@ class Net::HTTPResponse
   #
   # - If the given value is an Encoding object, that encoding will be used.
   # - Otherwise if the value is a string, the value of
-  #   {Encoding#find(value)}[rdoc-ref:Encoding.find]
+  #   {Encoding#find(value)}[https://docs.ruby-lang.org/en/master/Encoding.html#method-c-find]
   #   will be used.
   # - Otherwise an encoding will be deduced from the body itself.
   #
