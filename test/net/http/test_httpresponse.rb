@@ -769,14 +769,19 @@ EOS
     res = Net::HTTPOK.new('1.1', '200', 'OK')
     res['content-type'] = 'application/json'
 
-    matched = case res
-    in code: '200', content_type: /json/
-      true
-    else
-      false
+    begin
+      matched = instance_eval <<~RUBY, __FILE__, __LINE__ + 1
+        case res
+        in code: '200', content_type: /json/
+          true
+        else
+          false
+        end
+      RUBY
+      assert_equal true, matched
+    rescue SyntaxError
+      skip "Pattern matching requires Ruby 2.7+"
     end
-
-    assert_equal true, matched
   end
 
 private
