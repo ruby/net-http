@@ -114,14 +114,19 @@ class HTTPRequestTest < Test::Unit::TestCase
     uri = URI('https://example.com/api/users')
     req = Net::HTTP::Post.new(uri)
 
-    matched = case req
-    in method: 'POST', path: %r{^/api/}
-      true
-    else
-      false
+    begin
+      matched = instance_eval <<~RUBY, __FILE__, __LINE__ + 1
+        case req
+        in method: 'POST', path: %r{^/api/}
+          true
+        else
+          false
+        end
+      RUBY
+      assert_equal true, matched
+    rescue SyntaxError
+      skip "Pattern matching requires Ruby 2.7+"
     end
-
-    assert_equal true, matched
   end
 
 end
