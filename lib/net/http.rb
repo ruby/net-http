@@ -734,6 +734,9 @@ module Net   #:nodoc:
     end
     # :startdoc:
 
+    # Valid keys for pattern matching via #deconstruct_keys.
+    PATTERN_MATCHING_KEYS = %i[address port use_ssl? started? read_timeout write_timeout open_timeout].freeze
+
     # Returns +true+; retained for compatibility.
     def HTTP.version_1_2
       true
@@ -1509,6 +1512,24 @@ module Net   #:nodoc:
         raise IOError, "use_ssl value changed, but session already started"
       end
       @use_ssl = flag
+    end
+
+    # Returns a hash of HTTP client attributes for pattern matching.
+    #
+    # Valid keys are: +:address+, +:port+, +:use_ssl?+, +:started?+, +:read_timeout+, +:write_timeout+, +:open_timeout+
+    #
+    # Example:
+    #
+    #   case http_client
+    #   in address: "localhost", port: 3000, use_ssl?: false
+    #     "local development"
+    #   in use_ssl?: true, port: 443
+    #     "secure production"
+    #   end
+    #
+    def deconstruct_keys(keys)
+      valid_keys = keys ? PATTERN_MATCHING_KEYS & keys : PATTERN_MATCHING_KEYS
+      valid_keys.to_h { |key| [key, public_send(key)] }
     end
 
     SSL_ATTRIBUTES = [
