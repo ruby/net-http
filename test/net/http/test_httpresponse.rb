@@ -780,7 +780,7 @@ EOS
       RUBY
       assert_equal true, matched
     rescue SyntaxError
-      skip "Pattern matching requires Ruby 2.7+"
+      omit "Pattern matching requires Ruby 2.7+"
     end
   end
 
