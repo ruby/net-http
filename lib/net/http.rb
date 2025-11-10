@@ -819,7 +819,7 @@ module Net   #:nodoc:
           return http.request_get(path, &block)
         }
       else
-        uri = uri_or_host
+        uri = URI(uri_or_host)
         headers = path_or_headers
         start(uri.hostname, uri.port,
               :use_ssl => uri.scheme == 'https') {|http|
@@ -830,7 +830,7 @@ module Net   #:nodoc:
 
     # Posts data to a host; returns a Net::HTTPResponse object.
     #
-    # Argument +url+ must be a URL;
+    # Argument +url+ must be a URI;
     # argument +data+ must be a string:
     #
     #   _uri = uri.dup
@@ -855,6 +855,7 @@ module Net   #:nodoc:
     # - Net::HTTP#post: convenience method for \HTTP method +POST+.
     #
     def HTTP.post(url, data, header = nil)
+      url = URI(url)
       start(url.hostname, url.port,
             :use_ssl => url.scheme == 'https' ) {|http|
         http.post(url, data, header)
@@ -882,6 +883,7 @@ module Net   #:nodoc:
     #   }
     #
     def HTTP.post_form(url, params)
+      url = URI(url)
       req = Post.new(url)
       req.form_data = params
       req.basic_auth url.user, url.password if url.user
@@ -893,7 +895,7 @@ module Net   #:nodoc:
 
     # Sends a PUT request to the server; returns a Net::HTTPResponse object.
     #
-    # Argument +url+ must be a URL;
+    # Argument +url+ must be a URI;
     # argument +data+ must be a string:
     #
     #   _uri = uri.dup
@@ -918,6 +920,7 @@ module Net   #:nodoc:
     # - Net::HTTP#put: convenience method for \HTTP method +PUT+.
     #
     def HTTP.put(url, data, header = nil)
+      url = URI(url)
       start(url.hostname, url.port,
             :use_ssl => url.scheme == 'https' ) {|http|
         http.put(url, data, header)
