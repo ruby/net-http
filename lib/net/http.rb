@@ -796,6 +796,12 @@ module Net   #:nodoc:
     #   headers = {'Content-type' => 'application/json; charset=UTF-8'}
     #   Net::HTTP.get(uri, headers)
     #
+    # Alternatively, +uri+ may be a String:
+    #
+    #   uri = 'https://jsonplaceholder.typicode.com/todos/1'
+    #   headers = {'Content-type' => 'application/json; charset=UTF-8'}
+    #   Net::HTTP.get(uri, headers)
+    #
     # Related:
     #
     # - Net::HTTP::Get: request class for \HTTP method +GET+.
@@ -820,6 +826,7 @@ module Net   #:nodoc:
         }
       else
         uri = uri_or_host
+        uri = URI(uri) if uri.is_a?(String)
         headers = path_or_headers
         start(uri.hostname, uri.port,
               :use_ssl => uri.scheme == 'https') {|http|
@@ -830,7 +837,7 @@ module Net   #:nodoc:
 
     # Posts data to a host; returns a Net::HTTPResponse object.
     #
-    # Argument +url+ must be a URL;
+    # Argument +url+ must be a URI object or a URI string;
     # argument +data+ must be a string:
     #
     #   _uri = uri.dup
@@ -855,6 +862,7 @@ module Net   #:nodoc:
     # - Net::HTTP#post: convenience method for \HTTP method +POST+.
     #
     def HTTP.post(url, data, header = nil)
+      url = URI(url) if url.is_a?(String)
       start(url.hostname, url.port,
             :use_ssl => url.scheme == 'https' ) {|http|
         http.post(url, data, header)
@@ -863,7 +871,7 @@ module Net   #:nodoc:
 
     # Posts data to a host; returns a Net::HTTPResponse object.
     #
-    # Argument +url+ must be a URI;
+    # Argument +url+ must be a URI object or a URI string;
     # argument +data+ must be a hash:
     #
     #   _uri = uri.dup
@@ -882,6 +890,7 @@ module Net   #:nodoc:
     #   }
     #
     def HTTP.post_form(url, params)
+      url = URI(url) if url.is_a?(String)
       req = Post.new(url)
       req.form_data = params
       req.basic_auth url.user, url.password if url.user
@@ -893,7 +902,7 @@ module Net   #:nodoc:
 
     # Sends a PUT request to the server; returns a Net::HTTPResponse object.
     #
-    # Argument +url+ must be a URL;
+    # Argument +url+ must be a URL object or a URI string;
     # argument +data+ must be a string:
     #
     #   _uri = uri.dup
@@ -918,6 +927,7 @@ module Net   #:nodoc:
     # - Net::HTTP#put: convenience method for \HTTP method +PUT+.
     #
     def HTTP.put(url, data, header = nil)
+      url = URI(url) if url.is_a?(String)
       start(url.hostname, url.port,
             :use_ssl => url.scheme == 'https' ) {|http|
         http.put(url, data, header)
