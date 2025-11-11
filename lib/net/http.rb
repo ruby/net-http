@@ -1705,15 +1705,15 @@ module Net   #:nodoc:
       end
       s.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
       debug "opened"
+
+      if proxy? && @proxy_use_ssl
+        s = OpenSSL::SSL::SSLSocket.new(s)
+        ssl_socket_connect(s, @open_timeout)
+      end
+
       if use_ssl?
         if proxy?
-          if @proxy_use_ssl
-            proxy_sock = OpenSSL::SSL::SSLSocket.new(s)
-            ssl_socket_connect(proxy_sock, @open_timeout)
-          else
-            proxy_sock = s
-          end
-          proxy_sock = BufferedIO.new(proxy_sock, read_timeout: @read_timeout,
+          proxy_sock = BufferedIO.new(s, read_timeout: @read_timeout,
                                       write_timeout: @write_timeout,
                                       continue_timeout: @continue_timeout,
                                       debug_output: @debug_output)
