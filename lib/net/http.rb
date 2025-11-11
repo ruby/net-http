@@ -2495,10 +2495,17 @@ module Net   #:nodoc:
           debug 'Conn close because of keep_alive_timeout'
           @socket.close
           connect
-        elsif @socket.io.to_io.wait_readable(0) && @socket.eof?
-          debug "Conn close because of EOF"
-          @socket.close
-          connect
+        elsif @socket.io.to_io.wait_readable(0)
+          # Check for EOF without blocking.
+          # With TLS 1.3, servers may send NewSessionTicket after responses,
+          # making the socket appear readable when only handshake data is
+          # pending. Using eof? here would block waiting for app data.
+          # See: https://bugs.ruby-lang.org/issues/19017
+          if eof_without_blocking?
+            debug "Conn close because of EOF"
+            @socket.close
+            connect
+          end
         end
       end
 
@@ -2525,6 +2532,28 @@ module Net   #:nodoc:
         debug 'Conn close'
         @socket.close
       end
+    end
+
+    # Non-blocking EOF check for TLS connections.
+    # Returns true if connection is at EOF, false otherwise.
+    # Unlike @socket.eof?, this won't block when TLS 1.3 NewSessionTicket
+    # messages are pending on the connection.
+    def eof_without_blocking?
+      result = @socket.io.read_nonblock(1, exception: false)
+      case result
+      when nil
+        # EOF - connection was closed
+        true
+      when :wait_readable, :wait_writable
+        # No data available yet, but connection is alive
+        false
+      when String
+        # Got actual data - push it back for later reads
+        @socket.io.ungetc(result)
+        false
+      end
+    rescue EOFError
+      true
     end
 
     def keep_alive?(req, res)
