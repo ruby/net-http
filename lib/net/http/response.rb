@@ -156,6 +156,7 @@ class Net::HTTPResponse
     end
 
     private
+    # :stopdoc:
 
     def read_status_line(sock)
       str = sock.readline
@@ -262,7 +263,7 @@ class Net::HTTPResponse
   # header.
   attr_accessor :ignore_eof
 
-  def inspect
+  def inspect   # :nodoc:
     "#<#{self.class} #{@code} #{@message} readbody=#{@read}>"
   end
 
