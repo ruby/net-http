@@ -37,6 +37,7 @@ module Net
     end
   end
 
+  # :stopdoc:
   class HTTPError < ProtocolError
     include HTTPExceptions
   end
