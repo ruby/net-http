@@ -286,6 +286,17 @@ class TestNetHTTPS < Test::Unit::TestCase
     assert_match(re_msg, ex.message)
   end
 
+  def test_security_level
+    http = Net::HTTP.new(HOST, config("port"))
+    http.use_ssl = true
+    http.security_level = 3
+    http.cert_store = TEST_STORE
+    ex = assert_raise(OpenSSL::SSL::SSLError){
+      http.request_get("/") {|res| }
+    }
+    assert_match(/certificate verify failed/, ex.message)
+  end
+
 end if defined?(OpenSSL::SSL)
 
 class TestNetHTTPSIdentityVerifyFailure < Test::Unit::TestCase
