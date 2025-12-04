@@ -1038,6 +1038,7 @@ module Net   #:nodoc:
     # - #verify_depth
     # - #verify_mode
     # - #write_timeout
+    # - #unix_socket
     #
     # Note: If +port+ is +nil+ and <tt>opts[:use_ssl]</tt> is a truthy value,
     # the value passed to +new+ is Net::HTTP.https_default_port, not +port+.
@@ -1156,7 +1157,8 @@ module Net   #:nodoc:
         max_retries: 1,
         debug_output: nil,
         response_body_encoding: false,
-        ignore_eof: true
+        ignore_eof: true,
+        unix_socket: nil
       }
       options = defaults.merge(self.class.default_configuration || {})
 
@@ -1179,6 +1181,7 @@ module Net   #:nodoc:
       @debug_output = options[:debug_output]
       @response_body_encoding = options[:response_body_encoding]
       @ignore_eof = options[:ignore_eof]
+      @unix_socket = options[:unix_socket]
       @tcpsocket_supports_open_timeout = nil
 
       @proxy_from_env = false
@@ -1266,6 +1269,9 @@ module Net   #:nodoc:
 
     # Returns the integer port number given as argument +port+ in ::new.
     attr_reader :port
+
+    # Sets or returns the path to a UNIX domain socket used instead of TCP.
+    attr_accessor :unix_socket
 
     # Sets or returns the string local host used to establish the connection;
     # initially +nil+.
@@ -1658,127 +1664,134 @@ module Net   #:nodoc:
     private :do_start
 
     def connect
-      if use_ssl?
-        # reference early to load OpenSSL before connecting,
-        # as OpenSSL may take time to load.
-        @ssl_context = OpenSSL::SSL::SSLContext.new
-      end
-
-      if proxy? then
-        conn_addr = proxy_address
-        conn_port = proxy_port
+      s = nil
+      if unix_socket
+        debug "opening connection to unix://#{unix_socket}..."
+        s = UNIXSocket.open(unix_socket)
+        debug "opened"
       else
-        conn_addr = conn_address
-        conn_port = port
-      end
+        if use_ssl?
+          # reference early to load OpenSSL before connecting,
+          # as OpenSSL may take time to load.
+          @ssl_context = OpenSSL::SSL::SSLContext.new
+        end
 
-      debug "opening connection to #{conn_addr}:#{conn_port}..."
-      begin
-        s =
-          case @tcpsocket_supports_open_timeout
-          when nil, true
-            begin
-              # Use built-in timeout in TCPSocket.open if available
-              sock = TCPSocket.open(conn_addr, conn_port, @local_host, @local_port, open_timeout: @open_timeout)
-              @tcpsocket_supports_open_timeout = true
-              sock
-            rescue ArgumentError => e
-              raise if !(e.message.include?('unknown keyword: :open_timeout') || e.message.include?('wrong number of arguments (given 5, expected 2..4)'))
-              @tcpsocket_supports_open_timeout = false
+        if proxy? then
+          conn_addr = proxy_address
+          conn_port = proxy_port
+        else
+          conn_addr = conn_address
+          conn_port = port
+        end
 
-              # Fallback to Timeout.timeout if TCPSocket.open does not support open_timeout
+        debug "opening connection to #{conn_addr}:#{conn_port}..."
+        begin
+          s =
+            case @tcpsocket_supports_open_timeout
+            when nil, true
+              begin
+                # Use built-in timeout in TCPSocket.open if available
+                sock = TCPSocket.open(conn_addr, conn_port, @local_host, @local_port, open_timeout: @open_timeout)
+                @tcpsocket_supports_open_timeout = true
+                sock
+              rescue ArgumentError => e
+                raise if !(e.message.include?('unknown keyword: :open_timeout') || e.message.include?('wrong number of arguments (given 5, expected 2..4)'))
+                @tcpsocket_supports_open_timeout = false
+
+                # Fallback to Timeout.timeout if TCPSocket.open does not support open_timeout
+                Timeout.timeout(@open_timeout, Net::OpenTimeout) {
+                  TCPSocket.open(conn_addr, conn_port, @local_host, @local_port)
+                }
+              end
+            when false
+              # The current Ruby is known to not support TCPSocket(open_timeout:).
+              # Directly fall back to Timeout.timeout to avoid performance penalty incured by rescue.
               Timeout.timeout(@open_timeout, Net::OpenTimeout) {
                 TCPSocket.open(conn_addr, conn_port, @local_host, @local_port)
               }
             end
-          when false
-            # The current Ruby is known to not support TCPSocket(open_timeout:).
-            # Directly fall back to Timeout.timeout to avoid performance penalty incured by rescue.
-            Timeout.timeout(@open_timeout, Net::OpenTimeout) {
-              TCPSocket.open(conn_addr, conn_port, @local_host, @local_port)
-            }
-          end
-      rescue => e
-        e = Net::OpenTimeout.new(e) if e.is_a?(Errno::ETIMEDOUT) # for compatibility with previous versions
-        raise e, "Failed to open TCP connection to " +
-          "#{conn_addr}:#{conn_port} (#{e.message})"
-      end
-      s.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
-      debug "opened"
-      if use_ssl?
-        if proxy?
-          if @proxy_use_ssl
-            proxy_sock = OpenSSL::SSL::SSLSocket.new(s)
-            ssl_socket_connect(proxy_sock, @open_timeout)
-          else
-            proxy_sock = s
-          end
-          proxy_sock = BufferedIO.new(proxy_sock, read_timeout: @read_timeout,
-                                      write_timeout: @write_timeout,
-                                      continue_timeout: @continue_timeout,
-                                      debug_output: @debug_output)
-          buf = +"CONNECT #{conn_address}:#{@port} HTTP/#{HTTPVersion}\r\n" \
-            "Host: #{@address}:#{@port}\r\n"
-          if proxy_user
-            credential = ["#{proxy_user}:#{proxy_pass}"].pack('m0')
-            buf << "Proxy-Authorization: Basic #{credential}\r\n"
-          end
-          buf << "\r\n"
-          proxy_sock.write(buf)
-          HTTPResponse.read_new(proxy_sock).value
-          # assuming nothing left in buffers after successful CONNECT response
+        rescue => e
+          e = Net::OpenTimeout.new(e) if e.is_a?(Errno::ETIMEDOUT) # for compatibility with previous versions
+          raise e, "Failed to open TCP connection to " +
+            "#{conn_addr}:#{conn_port} (#{e.message})"
         end
+        s.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+        debug "opened"
+        if use_ssl?
+          if proxy?
+            if @proxy_use_ssl
+              proxy_sock = OpenSSL::SSL::SSLSocket.new(s)
+              ssl_socket_connect(proxy_sock, @open_timeout)
+            else
+              proxy_sock = s
+            end
+            proxy_sock = BufferedIO.new(proxy_sock, read_timeout: @read_timeout,
+                                        write_timeout: @write_timeout,
+                                        continue_timeout: @continue_timeout,
+                                        debug_output: @debug_output)
+            buf = +"CONNECT #{conn_address}:#{@port} HTTP/#{HTTPVersion}\r\n" \
+              "Host: #{@address}:#{@port}\r\n"
+            if proxy_user
+              credential = ["#{proxy_user}:#{proxy_pass}"].pack('m0')
+              buf << "Proxy-Authorization: Basic #{credential}\r\n"
+            end
+            buf << "\r\n"
+            proxy_sock.write(buf)
+            HTTPResponse.read_new(proxy_sock).value
+            # assuming nothing left in buffers after successful CONNECT response
+          end
 
-        ssl_parameters = Hash.new
-        iv_list = instance_variables
-        SSL_IVNAMES.each_with_index do |ivname, i|
-          if iv_list.include?(ivname)
-            value = instance_variable_get(ivname)
-            unless value.nil?
-              ssl_parameters[SSL_ATTRIBUTES[i]] = value
+          ssl_parameters = Hash.new
+          iv_list = instance_variables
+          SSL_IVNAMES.each_with_index do |ivname, i|
+            if iv_list.include?(ivname)
+              value = instance_variable_get(ivname)
+              unless value.nil?
+                ssl_parameters[SSL_ATTRIBUTES[i]] = value
+              end
             end
           end
-        end
-        @ssl_context.set_params(ssl_parameters)
-        unless @ssl_context.session_cache_mode.nil? # a dummy method on JRuby
-          @ssl_context.session_cache_mode =
-              OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
-                  OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
-        end
-        if @ssl_context.respond_to?(:session_new_cb) # not implemented under JRuby
-          @ssl_context.session_new_cb = proc {|sock, sess| @ssl_session = sess }
-        end
+          @ssl_context.set_params(ssl_parameters)
+          unless @ssl_context.session_cache_mode.nil? # a dummy method on JRuby
+            @ssl_context.session_cache_mode =
+                OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
+                    OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
+          end
+          if @ssl_context.respond_to?(:session_new_cb) # not implemented under JRuby
+            @ssl_context.session_new_cb = proc {|sock, sess| @ssl_session = sess }
+          end
 
-        # Still do the post_connection_check below even if connecting
-        # to IP address
-        verify_hostname = @ssl_context.verify_hostname
+          # Still do the post_connection_check below even if connecting
+          # to IP address
+          verify_hostname = @ssl_context.verify_hostname
 
-        # Server Name Indication (SNI) RFC 3546/6066
-        case @address
-        when Resolv::IPv4::Regex, Resolv::IPv6::Regex
-          # don't set SNI, as IP addresses in SNI is not valid
-          # per RFC 6066, section 3.
+          # Server Name Indication (SNI) RFC 3546/6066
+          case @address
+          when Resolv::IPv4::Regex, Resolv::IPv6::Regex
+            # don't set SNI, as IP addresses in SNI is not valid
+            # per RFC 6066, section 3.
 
-          # Avoid openssl warning
-          @ssl_context.verify_hostname = false
-        else
-          ssl_host_address = @address
+            # Avoid openssl warning
+            @ssl_context.verify_hostname = false
+          else
+            ssl_host_address = @address
+          end
+
+          debug "starting SSL for #{conn_addr}:#{conn_port}..."
+          s = OpenSSL::SSL::SSLSocket.new(s, @ssl_context)
+          s.sync_close = true
+          s.hostname = ssl_host_address if s.respond_to?(:hostname=) && ssl_host_address
+
+          if @ssl_session and
+             Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + @ssl_session.timeout
+            s.session = @ssl_session
+          end
+          ssl_socket_connect(s, @open_timeout)
+          if (@ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE) && verify_hostname
+            s.post_connection_check(@address)
+          end
+          debug "SSL established, protocol: #{s.ssl_version}, cipher: #{s.cipher[0]}"
         end
-
-        debug "starting SSL for #{conn_addr}:#{conn_port}..."
-        s = OpenSSL::SSL::SSLSocket.new(s, @ssl_context)
-        s.sync_close = true
-        s.hostname = ssl_host_address if s.respond_to?(:hostname=) && ssl_host_address
-
-        if @ssl_session and
-           Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + @ssl_session.timeout
-          s.session = @ssl_session
-        end
-        ssl_socket_connect(s, @open_timeout)
-        if (@ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE) && verify_hostname
-          s.post_connection_check(@address)
-        end
-        debug "SSL established, protocol: #{s.ssl_version}, cipher: #{s.cipher[0]}"
       end
       @socket = BufferedIO.new(s, read_timeout: @read_timeout,
                                write_timeout: @write_timeout,
