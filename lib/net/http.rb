@@ -660,6 +660,10 @@ module Net   #:nodoc:
   #   Sets the minimum SSL version.
   # - {#peer_cert}[rdoc-ref:Net::HTTP#peer_cert]:
   #   Returns the X509 certificate chain for the session's socket peer.
+  # - {:ssl_options}[rdoc-ref:Net::HTTP#ssl_options]:
+  #   Returns the SSL options.
+  # - {:ssl_options=}[rdoc-ref:Net::HTTP#ssl_options=]:
+  #   Sets the SSL options.
   # - {:ssl_version}[rdoc-ref:Net::HTTP#ssl_version]:
   #   Returns the SSL version.
   # - {:ssl_version=}[rdoc-ref:Net::HTTP#ssl_version=]:
@@ -1191,6 +1195,7 @@ module Net   #:nodoc:
 
       @use_ssl = false
       @ssl_context = nil
+      @ssl_options = nil
       @ssl_session = nil
       @sspi_enabled = false
       SSL_IVNAMES.each do |ivname|
@@ -1560,6 +1565,10 @@ module Net   #:nodoc:
     # Sets or returns the OpenSSL::PKey::RSA or OpenSSL::PKey::DSA object.
     attr_accessor :key
 
+    # Sets or returns the SSL options.
+    # See {OpenSSL::SSL::SSLContext#options=}[OpenSSL::SSL::SSL::Context#options=].
+    attr_accessor :ssl_options
+
     # Sets or returns the SSL timeout seconds.
     attr_accessor :ssl_timeout
 
@@ -1716,6 +1725,7 @@ module Net   #:nodoc:
             end
           end
         end
+        @ssl_context.options |= @ssl_options unless @ssl_options.nil?
         @ssl_context.set_params(ssl_parameters)
         unless @ssl_context.session_cache_mode.nil? # a dummy method on JRuby
           @ssl_context.session_cache_mode =
