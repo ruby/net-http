@@ -502,7 +502,7 @@ module Net::HTTPHeader
   # Returns an array of Range objects that represent
   # the value of field <tt>'Range'</tt>,
   # or +nil+ if there is no such field;
-  # see {Range request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#range-request-header]:
+  # see {Range request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Content-Range]:
   #
   #   req = Net::HTTP::Get.new(uri)
   #   req['Range'] = 'bytes=0-99,200-299,400-499'
@@ -558,7 +558,7 @@ module Net::HTTPHeader
   #   set_range(begin..length) -> range
   #
   # Sets the value for field <tt>'Range'</tt>;
-  # see {Range request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#range-request-header]:
+  # see {Range request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Content-Range]:
   #
   # With argument +length+:
   #
@@ -610,7 +610,7 @@ module Net::HTTPHeader
 
   # Returns the value of field <tt>'Content-Length'</tt> as an integer,
   # or +nil+ if there is no such field;
-  # see {Content-Length request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-length-request-header]:
+  # see {Content-Length request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Content-Length]:
   #
   #   res = Net::HTTP.get_response(hostname, '/nosuch/1')
   #   res.content_length # => 2
@@ -625,7 +625,7 @@ module Net::HTTPHeader
   end
 
   # Sets the value of field <tt>'Content-Length'</tt> to the given numeric;
-  # see {Content-Length response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-length-response-header]:
+  # see {Content-Length response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Content-Length_2]:
   #
   #   _uri = uri.dup
   #   hostname = _uri.hostname           # => "jsonplaceholder.typicode.com"
@@ -649,7 +649,7 @@ module Net::HTTPHeader
   # Returns +true+ if field <tt>'Transfer-Encoding'</tt>
   # exists and has value <tt>'chunked'</tt>,
   # +false+ otherwise;
-  # see {Transfer-Encoding response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#transfer-encoding-response-header]:
+  # see {Transfer-Encoding response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Transfer-Encoding_2]:
   #
   #   res = Net::HTTP.get_response(hostname, '/todos/1')
   #   res['Transfer-Encoding'] # => "chunked"
@@ -663,7 +663,7 @@ module Net::HTTPHeader
 
   # Returns a Range object representing the value of field
   # <tt>'Content-Range'</tt>, or +nil+ if no such field exists;
-  # see {Content-Range response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-range-response-header]:
+  # see {Content-Range response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Content-Range]:
   #
   #   res = Net::HTTP.get_response(hostname, '/todos/1')
   #   res['Content-Range'] # => nil
@@ -681,7 +681,7 @@ module Net::HTTPHeader
 
   # Returns the integer representing length of the value of field
   # <tt>'Content-Range'</tt>, or +nil+ if no such field exists;
-  # see {Content-Range response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-range-response-header]:
+  # see {Content-Range response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Content-Range]:
   #
   #   res = Net::HTTP.get_response(hostname, '/todos/1')
   #   res['Content-Range'] # => nil
@@ -696,7 +696,7 @@ module Net::HTTPHeader
   # Returns the {media type}[https://en.wikipedia.org/wiki/Media_type]
   # from the value of field <tt>'Content-Type'</tt>,
   # or +nil+ if no such field exists;
-  # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
+  # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Content-Type_2]:
   #
   #   res = Net::HTTP.get_response(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
@@ -718,7 +718,7 @@ module Net::HTTPHeader
   # {media type}[https://en.wikipedia.org/wiki/Media_type]
   # from the value of field <tt>'Content-Type'</tt>,
   # or +nil+ if no such field exists;
-  # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
+  # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Content-Type_2]:
   #
   #   res = Net::HTTP.get_response(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
@@ -733,7 +733,7 @@ module Net::HTTPHeader
   # {media type}[https://en.wikipedia.org/wiki/Media_type]
   # from the value of field <tt>'Content-Type'</tt>,
   # or +nil+ if no such field exists;
-  # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
+  # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Content-Type_2]:
   #
   #   res = Net::HTTP.get_response(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
@@ -748,7 +748,7 @@ module Net::HTTPHeader
 
   # Returns the trailing ('parameters') part of the value of field <tt>'Content-Type'</tt>,
   # or +nil+ if no such field exists;
-  # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-response-header]:
+  # see {Content-Type response header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Content-Type_2]:
   #
   #   res = Net::HTTP.get_response(hostname, '/todos/1')
   #   res['content-type'] # => "application/json; charset=utf-8"
@@ -767,7 +767,7 @@ module Net::HTTPHeader
 
   # Sets the value of field <tt>'Content-Type'</tt>;
   # returns the new value;
-  # see {Content-Type request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#content-type-request-header]:
+  # see {Content-Type request header}[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Content-Type]:
   #
   #   req = Net::HTTP::Get.new(uri)
   #   req.set_content_type('application/json') # => ["application/json"]
