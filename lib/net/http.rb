@@ -37,7 +37,7 @@ module Net   #:nodoc:
   # For information about \HTTP, see:
   #
   # - {Hypertext Transfer Protocol}[https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol].
-  # - {Technical overview}[https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Technical_overview].
+  # - {Technology}[https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Technology].
   #
   # == About the Examples
   #
