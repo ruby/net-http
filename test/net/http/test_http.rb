@@ -1399,6 +1399,45 @@ class TestNetHTTPPartialResponse < Test::Unit::TestCase
     http.ignore_eof = false
     assert_raise(EOFError) {http.get('/')}
   end
+
+  def test_deconstruct_keys
+    http = Net::HTTP.new('example.com', 443)
+    http.use_ssl = true
+
+    keys = http.deconstruct_keys(nil)
+    assert_equal 'example.com', keys[:address]
+    assert_equal 443, keys[:port]
+    assert_equal true, keys[:use_ssl?]
+    assert_equal false, keys[:started?]
+    assert_kind_of Numeric, keys[:read_timeout]
+    assert_kind_of Numeric, keys[:write_timeout]
+    assert_kind_of Numeric, keys[:open_timeout]
+  end
+
+  def test_deconstruct_keys_with_specific_keys
+    http = Net::HTTP.new('example.com', 80)
+
+    keys = http.deconstruct_keys([:address, :port, :use_ssl?])
+    assert_equal({address: 'example.com', port: 80, use_ssl?: false}, keys)
+  end
+
+  def test_pattern_matching
+    http = Net::HTTP.new('localhost', 3000)
+
+    begin
+      matched = instance_eval <<~RUBY, __FILE__, __LINE__ + 1
+        case http
+        in address: 'localhost', port: 3000, use_ssl?: false
+          true
+        else
+          false
+        end
+      RUBY
+      assert_equal true, matched
+    rescue SyntaxError
+      omit "Pattern matching requires Ruby 2.7+"
+    end
+  end
 end
 
 class TestNetHTTPInRactor < Test::Unit::TestCase
