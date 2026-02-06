@@ -659,7 +659,7 @@ module Net   #:nodoc:
   # - {:min_version=}[rdoc-ref:Net::HTTP#min_version=]:
   #   Sets the minimum SSL version.
   # - {#peer_cert}[rdoc-ref:Net::HTTP#peer_cert]:
-  #   Returns the X509 certificate chain for the session's socket peer.
+  #   Returns the X509 certificate for the session's socket peer.
   # - {:ssl_version}[rdoc-ref:Net::HTTP#ssl_version]:
   #   Returns the SSL version.
   # - {:ssl_version=}[rdoc-ref:Net::HTTP#ssl_version=]:
@@ -1591,7 +1591,7 @@ module Net   #:nodoc:
     # See {OpenSSL::SSL::SSLContext#verify_hostname=}[OpenSSL::SSL::SSL::Context#verify_hostname=].
     attr_accessor :verify_hostname
 
-    # Returns the X509 certificate chain (an array of strings)
+    # Returns the X509 certificate (an OpenSSL::X509::Certificate)
     # for the session's socket peer,
     # or +nil+ if none.
     def peer_cert
