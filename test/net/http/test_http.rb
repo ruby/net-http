@@ -1399,6 +1399,29 @@ class TestNetHTTPPartialResponse < Test::Unit::TestCase
     http.ignore_eof = false
     assert_raise(EOFError) {http.get('/')}
   end
+
+  def test_capitalized_headers
+    headers = { accept: '*/*' }
+    expected_raw_header = "Accept: */*\r\n"
+    @server.mount_proc('/') do |req, _res|
+      assert_includes(req.raw_header, expected_raw_header)
+    end
+
+    http = Net::HTTP.new(config('host'), config('port'))
+    http.get('/', headers)
+  end
+
+  def test_no_capitalized_headers
+    headers = { accept: '*/*' }
+    expected_raw_header = "accept: */*\r\n"
+    @server.mount_proc('/') do |req, _res|
+      assert_includes(req.raw_header, expected_raw_header)
+    end
+
+    http = Net::HTTP.new(config('host'), config('port'))
+    http.capitalize_headers = false
+    http.get('/', headers)
+  end
 end
 
 class TestNetHTTPInRactor < Test::Unit::TestCase
