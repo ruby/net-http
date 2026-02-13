@@ -81,6 +81,8 @@ res = Net::HTTP.post_form(uri, 'q' => ['ruby', 'perl'], 'max' => '50')
 puts res.body
 ```
 
+[For more information](https://docs.ruby-lang.org/en/4.0/Net/HTTP.html#public-class-methods)
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
