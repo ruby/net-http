@@ -81,7 +81,7 @@ res = Net::HTTP.post_form(uri, 'q' => ['ruby', 'perl'], 'max' => '50')
 puts res.body
 ```
 
-[For more information](https://docs.ruby-lang.org/en/4.0/Net/HTTP.html#public-class-methods)
+See the [documentation](https://docs.ruby-lang.org/en/master/Net/HTTP.html) for more details.
 
 ## Development
 
