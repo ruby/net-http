@@ -12,4 +12,12 @@ task :steep do
   sh "steep check"
 end
 
+namespace :rbs do
+  Rake::TestTask.new(:test) do |t|
+    t.libs << "test_sig"
+    t.ruby_opts << "-rtest_helper"
+    t.test_files = FileList["test_sig/test_*.rb"]
+  end
+end
+
 task :default => :test
