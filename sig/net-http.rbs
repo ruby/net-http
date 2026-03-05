@@ -14,9 +14,8 @@ module Net
   #
   # *   [Hypertext Transfer
   #     Protocol](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol).
-  # *   [Technical
-  #     overview](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Techni
-  #     cal_overview).
+  # *   [Technology](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Tec
+  #     hnology).
   #
   # ## About the Examples
   #
@@ -56,7 +55,7 @@ module Net
   # ## Strategies
   #
   # *   If you will make only a few GET requests, consider using
-  #     [OpenURI](rdoc-ref:OpenURI).
+  #     [OpenURI](https://docs.ruby-lang.org/en/master/OpenURI.html).
   # *   If you will make only a few requests of all kinds, consider using the
   #     various singleton convenience methods in this class. Each of the following
   #     methods automatically starts and finishes a
@@ -83,9 +82,8 @@ module Net
   # *   If performance is important, consider using sessions, which lower request
   #     overhead. This [session](rdoc-ref:Net::HTTP@Sessions) has multiple
   #     requests for [HTTP
-  #     methods](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request
-  #     _methods) and [WebDAV
-  #     methods](https://en.wikipedia.org/wiki/WebDAV#Implementation):
+  #     methods](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Method)
+  #     and [WebDAV methods](https://en.wikipedia.org/wiki/WebDAV#Implementation):
   #
   #         Net::HTTP.start(hostname) do |http|
   #           # Session started automatically before block execution.
@@ -120,9 +118,9 @@ module Net
   # scheme, hostname, path, query, and fragment; see [URI
   # syntax](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax).
   #
-  # A Ruby [URI::Generic](rdoc-ref:URI::Generic) object represents an internet
-  # URI. It provides, among others, methods `scheme`, `hostname`, `path`, `query`,
-  # and `fragment`.
+  # A Ruby [URI::Generic](https://docs.ruby-lang.org/en/master/URI/Generic.html)
+  # object represents an internet URI. It provides, among others, methods
+  # `scheme`, `hostname`, `path`, `query`, and `fragment`.
   #
   # ### Schemes
   #
@@ -212,8 +210,8 @@ module Net
   # single request:
   #
   # *   [HTTP
-  #     methods](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request
-  #     _methods):
+  #     methods](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Method)
+  #     :
   #
   #     *   #get, #request_get: GET.
   #     *   #head, #request_head: HEAD.
@@ -462,8 +460,8 @@ module Net
   # has header <code>'Content-Range'</code>.
   #
   # Otherwise decompression (or not) depends on the value of header
-  # [Content-Encoding](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#co
-  # ntent-encoding-response-header):
+  # [Content-Encoding](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Co
+  # ntent-Encoding_2):
   #
   # *   <code>'deflate'</code>, <code>'gzip'</code>, or <code>'x-gzip'</code>:
   #     decompresses the body and deletes the header.
@@ -475,7 +473,9 @@ module Net
   #
   # First, what's elsewhere. Class Net::HTTP:
   #
-  # *   Inherits from [class Object](rdoc-ref:Object@What-27s+Here).
+  # *   Inherits from [class
+  #     Object](https://docs.ruby-lang.org/en/master/Object.html#class-object-what
+  #     s-here).
   #
   # This is a categorized summary of methods and attributes.
   #
@@ -868,6 +868,35 @@ module Net
     #
     def self.post_form: (URI::HTTP url, Hash[String | Symbol, untyped] params) -> Net::HTTPResponse
 
+    # <!--
+    #   rdoc-file=lib/net/http.rb
+    #   - put(url, data, header = nil)
+    # -->
+    # Sends a PUT request to the server; returns a Net::HTTPResponse object.
+    #
+    # Argument `url` must be a URL; argument `data` must be a string:
+    #
+    #     _uri = uri.dup
+    #     _uri.path = '/posts'
+    #     data = '{"title": "foo", "body": "bar", "userId": 1}'
+    #     headers = {'content-type': 'application/json'}
+    #     res = Net::HTTP.put(_uri, data, headers) # => #<Net::HTTPCreated 201 Created readbody=true>
+    #     puts res.body
+    #
+    # Output:
+    #
+    #     {
+    #       "title": "foo",
+    #       "body": "bar",
+    #       "userId": 1,
+    #       "id": 101
+    #     }
+    #
+    # Related:
+    #
+    # *   Net::HTTP::Put: request class for HTTP method `PUT`.
+    # *   Net::HTTP#put: convenience method for HTTP method `PUT`.
+    #
     def self.put: (URI::HTTP url, String data, ?headers? header) -> Net::HTTPResponse
 
     # <!--
@@ -1029,8 +1058,38 @@ module Net
     #
     def self.new: (String address, ?Integer? port, ?String | Symbol | nil p_addr, ?Integer? p_port, ?String? p_user, ?String? p_pass, ?untyped? p_no_proxy, ?bool? p_use_ssl) -> Net::HTTP
 
+    # <!-- rdoc-file=lib/net/http.rb -->
+    # Allows to set the default configuration that will be used when creating a new
+    # connection.
+    #
+    # Example:
+    #
+    #     Net::HTTP.default_configuration = {
+    #       read_timeout: 1,
+    #       write_timeout: 1
+    #     }
+    #     http = Net::HTTP.new(hostname)
+    #     http.open_timeout   # => 60
+    #     http.read_timeout   # => 1
+    #     http.write_timeout  # => 1
+    #
     def self.default_configuration: () -> Hash[Symbol, untyped]?
 
+    # <!-- rdoc-file=lib/net/http.rb -->
+    # Allows to set the default configuration that will be used when creating a new
+    # connection.
+    #
+    # Example:
+    #
+    #     Net::HTTP.default_configuration = {
+    #       read_timeout: 1,
+    #       write_timeout: 1
+    #     }
+    #     http = Net::HTTP.new(hostname)
+    #     http.open_timeout   # => 60
+    #     http.read_timeout   # => 1
+    #     http.write_timeout  # => 1
+    #
     def self.default_configuration=: (Hash[Symbol, untyped]?) -> Hash[Symbol, untyped]?
 
     def self.socket_type: () -> singleton(Net::BufferedIO)
@@ -1126,7 +1185,7 @@ module Net
     # <!-- rdoc-file=lib/net/http.rb -->
     # Sets whether to determine the proxy from environment variable
     # '<code>ENV['http_proxy']</code>'; see {Proxy Using
-    # [ENV]('http_proxy')}[Net::HTTP@Proxy+Using+-27ENV-5B-27http_proxy-27-5D-27].
+    # [ENV]('http_proxy')}[Net::HTTP@Proxy+Using+ENVHTTPProxy].
     #
     attr_writer proxy_from_env: untyped
 
@@ -1151,7 +1210,8 @@ module Net
     attr_accessor proxy_pass: String?
 
     # <!-- rdoc-file=lib/net/http.rb -->
-    # Sets whether the proxy uses SSL; see [Proxy Server](rdoc-ref:Net::HTTP@Proxy+Server).
+    # Sets whether the proxy uses SSL; see [Proxy
+    # Server](rdoc-ref:Net::HTTP@Proxy+Server).
     #
     attr_writer proxy_use_ssl: bool?
 
@@ -1281,8 +1341,33 @@ module Net
     #
     attr_accessor continue_timeout: Float | Integer | nil
 
+    # <!-- rdoc-file=lib/net/http.rb -->
+    # Returns the encoding to use for the response body; see
+    # #response_body_encoding=.
+    #
     def response_body_encoding: () -> (Encoding | String | false | nil)
 
+    # <!--
+    #   rdoc-file=lib/net/http.rb
+    #   - response_body_encoding=(value)
+    # -->
+    # Sets the encoding to be used for the response body; returns the encoding.
+    #
+    # The given `value` may be:
+    #
+    # *   An Encoding object.
+    # *   The name of an encoding.
+    # *   An alias for an encoding name.
+    #
+    # See [Encoding](https://docs.ruby-lang.org/en/master/Encoding.html).
+    #
+    # Examples:
+    #
+    #     http = Net::HTTP.new(hostname)
+    #     http.response_body_encoding = Encoding::US_ASCII # => #<Encoding:US-ASCII>
+    #     http.response_body_encoding = 'US-ASCII'         # => "US-ASCII"
+    #     http.response_body_encoding = 'ASCII'            # => "ASCII"
+    #
     def response_body_encoding=: (Encoding | String | false | nil) -> (Encoding | String | false | nil)
 
     # <!-- rdoc-file=lib/net/http.rb -->
@@ -2424,8 +2509,14 @@ module Net
   # *   #each_value: Passes each string field value to the block.
   #
   module HTTPHeader : BasicObject
+    # <!-- rdoc-file=lib/net/http/header.rb -->
+    # The maximum length of HTTP header keys.
+    #
     MAX_KEY_LENGTH: Integer
 
+    # <!-- rdoc-file=lib/net/http/header.rb -->
+    # The maximum length of HTTP header values.
+    #
     MAX_FIELD_LENGTH: Integer
 
     # <!--
@@ -2644,7 +2735,7 @@ module Net
     #     "Cf-Ray"
     #
     # The capitalization is system-dependent; see [Case
-    # Mapping](rdoc-ref:case_mapping.rdoc).
+    # Mapping](https://docs.ruby-lang.org/en/master/case_mapping_rdoc.html).
     #
     # Returns an enumerator if no block is given.
     #
@@ -2989,7 +3080,8 @@ module Net
     # The resulting request is suitable for HTTP request `POST` or `PUT`.
     #
     # Argument `params` must be suitable for use as argument `enum` to
-    # [URI.encode_www_form](rdoc-ref:URI.encode_www_form).
+    # [URI.encode_www_form](https://docs.ruby-lang.org/en/master/URI.html#method-c-e
+    # ncode_www_form).
     #
     # With only argument `params` given, sets the body to a URL-encoded string with
     # the default separator <code>'&'</code>:
@@ -3039,8 +3131,9 @@ module Net
     # *   An IO stream opened for reading.
     #
     # Argument `params` should be an
-    # [Enumerable](rdoc-ref:Enumerable@Enumerable+in+Ruby+Classes) (method
-    # <code>params.map</code> will be called), and is often an array or hash.
+    # [Enumerable](https://docs.ruby-lang.org/en/master/Enumerable.html#module-Enume
+    # rable-label-Enumerable+in+Ruby+Classes) (method <code>params.map</code> will
+    # be called), and is often an array or hash.
     #
     # First, we set up a request:
     #
@@ -3298,12 +3391,9 @@ module Net
   #
   # *   Request body: optional.
   # *   Response body: yes.
-  # *   [Safe](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Safe_meth
-  #     ods): yes.
-  # *   [Idempotent](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Ide
-  #     mpotent_methods): yes.
-  # *   [Cacheable](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Cach
-  #     eable_methods): yes.
+  # *   [Safe](https://en.wikipedia.org/wiki/HTTP#Safe_method): yes.
+  # *   [Idempotent](https://en.wikipedia.org/wiki/HTTP#Idempotent_method): yes.
+  # *   [Cacheable](https://en.wikipedia.org/wiki/HTTP#Cacheable_method): yes.
   #
   # Related:
   #
@@ -3337,12 +3427,9 @@ module Net
   #
   # *   Request body: optional.
   # *   Response body: no.
-  # *   [Safe](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Safe_meth
-  #     ods): yes.
-  # *   [Idempotent](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Ide
-  #     mpotent_methods): yes.
-  # *   [Cacheable](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Cach
-  #     eable_methods): yes.
+  # *   [Safe](https://en.wikipedia.org/wiki/HTTP#Safe_method): yes.
+  # *   [Idempotent](https://en.wikipedia.org/wiki/HTTP#Idempotent_method): yes.
+  # *   [Cacheable](https://en.wikipedia.org/wiki/HTTP#Cacheable_method): yes.
   #
   # Related:
   #
@@ -3378,12 +3465,9 @@ module Net
   #
   # *   Request body: yes.
   # *   Response body: yes.
-  # *   [Safe](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Safe_meth
-  #     ods): no.
-  # *   [Idempotent](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Ide
-  #     mpotent_methods): no.
-  # *   [Cacheable](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Cach
-  #     eable_methods): yes.
+  # *   [Safe](https://en.wikipedia.org/wiki/HTTP#Safe_method): no.
+  # *   [Idempotent](https://en.wikipedia.org/wiki/HTTP#Idempotent_method): no.
+  # *   [Cacheable](https://en.wikipedia.org/wiki/HTTP#Cacheable_method): yes.
   #
   # Related:
   #
@@ -3420,12 +3504,9 @@ module Net
   #
   # *   Request body: yes.
   # *   Response body: yes.
-  # *   [Safe](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Safe_meth
-  #     ods): no.
-  # *   [Idempotent](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Ide
-  #     mpotent_methods): yes.
-  # *   [Cacheable](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Cach
-  #     eable_methods): no.
+  # *   [Safe](https://en.wikipedia.org/wiki/HTTP#Safe_method): no.
+  # *   [Idempotent](https://en.wikipedia.org/wiki/HTTP#Idempotent_method): yes.
+  # *   [Cacheable](https://en.wikipedia.org/wiki/HTTP#Cacheable_method): no.
   #
   # Related:
   #
@@ -3460,12 +3541,9 @@ module Net
   #
   # *   Request body: optional.
   # *   Response body: yes.
-  # *   [Safe](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Safe_meth
-  #     ods): no.
-  # *   [Idempotent](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Ide
-  #     mpotent_methods): yes.
-  # *   [Cacheable](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Cach
-  #     eable_methods): no.
+  # *   [Safe](https://en.wikipedia.org/wiki/HTTP#Safe_method): no.
+  # *   [Idempotent](https://en.wikipedia.org/wiki/HTTP#Idempotent_method): yes.
+  # *   [Cacheable](https://en.wikipedia.org/wiki/HTTP#Cacheable_method): no.
   #
   # Related:
   #
@@ -3498,12 +3576,9 @@ module Net
   #
   # *   Request body: optional.
   # *   Response body: yes.
-  # *   [Safe](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Safe_meth
-  #     ods): yes.
-  # *   [Idempotent](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Ide
-  #     mpotent_methods): yes.
-  # *   [Cacheable](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Cach
-  #     eable_methods): no.
+  # *   [Safe](https://en.wikipedia.org/wiki/HTTP#Safe_method): yes.
+  # *   [Idempotent](https://en.wikipedia.org/wiki/HTTP#Idempotent_method): yes.
+  # *   [Cacheable](https://en.wikipedia.org/wiki/HTTP#Cacheable_method): no.
   #
   # Related:
   #
@@ -3536,12 +3611,9 @@ module Net
   #
   # *   Request body: no.
   # *   Response body: yes.
-  # *   [Safe](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Safe_meth
-  #     ods): yes.
-  # *   [Idempotent](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Ide
-  #     mpotent_methods): yes.
-  # *   [Cacheable](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Cach
-  #     eable_methods): no.
+  # *   [Safe](https://en.wikipedia.org/wiki/HTTP#Safe_method): yes.
+  # *   [Idempotent](https://en.wikipedia.org/wiki/HTTP#Idempotent_method): yes.
+  # *   [Cacheable](https://en.wikipedia.org/wiki/HTTP#Cacheable_method): no.
   #
   # Related:
   #
@@ -3577,12 +3649,9 @@ module Net
   #
   # *   Request body: yes.
   # *   Response body: yes.
-  # *   [Safe](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Safe_meth
-  #     ods): no.
-  # *   [Idempotent](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Ide
-  #     mpotent_methods): no.
-  # *   [Cacheable](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Cach
-  #     eable_methods): no.
+  # *   [Safe](https://en.wikipedia.org/wiki/HTTP#Safe_method): no.
+  # *   [Idempotent](https://en.wikipedia.org/wiki/HTTP#Idempotent_method): no.
+  # *   [Cacheable](https://en.wikipedia.org/wiki/HTTP#Cacheable_method): no.
   #
   # Related:
   #
