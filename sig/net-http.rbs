@@ -761,7 +761,7 @@ module Net
     # -->
     # Like Net::HTTP.get, but writes the returned body to $stdout; returns `nil`.
     #
-    def self.get_print: (URI::Generic uri, ?headers header) -> void
+    def self.get_print: (URI::Generic uri, ?headers? header, ?Integer? port) -> void
                       | (String host, String path, ?Integer port) -> void
 
     # <!--
@@ -797,8 +797,8 @@ module Net
     # *   Net::HTTP::Get: request class for HTTP method `GET`.
     # *   Net::HTTP#get: convenience method for HTTP method `GET`.
     #
-    def self.get: (URI::Generic uri, ?headers header) -> String
-                | (String host, String path, ?Integer port) -> String
+    def self.get: (URI::HTTP uri, ?headers? header, ?Integer? port) -> String?
+                | (String host, String path, ?Integer port) -> String?
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -808,8 +808,9 @@ module Net
     # Like Net::HTTP.get, but returns a Net::HTTPResponse object instead of the body
     # string.
     #
-    def self.get_response: (URI::Generic uri, ?headers header) ?{ (Net::HTTPResponse) -> void } -> Net::HTTPResponse
-                         | (String host, String path, ?Integer port) -> Net::HTTPResponse
+    def self.get_response: (URI::HTTP uri, ?headers? header, ?Integer? port) ?{ (Net::HTTPResponse) -> void } -> Net::HTTPResponse
+                         | (String | URI::HTTP uri_or_host, ?String | headers? path_or_headers, ?Integer? port) ?{ (Net::HTTPResponse) -> void } -> Net::HTTPResponse
+                         | (String host, String path, ?Integer port) ?{ (Net::HTTPResponse) -> void } -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -840,7 +841,7 @@ module Net
     # *   Net::HTTP::Post: request class for HTTP method `POST`.
     # *   Net::HTTP#post: convenience method for HTTP method `POST`.
     #
-    def self.post: (URI::Generic url, String data, ?headers header) -> Net::HTTPResponse
+    def self.post: (URI::HTTP url, String data, ?headers? header) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -865,7 +866,9 @@ module Net
     #       "id": 101
     #     }
     #
-    def self.post_form: (URI::Generic url, Hash[String, untyped] params) -> Net::HTTPResponse
+    def self.post_form: (URI::HTTP url, Hash[String | Symbol, untyped] params) -> Net::HTTPResponse
+
+    def self.put: (URI::HTTP url, String data, ?headers? header) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -982,8 +985,8 @@ module Net
     # Note: If `port` is `nil` and <code>opts[:use_ssl]</code> is a truthy value,
     # the value passed to `new` is Net::HTTP.https_default_port, not `port`.
     #
-    def self.start: (String address, ?Integer? port, ?String | :ENV | nil p_addr, ?Integer? p_port, ?String? p_user, ?String? p_pass, ?Hash[Symbol, untyped]?, **untyped opt) -> Net::HTTP
-                  | [T] (String address, ?Integer? port, ?String | :ENV | nil p_addr, ?Integer? p_port, ?String? p_user, ?String? p_pass, ?Hash[Symbol, untyped]?, **untyped opt) { (Net::HTTP) -> T } -> T
+    def self.start: (String address, *untyped arg) -> Net::HTTP
+                  | [T] (String address, *untyped arg) { (Net::HTTP) -> T } -> T
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1024,7 +1027,13 @@ module Net
     # For proxy-defining arguments `p_addr` through `p_no_proxy`, see [Proxy
     # Server](rdoc-ref:Net::HTTP@Proxy+Server).
     #
-    def self.new: (String address, ?Integer? port, ?String | :ENV | nil p_addr, ?Integer? p_port, ?String? p_user, ?String? p_pass, ?untyped? p_no_proxy) -> Net::HTTP
+    def self.new: (String address, ?Integer? port, ?String | Symbol | nil p_addr, ?Integer? p_port, ?String? p_user, ?String? p_pass, ?untyped? p_no_proxy, ?bool? p_use_ssl) -> Net::HTTP
+
+    def self.default_configuration: () -> Hash[Symbol, untyped]?
+
+    def self.default_configuration=: (Hash[Symbol, untyped]?) -> Hash[Symbol, untyped]?
+
+    def self.socket_type: () -> singleton(Net::BufferedIO)
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1106,13 +1115,13 @@ module Net
     # Sets or returns the string local host used to establish the connection;
     # initially `nil`.
     #
-    attr_accessor local_host: String
+    attr_accessor local_host: String?
 
     # <!-- rdoc-file=lib/net/http.rb -->
     # Sets or returns the integer local port used to establish the connection;
     # initially `nil`.
     #
-    attr_accessor local_port: Integer
+    attr_accessor local_port: Integer?
 
     # <!-- rdoc-file=lib/net/http.rb -->
     # Sets whether to determine the proxy from environment variable
@@ -1140,6 +1149,11 @@ module Net
     # Sets the proxy password; see [Proxy Server](rdoc-ref:Net::HTTP@Proxy+Server).
     #
     attr_accessor proxy_pass: String?
+
+    # <!-- rdoc-file=lib/net/http.rb -->
+    # Sets whether the proxy uses SSL; see [Proxy Server](rdoc-ref:Net::HTTP@Proxy+Server).
+    #
+    attr_writer proxy_use_ssl: bool?
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1266,6 +1280,10 @@ module Net
     # in this many seconds it sends the request body.
     #
     attr_accessor continue_timeout: Float | Integer | nil
+
+    def response_body_encoding: () -> (Encoding | String | false | nil)
+
+    def response_body_encoding=: (Encoding | String | false | nil) -> (Encoding | String | false | nil)
 
     # <!-- rdoc-file=lib/net/http.rb -->
     # Sets or returns the numeric (Integer or Float) number of seconds to keep the
@@ -1487,7 +1505,7 @@ module Net
     # This class is obsolete.  You may pass these same parameters directly to
     # Net::HTTP.new.  See Net::HTTP.new for details of the arguments.
     #
-    def self.Proxy: (?interned p_addr, ?Integer? p_port, ?String? p_user, ?String? p_pass) -> untyped
+    def self.Proxy: (?interned p_addr, ?Integer? p_port, ?String? p_user, ?String? p_pass, ?bool? p_use_ssl) -> untyped
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1585,7 +1603,7 @@ module Net
     # *   Net::HTTP::Get: request class for HTTP method GET.
     # *   Net::HTTP.get: sends GET request, returns response body.
     #
-    def get: (String path, ?headers initheader, ?bot dest) ?{ (String body_segment) -> void } -> Net::HTTPResponse
+    def get: (String path, ?headers? initheader, ?untyped dest) ?{ (String body_segment) -> void } -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1605,7 +1623,7 @@ module Net
     #      ["content-type", ["application/json; charset=utf-8"]],
     #      ["connection", ["close"]]]
     #
-    def head: (String path, ?headers initheader) -> Net::HTTPResponse
+    def head: (String path, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1638,7 +1656,7 @@ module Net
     # *   Net::HTTP::Post: request class for HTTP method POST.
     # *   Net::HTTP.post: sends POST request, returns response body.
     #
-    def post: (String path, String data, ?headers initheader, ?bot dest) ?{ (String body_segment) -> void } -> Net::HTTPResponse
+    def post: (String | URI::HTTP path, String data, ?headers? initheader, ?untyped dest) ?{ (String body_segment) -> void } -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1666,7 +1684,7 @@ module Net
     #
     #     http.patch('/todos/1', data) # => #<Net::HTTPCreated 201 Created readbody=true>
     #
-    def patch: (String path, String data, ?headers initheader, ?bot dest) ?{ (String body_segment) -> void } -> Net::HTTPResponse
+    def patch: (String path, String data, ?headers? initheader, ?untyped dest) ?{ (String body_segment) -> void } -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1687,7 +1705,7 @@ module Net
     # *   Net::HTTP::Put: request class for HTTP method PUT.
     # *   Net::HTTP.put: sends PUT request, returns response body.
     #
-    def put: (String path, String data, ?headers initheader) -> Net::HTTPResponse
+    def put: (String | URI::HTTP path, String data, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1703,7 +1721,7 @@ module Net
     #     http = Net::HTTP.new(hostname)
     #     http.proppatch('/todos/1', data)
     #
-    def proppatch: (String path, String body, ?headers initheader) -> Net::HTTPResponse
+    def proppatch: (String path, String body, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1719,7 +1737,7 @@ module Net
     #     http = Net::HTTP.new(hostname)
     #     http.lock('/todos/1', data)
     #
-    def lock: (String path, String body, ?headers initheader) -> Net::HTTPResponse
+    def lock: (String path, String body, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1735,7 +1753,7 @@ module Net
     #     http = Net::HTTP.new(hostname)
     #     http.unlock('/todos/1', data)
     #
-    def unlock: (String path, String body, ?headers initheader) -> Net::HTTPResponse
+    def unlock: (String path, String body, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1750,7 +1768,7 @@ module Net
     #     http = Net::HTTP.new(hostname)
     #     http.options('/')
     #
-    def options: (String path, ?headers initheader) -> Net::HTTPResponse
+    def options: (String path, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1766,7 +1784,7 @@ module Net
     #     http = Net::HTTP.new(hostname)
     #     http.propfind('/todos/1', data)
     #
-    def propfind: (String path, ?untyped? body, ?headers initheader) -> Net::HTTPResponse
+    def propfind: (String path, ?untyped? body, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1781,7 +1799,7 @@ module Net
     #     http = Net::HTTP.new(hostname)
     #     http.delete('/todos/1')
     #
-    def delete: (String path, ?headers initheader) -> Net::HTTPResponse
+    def delete: (String path, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1796,7 +1814,7 @@ module Net
     #     http = Net::HTTP.new(hostname)
     #     http.move('/todos/1')
     #
-    def move: (String path, ?headers initheader) -> Net::HTTPResponse
+    def move: (String path, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1811,7 +1829,7 @@ module Net
     #     http = Net::HTTP.new(hostname)
     #     http.copy('/todos/1')
     #
-    def copy: (String path, ?headers initheader) -> Net::HTTPResponse
+    def copy: (String path, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1827,7 +1845,7 @@ module Net
     #     http.mkcol('/todos/1', data)
     #     http = Net::HTTP.new(hostname)
     #
-    def mkcol: (String path, ?untyped? body, ?headers initheader) -> Net::HTTPResponse
+    def mkcol: (String path, ?untyped? body, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1842,7 +1860,7 @@ module Net
     #     http = Net::HTTP.new(hostname)
     #     http.trace('/todos/1')
     #
-    def trace: (String path, ?headers initheader) -> Net::HTTPResponse
+    def trace: (String path, ?headers? initheader) -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1870,7 +1888,7 @@ module Net
     #
     #     #<Net::HTTPOK 200 OK readbody=false>
     #
-    def request_get: (String path, ?headers initheader) ?{ (Net::HTTPResponse response) -> void } -> Net::HTTPResponse
+    def request_get: (String | URI::HTTP path, ?headers? initheader) ?{ (Net::HTTPResponse response) -> void } -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1885,7 +1903,7 @@ module Net
     #     http = Net::HTTP.new(hostname)
     #     http.head('/todos/1') # => #<Net::HTTPOK 200 OK readbody=true>
     #
-    def request_head: (String path, ?headers initheader) ?{ (Net::HTTPResponse response) -> void } -> Net::HTTPResponse
+    def request_head: (String path, ?headers? initheader) ?{ (Net::HTTPResponse response) -> void } -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -1914,9 +1932,9 @@ module Net
     #
     #     "{\n  \"xyzzy\": \"\",\n  \"id\": 201\n}"
     #
-    def request_post: (String path, String data, ?headers initheader) ?{ (Net::HTTPResponse response) -> void } -> Net::HTTPResponse
+    def request_post: (String path, String data, ?headers? initheader) ?{ (Net::HTTPResponse response) -> void } -> Net::HTTPResponse
 
-    def request_put: (String path, String data, ?headers initheader) ?{ (Net::HTTPResponse response) -> void } -> Net::HTTPResponse
+    def request_put: (String path, String data, ?headers? initheader) ?{ (Net::HTTPResponse response) -> void } -> Net::HTTPResponse
 
     # <!--
     #   rdoc-file=lib/net/http.rb
@@ -2001,7 +2019,7 @@ module Net
     #
     #     #<Net::HTTPOK 200 OK readbody=false>
     #
-    def request: (Net::HTTPRequest req, ?String? body) ?{ (Net::HTTPResponse response) -> void } -> Net::HTTPResponse
+    def request: (Net::HTTPGenericRequest req, ?String? body) ?{ (Net::HTTPResponse response) -> void } -> Net::HTTPResponse
   end
 
   # <!-- rdoc-file=lib/net/http/generic_request.rb -->
@@ -2052,7 +2070,7 @@ module Net
     #   - new(m, reqbody, resbody, uri_or_path, initheader = nil)
     # -->
     #
-    def initialize: (String m, boolish reqbody, boolish resbody, URI::Generic | String uri_or_path, ?headers initheader) -> void
+    def initialize: (String m, boolish reqbody, boolish resbody, URI::HTTP | String uri_or_path, ?headers? initheader) -> void
 
     # <!-- rdoc-file=lib/net/http/generic_request.rb -->
     # Returns the string method name for the request:
@@ -2077,7 +2095,7 @@ module Net
     #     # => #<URI::HTTPS https://jsonplaceholder.typicode.com/>
     #     Net::HTTP::Get.new('example.com').uri # => nil
     #
-    attr_reader uri: URI::Generic
+    attr_reader uri: URI::Generic?
 
     # <!-- rdoc-file=lib/net/http/generic_request.rb -->
     # Returns `false` if the request's header <code>'Accept-Encoding'</code> has
@@ -2406,12 +2424,16 @@ module Net
   # *   #each_value: Passes each string field value to the block.
   #
   module HTTPHeader : BasicObject
+    MAX_KEY_LENGTH: Integer
+
+    MAX_FIELD_LENGTH: Integer
+
     # <!--
     #   rdoc-file=lib/net/http/header.rb
     #   - initialize_http_header(initheader)
     # -->
     #
-    def initialize_http_header: (Hash[untyped, untyped] initheader) -> void
+    def initialize_http_header: (Hash[untyped, untyped]? initheader) -> void
 
     def size: () -> Integer
 
@@ -2533,9 +2555,8 @@ module Net
     #     res.fetch('Nosuch', 'Foo')     # => "Foo"
     #     res.fetch('Nosuch')            # Raises KeyError.
     #
-    def fetch: (interned key) -> String
-             | (interned key, untyped) -> untyped
-             | (interned key) { (String) -> untyped } -> untyped
+    def fetch: (interned key, *untyped args) -> untyped
+             | (interned key, *untyped args) { (String) -> untyped } -> untyped
 
     # <!--
     #   rdoc-file=lib/net/http/header.rb
@@ -2664,7 +2685,7 @@ module Net
     #     req.delete('Accept') # => ["*/*"]
     #     req.delete('Nosuch') # => nil
     #
-    def delete: (interned key) -> (Array[String] | nil)
+    def delete: (String | Symbol key) -> (Array[String] | nil)
 
     # <!--
     #   rdoc-file=lib/net/http/header.rb
@@ -2677,7 +2698,7 @@ module Net
     #     req.key?('Accept') # => true
     #     req.key?('Nosuch') # => false
     #
-    def key?: (interned key) -> bool
+    def key?: (String | Symbol key) -> bool
 
     # <!--
     #   rdoc-file=lib/net/http/header.rb
@@ -2721,7 +2742,7 @@ module Net
     #   - capitalize(name)
     # -->
     #
-    def capitalize: (interned name) -> String
+    def capitalize: (String | Symbol name) -> String
 
     public
 
@@ -2770,7 +2791,7 @@ module Net
     #
     # Net::HTTPHeader#range= is an alias for Net::HTTPHeader#set_range.
     #
-    def set_range: (Range[Integer] | Numeric r, ?Integer? e) -> Range[Integer]
+    def set_range: (Range[Integer] | Numeric? r, ?Integer? e) -> (Range[Integer] | Numeric | nil)
 
     # <!--
     #   rdoc-file=lib/net/http/header.rb
@@ -2948,7 +2969,7 @@ module Net
     # Net::HTTPHeader#content_type= is an alias for
     # Net::HTTPHeader#set_content_type.
     #
-    def set_content_type: (interned `type`, ?Hash[untyped, untyped] params) -> void
+    def set_content_type: (String | Symbol `type`, ?Hash[untyped, untyped] params) -> void
 
     # <!--
     #   rdoc-file=lib/net/http/header.rb
@@ -3255,8 +3276,7 @@ module Net
     # to enable compression of the response body unless Accept-Encoding or Range are
     # supplied in `initheader`.
     #
-    def initialize: (String path, ?headers initheader) -> void
-                  | (URI::Generic uri, ?headers initheader) -> void
+    def initialize: (String | URI::HTTP path, ?headers? initheader) -> void
   end
 
   # <!-- rdoc-file=lib/net/http/requests.rb -->
@@ -3936,7 +3956,7 @@ module Net
     # <!-- rdoc-file=lib/net/http/response.rb -->
     # The HTTP version supported by the server.
     #
-    attr_reader http_version: String
+    attr_reader http_version: String?
 
     # <!-- rdoc-file=lib/net/http/response.rb -->
     # The HTTP result code string. For example, '302'.  You can also determine the
@@ -3948,7 +3968,7 @@ module Net
     # <!-- rdoc-file=lib/net/http/response.rb -->
     # The HTTP result message sent by the server. For example, 'Not Found'.
     #
-    attr_reader message: String
+    attr_reader message: String?
 
     # <!-- rdoc-file=lib/net/http/response.rb -->
     # The HTTP result message sent by the server. For example, 'Not Found'.
@@ -3978,7 +3998,7 @@ module Net
 
     def error!: () -> untyped
 
-    def error_type: () -> (Net::HTTPError | Net::HTTPServerException | Net::HTTPRetriableError | Net::HTTPFatalError)
+    def error_type: () -> (singleton(Net::HTTPError) | singleton(Net::HTTPClientException) | singleton(Net::HTTPRetriableError) | singleton(Net::HTTPFatalError))
 
     # <!--
     #   rdoc-file=lib/net/http/response.rb
@@ -3988,7 +4008,7 @@ module Net
     #
     def value: () -> (nil | untyped)
 
-    def uri=: (URI::Generic uri) -> void
+    def uri=: (URI::Generic? uri) -> void
 
     interface _Dest
       def <<: (String) -> void
@@ -4026,9 +4046,9 @@ module Net
     #       end
     #     }
     #
-    def read_body: () -> String
-                 | (_Dest dest) -> String
-                 | () { (String) -> void } -> String
+    def read_body: () -> String?
+                 | (_Dest dest) -> String?
+                 | () { (String) -> void } -> String?
 
     # <!--
     #   rdoc-file=lib/net/http/response.rb
@@ -4049,7 +4069,7 @@ module Net
     #     "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"delectus aut autem\",\n  \"completed\": false\n}"
     #     nil
     #
-    def body: () -> String
+    def body: () -> String?
 
     # <!--
     #   rdoc-file=lib/net/http/response.rb
@@ -4073,7 +4093,7 @@ module Net
   class HTTPUnknownResponse < HTTPResponse
     HAS_BODY: bool
 
-    EXCEPTION_TYPE: Net::HTTPError
+    EXCEPTION_TYPE: singleton(Net::HTTPError)
   end
 
   # <!-- rdoc-file=lib/net/http/responses.rb -->
@@ -4091,7 +4111,7 @@ module Net
   class HTTPInformation < HTTPResponse
     HAS_BODY: bool
 
-    EXCEPTION_TYPE: Net::HTTPError
+    EXCEPTION_TYPE: singleton(Net::HTTPError)
   end
 
   # <!-- rdoc-file=lib/net/http/responses.rb -->
@@ -4109,7 +4129,7 @@ module Net
   class HTTPSuccess < HTTPResponse
     HAS_BODY: bool
 
-    EXCEPTION_TYPE: Net::HTTPError
+    EXCEPTION_TYPE: singleton(Net::HTTPError)
   end
 
   # <!-- rdoc-file=lib/net/http/responses.rb -->
@@ -4127,7 +4147,7 @@ module Net
   class HTTPRedirection < HTTPResponse
     HAS_BODY: bool
 
-    EXCEPTION_TYPE: Net::HTTPRetriableError
+    EXCEPTION_TYPE: singleton(Net::HTTPRetriableError)
   end
 
   # <!-- rdoc-file=lib/net/http/responses.rb -->
@@ -4144,7 +4164,7 @@ module Net
   class HTTPClientError < HTTPResponse
     HAS_BODY: bool
 
-    EXCEPTION_TYPE: untyped
+    EXCEPTION_TYPE: singleton(Net::HTTPClientException)
   end
 
   # <!-- rdoc-file=lib/net/http/responses.rb -->
@@ -4161,7 +4181,7 @@ module Net
   class HTTPServerError < HTTPResponse
     HAS_BODY: bool
 
-    EXCEPTION_TYPE: Net::HTTPFatalError
+    EXCEPTION_TYPE: singleton(Net::HTTPFatalError)
   end
 
   # <!-- rdoc-file=lib/net/http/responses.rb -->
@@ -4483,7 +4503,7 @@ module Net
   #     s).
   # *   [Wikipedia](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#300).
   #
-  HTTPMultipleChoice: HTTPMultipleChoices
+  class HTTPMultipleChoice = HTTPMultipleChoices
 
   # <!-- rdoc-file=lib/net/http/responses.rb -->
   # Response class for `Moved Permanently` responses (status code 301).
@@ -5549,6 +5569,20 @@ module Net
 
   HTTP::STATUS_CODES: Hash[Integer, String]
 
+  class HTTPMovedTemporarily = HTTPFound
+
+  class HTTPRequestTimeOut = HTTPRequestTimeout
+
+  class HTTPRequestEntityTooLarge = HTTPPayloadTooLarge
+
+  class HTTPRequestURITooLong = HTTPURITooLong
+
+  class HTTPRequestURITooLarge = HTTPRequestURITooLong
+
+  class HTTPRequestedRangeNotSatisfiable = HTTPRangeNotSatisfiable
+
+  class HTTPGatewayTimeOut = HTTPGatewayTimeout
+
   # <!-- rdoc-file=lib/net/http/exceptions.rb -->
   # Net::HTTP exception class. You cannot use Net::HTTPExceptions directly;
   # instead, you must use its subclasses.
@@ -5569,10 +5603,12 @@ module Net
     include Net::HTTPExceptions
   end
 
-  class HTTPServerException < ProtoServerError
+  class HTTPClientException < ProtoServerError
     # We cannot use the name "HTTPServerError", it is the name of the response.
     include Net::HTTPExceptions
   end
+
+  class HTTPServerException = HTTPClientException
 
   class HTTPFatalError < ProtoFatalError
     include Net::HTTPExceptions
