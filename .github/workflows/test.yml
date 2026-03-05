@@ -26,6 +26,8 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
     - name: Install dependencies
       run: bundle install
+      env:
+        BUNDLE_WITHOUT: sig
     - name: Run test
       run: rake test
     - name: Build
