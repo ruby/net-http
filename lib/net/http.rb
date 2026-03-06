@@ -761,11 +761,23 @@ module Net   #:nodoc:
     # Like Net::HTTP.get, but writes the returned body to $stdout;
     # returns +nil+.
     def HTTP.get_print(uri_or_host, path_or_headers = nil, port = nil)
-      get_response(uri_or_host, path_or_headers, port) {|res|
-        res.read_body do |chunk|
-          $stdout.print chunk
-        end
-      }
+      if path_or_headers && !path_or_headers.is_a?(Hash)
+        host = uri_or_host #: String
+        path = path_or_headers #: String
+        get_response(host, path, port) {|res|
+          res.read_body do |chunk|
+            $stdout.print chunk
+          end
+        }
+      else
+        uri = uri_or_host #: URI::HTTP
+        headers = path_or_headers #: headers?
+        get_response(uri, headers) {|res|
+          res.read_body do |chunk|
+            $stdout.print chunk
+          end
+        }
+      end
       nil
     end
 
@@ -802,7 +814,15 @@ module Net   #:nodoc:
     # - Net::HTTP#get: convenience method for \HTTP method +GET+.
     #
     def HTTP.get(uri_or_host, path_or_headers = nil, port = nil)
-      get_response(uri_or_host, path_or_headers, port).body
+      if path_or_headers && !path_or_headers.is_a?(Hash)
+        host = uri_or_host #: String
+        path = path_or_headers #: String
+        get_response(host, path, port).body
+      else
+        uri = uri_or_host #: URI::HTTP
+        headers = path_or_headers #: headers?
+        get_response(uri, headers).body
+      end
     end
 
     # :call-seq:
@@ -813,15 +833,16 @@ module Net   #:nodoc:
     # instead of the body string.
     def HTTP.get_response(uri_or_host, path_or_headers = nil, port = nil, &block)
       if path_or_headers && !path_or_headers.is_a?(Hash)
-        host = uri_or_host
-        path = path_or_headers
+        host = uri_or_host #: String
+        path = path_or_headers #: String
         new(host, port || HTTP.default_port).start {|http|
           return http.request_get(path, &block)
         }
       else
-        uri = uri_or_host
-        headers = path_or_headers
-        start(uri.hostname, uri.port,
+        uri = uri_or_host #: URI::HTTP
+        headers = path_or_headers #: headers?
+        hostname = uri.hostname or raise ArgumentError, "no host component for URI"
+        start(hostname, uri.port,
               :use_ssl => uri.scheme == 'https') {|http|
           return http.request_get(uri, headers, &block)
         }
@@ -855,7 +876,8 @@ module Net   #:nodoc:
     # - Net::HTTP#post: convenience method for \HTTP method +POST+.
     #
     def HTTP.post(url, data, header = nil)
-      start(url.hostname, url.port,
+      hostname = url.hostname or raise ArgumentError, "no host component for URI"
+      start(hostname, url.port,
             :use_ssl => url.scheme == 'https' ) {|http|
         http.post(url, data, header)
       }
@@ -884,8 +906,11 @@ module Net   #:nodoc:
     def HTTP.post_form(url, params)
       req = Post.new(url)
       req.form_data = params
-      req.basic_auth url.user, url.password if url.user
-      start(url.hostname, url.port,
+      if user = url.user
+        req.basic_auth(user, url.password.to_s)
+      end
+      hostname = url.hostname or raise ArgumentError, "no host component for URI"
+      start(hostname, url.port,
             :use_ssl => url.scheme == 'https' ) {|http|
         http.request(req)
       }
@@ -918,7 +943,8 @@ module Net   #:nodoc:
     # - Net::HTTP#put: convenience method for \HTTP method +PUT+.
     #
     def HTTP.put(url, data, header = nil)
-      start(url.hostname, url.port,
+      hostname = url.hostname or raise ArgumentError, "no host component for URI"
+      start(hostname, url.port,
             :use_ssl => url.scheme == 'https' ) {|http|
         http.put(url, data, header)
       }
@@ -1054,14 +1080,22 @@ module Net   #:nodoc:
         if opt[:use_ssl]
           opt = {verify_mode: OpenSSL::SSL::VERIFY_PEER}.update(opt)
         end
-        http.methods.grep(/\A(\w+)=\z/) do |meth|
-          key = $1.to_sym
-          opt.key?(key) or next
+        http.methods.grep(/\A(\w+)=\z/).each do |meth|
+          match = /\A(\w+)=\z/.match(meth.to_s)
+          next unless match
+          key = match[1]
+          next unless key
+          key = key.to_sym
+          next unless opt.key?(key)
           http.__send__(meth, opt[key])
         end
       end
 
-      http.start(&block)
+      if block
+        http.start(&block)
+      else
+        http.start
+      end
     end
 
     class << HTTP
@@ -1098,7 +1132,7 @@ module Net   #:nodoc:
     # see {Proxy Server}[rdoc-ref:Net::HTTP@Proxy+Server].
     #
     def HTTP.new(address, port = nil, p_addr = :ENV, p_port = nil, p_user = nil, p_pass = nil, p_no_proxy = nil, p_use_ssl = nil)
-      http = super address, port
+      http = newobj(address, port)
 
       if proxy_class? then # from Net::HTTP::Proxy()
         http.proxy_from_env = @proxy_from_env
@@ -1107,14 +1141,14 @@ module Net   #:nodoc:
         http.proxy_user     = @proxy_user
         http.proxy_pass     = @proxy_pass
         http.proxy_use_ssl  = @proxy_use_ssl
-      elsif p_addr == :ENV then
+      elsif p_addr.is_a?(Symbol) && p_addr == :ENV then
         http.proxy_from_env = true
       else
-        if p_addr && p_no_proxy && !URI::Generic.use_proxy?(address, address, port, p_no_proxy)
+        if p_addr && p_no_proxy && !URI::Generic.use_proxy?(address, address, port || default_port, p_no_proxy)
           p_addr = nil
           p_port = nil
         end
-        http.proxy_address = p_addr
+        http.proxy_address = p_addr&.to_s
         http.proxy_port    = p_port || default_port
         http.proxy_user    = p_user
         http.proxy_pass    = p_pass
@@ -1347,7 +1381,12 @@ module Net   #:nodoc:
     #   http.finish
     #
     def ipaddr
-      started? ?  @socket.io.peeraddr[3] : @ipaddr
+      if started?
+        socket = @socket or return @ipaddr
+        socket.io.peeraddr[3]
+      else
+        @ipaddr
+      end
     end
 
     # Sets the IP address for the connection:
@@ -1416,7 +1455,9 @@ module Net   #:nodoc:
     #   http.get('/todos/1') # Raises Net::ReadTimeout.
     #
     def read_timeout=(sec)
-      @socket.read_timeout = sec if @socket
+      if (socket = @socket)
+        socket.read_timeout = sec
+      end
       @read_timeout = sec
     end
 
@@ -1440,7 +1481,9 @@ module Net   #:nodoc:
     #   http.post(_uri.path, data, headers) # Raises Net::WriteTimeout.
     #
     def write_timeout=(sec)
-      @socket.write_timeout = sec if @socket
+      if (socket = @socket)
+        socket.write_timeout = sec
+      end
       @write_timeout = sec
     end
 
@@ -1453,7 +1496,9 @@ module Net   #:nodoc:
     # If the \HTTP object does not receive a response in this many seconds
     # it sends the request body.
     def continue_timeout=(sec)
-      @socket.continue_timeout = sec if @socket
+      if (socket = @socket)
+        socket.continue_timeout = sec
+      end
       @continue_timeout = sec
     end
 
@@ -1595,10 +1640,11 @@ module Net   #:nodoc:
     # for the session's socket peer,
     # or +nil+ if none.
     def peer_cert
-      if not use_ssl? or not @socket
+      socket = @socket
+      if !use_ssl? || !socket
         return nil
       end
-      @socket.io.peer_cert
+      socket.io.peer_cert
     end
 
     # Starts an \HTTP session.
@@ -1676,7 +1722,8 @@ module Net   #:nodoc:
       begin
         s = timeouted_connect(conn_addr, conn_port)
       rescue => e
-        if (defined?(IO::TimeoutError) && e.is_a?(IO::TimeoutError)) || e.is_a?(Errno::ETIMEDOUT)  # for compatibility with previous versions
+        timeout_error = IO.const_get(:TimeoutError, false) if IO.const_defined?(:TimeoutError, false)
+        if (timeout_error && e.is_a?(timeout_error)) || e.is_a?(Errno::ETIMEDOUT)  # for compatibility with previous versions
           e = Net::OpenTimeout.new(e)
         end
         raise e, "Failed to open TCP connection to " +
@@ -1718,19 +1765,23 @@ module Net   #:nodoc:
             end
           end
         end
-        @ssl_context.set_params(ssl_parameters)
-        unless @ssl_context.session_cache_mode.nil? # a dummy method on JRuby
-          @ssl_context.session_cache_mode =
+        ssl_context = @ssl_context or raise OpenSSL::SSL::SSLError, 'SSL context not initialized'
+        ssl_context.set_params(ssl_parameters)
+        unless ssl_context.session_cache_mode.nil? # a dummy method on JRuby
+          ssl_context.session_cache_mode =
               OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
                   OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
         end
-        if @ssl_context.respond_to?(:session_new_cb) # not implemented under JRuby
-          @ssl_context.session_new_cb = proc {|sock, sess| @ssl_session = sess }
+        if ssl_context.respond_to?(:session_new_cb) # not implemented under JRuby
+          ssl_context.session_new_cb = ->(socket_or_pair) do
+            socket, session = Array(socket_or_pair)
+            @ssl_session = session || socket.session
+          end
         end
 
         # Still do the post_connection_check below even if connecting
         # to IP address
-        verify_hostname = @ssl_context.verify_hostname
+        verify_hostname = ssl_context.verify_hostname
 
         # Server Name Indication (SNI) RFC 3546/6066
         case @address
@@ -1739,25 +1790,26 @@ module Net   #:nodoc:
           # per RFC 6066, section 3.
 
           # Avoid openssl warning
-          @ssl_context.verify_hostname = false
+          ssl_context.verify_hostname = false
         else
           ssl_host_address = @address
         end
 
         debug "starting SSL for #{conn_addr}:#{conn_port}..."
-        s = OpenSSL::SSL::SSLSocket.new(s, @ssl_context)
+        s = OpenSSL::SSL::SSLSocket.new(s, ssl_context)
         s.sync_close = true
         s.hostname = ssl_host_address if s.respond_to?(:hostname=) && ssl_host_address
 
-        if @ssl_session and
-           Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + @ssl_session.timeout
-          s.session = @ssl_session
+        if (ssl_session = @ssl_session) &&
+           Process.clock_gettime(Process::CLOCK_REALTIME) < ssl_session.time.to_f + ssl_session.timeout
+          s.session = ssl_session
         end
         ssl_socket_connect(s, @open_timeout)
-        if (@ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE) && verify_hostname
+        if (ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE) && verify_hostname
           s.post_connection_check(@address)
         end
-        debug "SSL established, protocol: #{s.ssl_version}, cipher: #{s.cipher[0]}"
+        cipher = s.cipher
+        debug "SSL established, protocol: #{s.ssl_version}, cipher: #{cipher ? cipher[0] : nil}"
       end
       @socket = BufferedIO.new(s, read_timeout: @read_timeout,
                                write_timeout: @write_timeout,
@@ -1785,11 +1837,13 @@ module Net   #:nodoc:
     private_constant :TCP_SOCKET_NEW_HAS_OPEN_TIMEOUT
 
     def timeouted_connect(conn_addr, conn_port)
+      conn_addr = conn_addr or raise ArgumentError, "missing connection address"
+      conn_port = conn_port or raise ArgumentError, "missing connection port"
       if TCP_SOCKET_NEW_HAS_OPEN_TIMEOUT
-        TCPSocket.open(conn_addr, conn_port, @local_host, @local_port, open_timeout: @open_timeout)
+        TCPSocket.new(conn_addr, conn_port, @local_host, @local_port, open_timeout: @open_timeout)
       else
         Timeout.timeout(@open_timeout, Net::OpenTimeout) {
-          TCPSocket.open(conn_addr, conn_port, @local_host, @local_port)
+          TCPSocket.new(conn_addr, conn_port, @local_host, @local_port)
         }
       end
     end
@@ -1801,7 +1855,9 @@ module Net   #:nodoc:
 
     def do_finish
       @started = false
-      @socket.close if @socket
+      if (socket = @socket)
+        socket.close
+      end
       @socket = nil
     end
     private :do_finish
@@ -1832,13 +1888,14 @@ module Net   #:nodoc:
       Class.new(self) {
         @is_proxy_class = true
 
-        if p_addr == :ENV then
+        case p_addr
+        when :ENV
           @proxy_from_env = true
           @proxy_address = nil
           @proxy_port    = nil
         else
           @proxy_from_env = false
-          @proxy_address = p_addr
+          @proxy_address = String(p_addr)
           @proxy_port    = p_port || default_port
         end
 
@@ -2011,13 +2068,14 @@ module Net   #:nodoc:
     # - Net::HTTP.get: sends GET request, returns response body.
     #
     def get(path, initheader = nil, dest = nil, &block) # :yield: +body_segment+
-      res = nil
-
       request(Get.new(path, initheader)) {|r|
-        r.read_body dest, &block
-        res = r
+        if block
+          raise ArgumentError, 'both arg and block given for HTTP method' if dest
+          r.read_body(&block)
+        else
+          r.read_body(dest)
+        end
       }
-      res
     end
 
     # Sends a HEAD request to the server;
@@ -2404,7 +2462,7 @@ module Net   #:nodoc:
         }
       end
       if proxy_user()
-        req.proxy_basic_auth proxy_user(), proxy_pass() unless use_ssl?
+        req.proxy_basic_auth proxy_user(), proxy_pass().to_s unless use_ssl?
       end
       req.set_body_internal body
       res = transport_request(req, &block)
@@ -2420,12 +2478,14 @@ module Net   #:nodoc:
     # Executes a request which uses a representation
     # and returns its body.
     def send_entity(path, data, initheader, dest, type, &block)
-      res = nil
       request(type.new(path, initheader), data) {|r|
-        r.read_body dest, &block
-        res = r
+        if block
+          raise ArgumentError, 'both arg and block given for HTTP method' if dest
+          r.read_body(&block)
+        else
+          r.read_body(dest)
+        end
       }
-      res
     end
 
     # :stopdoc:
@@ -2437,24 +2497,29 @@ module Net   #:nodoc:
       begin
         begin_transport req
         res = catch(:response) {
+          socket = @socket or raise IOError, 'HTTP session not yet started'
           begin
-            req.exec @socket, @curr_http_version, edit_path(req.path)
+            req.exec socket, @curr_http_version, edit_path(req.path)
           rescue Errno::EPIPE
             # Failure when writing full request, but we can probably
             # still read the received response.
           end
 
-          begin
-            res = HTTPResponse.read_new(@socket)
+          res = HTTPResponse.read_new(socket)
+          loop do
             res.decode_content = req.decode_content
             res.body_encoding = @response_body_encoding
             res.ignore_eof = @ignore_eof
-          end while res.kind_of?(HTTPInformation)
+            break unless res.kind_of?(HTTPInformation)
+            res = HTTPResponse.read_new(socket)
+          end
 
-          res.uri = req.uri
+          response = res or raise Net::HTTPBadResponse, 'no HTTP response'
+          response.uri = req.uri if req.uri
 
-          res
+          response
         }
+        res = res or raise Net::HTTPBadResponse, 'no HTTP response'
         res.reading_body(@socket, req.response_body_permitted?) {
           if block_given?
             count = max_retries # Don't restart in the middle of a download
@@ -2470,12 +2535,16 @@ module Net   #:nodoc:
              Timeout::Error => exception
         if count < max_retries && IDEMPOTENT_METHODS_.include?(req.method)
           count += 1
-          @socket.close if @socket
+          if (socket = @socket)
+            socket.close
+          end
           debug "Conn close because of error #{exception}, and retry"
           retry
         end
         debug "Conn close because of error #{exception}"
-        @socket.close if @socket
+        if (socket = @socket)
+          socket.close
+        end
         raise
       end
 
@@ -2483,21 +2552,25 @@ module Net   #:nodoc:
       res
     rescue => exception
       debug "Conn close because of error #{exception}"
-      @socket.close if @socket
+      if (socket = @socket)
+        socket.close
+      end
       raise exception
     end
 
     def begin_transport(req)
-      if @socket.closed?
+      socket = @socket or raise IOError, 'HTTP session not yet started'
+      if socket.closed?
         connect
       elsif @last_communicated
-        if @last_communicated + @keep_alive_timeout < Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        last_communicated = @last_communicated
+        if last_communicated && last_communicated + @keep_alive_timeout < Process.clock_gettime(Process::CLOCK_MONOTONIC)
           debug 'Conn close because of keep_alive_timeout'
-          @socket.close
+          socket.close
           connect
-        elsif @socket.io.to_io.wait_readable(0) && @socket.eof?
+        elsif socket.io.to_io.wait_readable(0) && socket.eof?
           debug "Conn close because of EOF"
-          @socket.close
+          socket.close
           connect
         end
       end
@@ -2511,19 +2584,20 @@ module Net   #:nodoc:
     end
 
     def end_transport(req, res)
-      @curr_http_version = res.http_version
+      @curr_http_version = res.http_version || HTTPVersion
       @last_communicated = nil
-      if @socket.closed?
+      socket = @socket or raise IOError, 'HTTP session not yet started'
+      if socket.closed?
         debug 'Conn socket closed'
       elsif not res.body and @close_on_empty_response
         debug 'Conn close'
-        @socket.close
+        socket.close
       elsif keep_alive?(req, res)
         debug 'Conn keep-alive'
         @last_communicated = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       else
         debug 'Conn close'
-        @socket.close
+        socket.close
       end
     end
 
@@ -2539,7 +2613,7 @@ module Net   #:nodoc:
     def sspi_auth?(res)
       return false unless @sspi_enabled
       if res.kind_of?(HTTPProxyAuthenticationRequired) and
-          proxy? and res["Proxy-Authenticate"].include?("Negotiate")
+          proxy? and res["Proxy-Authenticate"].to_s.include?("Negotiate")
         begin
           require 'win32/sspi'
           true
@@ -2579,9 +2653,9 @@ module Net   #:nodoc:
 
     # Adds a message to debugging output
     def debug(msg)
-      return unless @debug_output
-      @debug_output << msg
-      @debug_output << "\n"
+      output = @debug_output or return
+      output << msg
+      output << "\n"
     end
 
     alias_method :D, :debug
