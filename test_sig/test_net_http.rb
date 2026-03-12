@@ -55,9 +55,11 @@ module WithServer
   end
 end
 
-class NetSingletonTest < NetHTTPRBSTestCase
+class NetSingletonTest < Test::Unit::TestCase
+  include RBS::UnitTest::TypeAssertions
   include WithServer
 
+  library "net-http"
   testing "singleton(::Net::HTTP)"
 
   def test_get
@@ -125,9 +127,11 @@ class NetSingletonTest < NetHTTPRBSTestCase
    end
 end
 
-class NetInstanceTest < NetHTTPRBSTestCase
+class NetInstanceTest < Test::Unit::TestCase
+  include RBS::UnitTest::TypeAssertions
   include WithServer
 
+  library "net-http"
   testing "::Net::HTTP"
 
   class TestNet < Net::HTTP
@@ -397,9 +401,11 @@ class NetInstanceTest < NetHTTPRBSTestCase
   end
 end
 
-class TestHTTPRequest < NetHTTPRBSTestCase
+class TestHTTPRequest < Test::Unit::TestCase
+  include RBS::UnitTest::TypeAssertions
   include WithServer
 
+  library "net-http"
   testing "::Net::HTTPRequest"
 
   def test_inspect
@@ -544,7 +550,10 @@ class TestHTTPRequest < NetHTTPRBSTestCase
   end
 end
 
-class TestSingletonNetHTTPResponse < NetHTTPRBSTestCase
+class TestSingletonNetHTTPResponse < Test::Unit::TestCase
+  include RBS::UnitTest::TypeAssertions
+
+  library "net-http"
   testing "singleton(::Net::HTTPResponse)"
 
   def test_body_permitted_?
@@ -553,9 +562,11 @@ class TestSingletonNetHTTPResponse < NetHTTPRBSTestCase
   end
 end
 
-class TestInstanceNetHTTPResponse < NetHTTPRBSTestCase
+class TestInstanceNetHTTPResponse < Test::Unit::TestCase
+  include RBS::UnitTest::TypeAssertions
   include WithServer
 
+  library "net-http"
   testing "::Net::HTTPResponse"
 
   class Foo
