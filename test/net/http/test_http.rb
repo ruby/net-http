@@ -243,14 +243,11 @@ class TestNetHTTP < Test::Unit::TestCase
   end
 
   def test_failure_message_includes_failed_domain_and_port
-    # hostname to be included in the error message
-    host = Struct.new(:to_s).new("<example>")
-    port = 2119
-    # hack to let TCPSocket.open fail
-    def host.to_str; raise SocketError, "open failure"; end
-    uri = Struct.new(:scheme, :hostname, :port).new("http", host, port)
-    assert_raise_with_message(SocketError, /#{host}:#{port}/) do
-      TestNetHTTPUtils.clean_http_proxy_env{ Net::HTTP.get(uri) }
+    begin
+      Net::HTTP.get(URI.parse("http://example.invalid"))
+      fail "should have raised"
+    rescue => e
+      assert_includes e.message, "example.invalid:80"
     end
   end
 
