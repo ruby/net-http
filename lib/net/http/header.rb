@@ -183,11 +183,19 @@ module Net::HTTPHeader
   MAX_KEY_LENGTH = 1024
   # The maximum length of HTTP header values.
   MAX_FIELD_LENGTH = 65536
+  MAX_HEADER_LENGTH = 1024 * 1024 # 1 MiB
 
   def initialize_http_header(initheader) #:nodoc:
     @header = {}
     return unless initheader
+
+    total_header_size = 0
     initheader.each do |key, value|
+      total_header_size += (key.to_s.bytesize + (value ? value.to_s.bytesize : 0))
+      if total_header_size > MAX_HEADER_LENGTH
+        raise ArgumentError, "headers too large (#{total_header_size} bytes exceeds #{MAX_HEADER_LENGTH} bytes limit)"
+      end
+
       warn "net/http: duplicated HTTP header: #{key}", uplevel: 3 if key?(key) and $VERBOSE
       if value.nil?
         warn "net/http: nil HTTP header: #{key}", uplevel: 3 if $VERBOSE
