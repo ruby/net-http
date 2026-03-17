@@ -34,6 +34,8 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: ruby
+        env:
+          BUNDLE_WITHOUT: sig
 
       - name: Publish to RubyGems
         uses: rubygems/release-gem@e9a6361a0b14562539327c2a02373edc56dd3169 # v1.1.4
