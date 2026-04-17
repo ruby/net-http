@@ -1,0 +1,5 @@
+source "https://rubygems.org"
+
+gem "rake"
+gem "rbs", "~> 3.9"
+gem "steep"

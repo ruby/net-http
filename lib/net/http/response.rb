@@ -159,7 +159,8 @@ class Net::HTTPResponse
       str = sock.readline
       m = /\AHTTP(?:\/(\d+\.\d+))?\s+(\d\d\d)(?:\s+(.*))?\z/in.match(str) or
         raise Net::HTTPBadResponse, "wrong status line: #{str.dump}"
-      m.captures
+      code = m[2] or raise Net::HTTPBadResponse, "wrong status line: #{str.dump}"
+      [m[1], code, m[3]]
     end
 
     def response_class(code)
@@ -169,20 +170,30 @@ class Net::HTTPResponse
     end
 
     def each_response_header(sock)
-      key = value = nil
+      key = nil #: String?
+      value = nil #: String?
       while true
         line = sock.readuntil("\n", true).sub(/\s+\z/, '')
         break if line.empty?
-        if line[0] == ?\s or line[0] == ?\t and value
-          value << ' ' unless value.empty?
-          value << line.strip
+        if (line[0] == ?\s || line[0] == ?\t) && value.is_a?(String)
+          current_value = value
+          current_value << ' ' unless current_value.empty?
+          current_value << line.strip
         else
-          yield key, value if key
+          if key.is_a?(String) && value.is_a?(String)
+            current_key = key
+            current_value = value
+            yield current_key, current_value
+          end
           key, value = line.strip.split(/\s*:\s*/, 2)
           raise Net::HTTPBadResponse, 'wrong header line format' if value.nil?
         end
       end
-      yield key, value if key
+      if key.is_a?(String) && value.is_a?(String)
+        current_key = key
+        current_value = value
+        yield current_key, current_value
+      end
     end
   end
 
@@ -274,7 +285,9 @@ class Net::HTTPResponse
 
   def error!   #:nodoc:
     message = @code
-    message = "#{message} #{@message.dump}" if @message
+    if detail = @message
+      message = "#{message} #{detail.dump}"
+    end
     raise error_type().new(message, self)
   end
 
@@ -369,16 +382,15 @@ class Net::HTTPResponse
     @read = true
     return if @body.nil?
 
-    case enc = @body_encoding
-    when Encoding, false, nil
-      # Encoding: force given encoding
-      # false/nil: do not force encoding
-    else
-      # other value: detect encoding from body
-      enc = detect_encoding(@body)
+    enc = @body_encoding
+    if enc.nil? || enc == false
+      # nil/false: do not force encoding
+    elsif !enc.is_a?(Encoding)
+      body = @body or return
+      enc = detect_encoding(body)
     end
 
-    @body.force_encoding(enc) if enc
+    @body&.force_encoding(enc) if enc
 
     @body
   end
@@ -466,10 +478,10 @@ class Net::HTTPResponse
     require 'strscan'
     ss = StringScanner.new(str)
     if ss.scan_until(/<meta[\t\n\f\r ]*/)
-      attrs = {} # attribute_list
+      attrs = {} #: Hash[String, bool] # attribute_list
       got_pragma = false
-      need_pragma = nil
-      charset = nil
+      need_pragma = nil #: bool?
+      charset = nil #: String | Encoding | nil
 
       # step: Attributes
       while attr = get_attribute(ss)
@@ -495,7 +507,13 @@ class Net::HTTPResponse
       return if need_pragma.nil?
       return if need_pragma && !got_pragma
 
-      charset = Encoding.find(charset) rescue nil
+      if charset.is_a?(String)
+        begin
+          charset = Encoding.find(charset)
+        rescue ArgumentError
+          charset = nil
+        end
+      end
       return unless charset
       charset = Encoding::UTF_8 if charset == Encoding::UTF_16
       return charset # tentative
@@ -509,7 +527,7 @@ class Net::HTTPResponse
       ss.getch
       return nil
     end
-    name = ss.scan(/[^=\t\n\f\r \/>]*/)
+    name = ss.scan(/[^=\t\n\f\r \/>]*/).to_s
     name.downcase!
     raise if name.empty?
     ss.skip(/[\t\n\f\r ]*/)
@@ -521,18 +539,18 @@ class Net::HTTPResponse
     case ss.peek(1)
     when '"'
       ss.getch
-      value = ss.scan(/[^"]+/)
+      value = ss.scan(/[^"]+/).to_s
       value.downcase!
       ss.getch
     when "'"
       ss.getch
-      value = ss.scan(/[^']+/)
+      value = ss.scan(/[^']+/).to_s
       value.downcase!
       ss.getch
     when '>'
       value = ''
     else
-      value = ss.scan(/[^\t\n\f\r >]+/)
+      value = ss.scan(/[^\t\n\f\r >]+/).to_s
       value.downcase!
     end
     [name, value]
@@ -556,16 +574,18 @@ class Net::HTTPResponse
   # bytes in the range may not be a complete deflate block.
 
   def inflater # :nodoc:
-    return yield @socket unless Net::HTTP::HAVE_ZLIB
-    return yield @socket unless @decode_content
-    return yield @socket if self['content-range']
+    socket = @socket or raise IOError, 'attempt to read body out of block'
+    return yield socket unless Net::HTTP::HAVE_ZLIB
+    return yield socket unless @decode_content
+    return yield socket if self['content-range']
 
     v = self['content-encoding']
     case v&.downcase
     when 'deflate', 'gzip', 'x-gzip' then
       self.delete 'content-encoding'
 
-      inflate_body_io = Inflater.new(@socket)
+      inflate_body_io = Inflater.new(socket)
+      success = false
 
       begin
         yield inflate_body_io
@@ -584,9 +604,9 @@ class Net::HTTPResponse
     when 'none', 'identity' then
       self.delete 'content-encoding'
 
-      yield @socket
+      yield socket
     else
-      yield @socket
+      yield socket
     end
   end
 
@@ -597,19 +617,19 @@ class Net::HTTPResponse
         return
       end
 
-      @socket = inflate_body_io
+      body_io = inflate_body_io
 
       clen = content_length()
       if clen
-        @socket.read clen, dest, @ignore_eof
+        body_io.read clen, dest, @ignore_eof
         return
       end
       clen = range_length()
       if clen
-        @socket.read clen, dest
+        body_io.read clen, dest
         return
       end
-      @socket.read_all dest
+      body_io.read_all dest
     end
   end
 
@@ -621,9 +641,10 @@ class Net::HTTPResponse
   # See RFC 2616 section 3.6.1 for definitions
 
   def read_chunked(dest, chunk_data_io) # :nodoc:
+    socket = @socket or raise IOError, 'attempt to read body out of block'
     total = 0
     while true
-      line = @socket.readline
+      line = socket.readline
       hexlen = line.slice(/[0-9a-fA-F]+/) or
           raise Net::HTTPBadResponse, "wrong chunk size line: #{line}"
       len = hexlen.hex
@@ -632,16 +653,17 @@ class Net::HTTPResponse
         chunk_data_io.read len, dest
       ensure
         total += len
-        @socket.read 2   # \r\n
+        socket.read 2   # \r\n
       end
     end
-    until @socket.readline.empty?
+    until socket.readline.empty?
       # none
     end
   end
 
   def stream_check
-    raise IOError, 'attempt to read body out of block' if @socket.nil? || @socket.closed?
+    socket = @socket or raise IOError, 'attempt to read body out of block'
+    raise IOError, 'attempt to read body out of block' if socket.closed?
   end
 
   def procdest(dest, block)
@@ -736,4 +758,3 @@ class Net::HTTPResponse
   end
 
 end
-
