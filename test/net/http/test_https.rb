@@ -39,6 +39,7 @@ class TestNetHTTPS < Test::Unit::TestCase
     http.request_get("/") {|res|
       assert_equal($test_net_http_data, res.body)
       assert_equal(SERVER_CERT.to_der, http.peer_cert.to_der)
+      assert_equal(SERVER_CERT.to_der, http.peer_cert_chain.first.to_der)
     }
   end
 
@@ -50,6 +51,7 @@ class TestNetHTTPS < Test::Unit::TestCase
     http.request_get("/") {|res|
       assert_equal($test_net_http_data, res.body)
       assert_equal(SERVER_CERT.to_der, http.peer_cert.to_der)
+      assert_equal(SERVER_CERT.to_der, http.peer_cert_chain.first.to_der)
     }
   end
 
