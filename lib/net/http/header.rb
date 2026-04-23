@@ -185,7 +185,7 @@ module Net::HTTPHeader
   MAX_FIELD_LENGTH = 65536
 
   def initialize_http_header(initheader) #:nodoc:
-    @header = {}
+    @header = {} #: Hash[String, Array[String]]
     return unless initheader
     initheader.each do |key, value|
       warn "net/http: duplicated HTTP header: #{key}", uplevel: 3 if key?(key) and $VERBOSE
@@ -202,7 +202,7 @@ module Net::HTTPHeader
         if value.count("\r\n") > 0
           raise ArgumentError, "header #{key} has field value #{value.inspect}, this cannot include CR/LF"
         end
-        @header[key.downcase.to_s] = [value]
+        @header[key.to_s.downcase] = [value]
       end
     end
   end
@@ -224,7 +224,7 @@ module Net::HTTPHeader
   # Note that some field values may be retrieved via convenience methods;
   # see {Getters}[rdoc-ref:Net::HTTPHeader@Getters].
   def [](key)
-    a = @header[key.downcase.to_s] or return nil
+    a = @header[String(key).downcase] or return nil
     a.join(', ')
   end
 
@@ -241,7 +241,7 @@ module Net::HTTPHeader
   # see {Setters}[rdoc-ref:Net::HTTPHeader@Setters].
   def []=(key, val)
     unless val
-      @header.delete key.downcase.to_s
+      @header.delete String(key).downcase
       return val
     end
     set_field(key, val)
@@ -261,7 +261,7 @@ module Net::HTTPHeader
   #   req.get_fields('Foo') # => ["bar", "baz", "baz", "bam"]
   #
   def add_field(key, val)
-    stringified_downcased_key = key.downcase.to_s
+    stringified_downcased_key = String(key).downcase
     if @header.key?(stringified_downcased_key)
       append_field_value(@header[stringified_downcased_key], val)
     else
@@ -273,15 +273,15 @@ module Net::HTTPHeader
   private def set_field(key, val)
     case val
     when Enumerable
-      ary = []
+      ary = [] #: Array[String]
       append_field_value(ary, val)
-      @header[key.downcase.to_s] = ary
+      @header[String(key).downcase] = ary
     else
       val = val.to_s # for compatibility use to_s instead of to_str
       if val.b.count("\r\n") > 0
         raise ArgumentError, 'header field value cannot include CR/LF'
       end
-      @header[key.downcase.to_s] = [val]
+      @header[String(key).downcase] = [val]
     end
   end
 
@@ -308,7 +308,7 @@ module Net::HTTPHeader
   #   res.get_fields('Nosuch')     # => nil
   #
   def get_fields(key)
-    stringified_downcased_key = key.downcase.to_s
+    stringified_downcased_key = String(key).downcase
     return nil unless @header[stringified_downcased_key]
     @header[stringified_downcased_key].dup
   end
@@ -343,7 +343,17 @@ module Net::HTTPHeader
   #   res.fetch('Nosuch')            # Raises KeyError.
   #
   def fetch(key, *args, &block)   #:yield: +key+
-    a = @header.fetch(key.downcase.to_s, *args, &block)
+    key = String(key).downcase
+    a = if (value = @header[key])
+      value
+    elsif block
+      handler = block
+      return handler.call(key)
+    elsif args.empty?
+      @header.fetch(key)
+    else
+      return args.first
+    end
     a.kind_of?(Array) ? a.join(', ') : a
   end
 
@@ -366,7 +376,7 @@ module Net::HTTPHeader
   #
   # Net::HTTPHeader#each is an alias for Net::HTTPHeader#each_header.
   def each_header   #:yield: +key+, +value+
-    block_given? or return enum_for(__method__) { @header.size }
+    block_given? or return enum_for(:each_header) { @header.size }
     @header.each do |k,va|
       yield k, va.join(', ')
     end
@@ -393,8 +403,11 @@ module Net::HTTPHeader
   #
   # Net::HTTPHeader#each_name is an alias for Net::HTTPHeader#each_key.
   def each_name(&block)   #:yield: +key+
-    block_given? or return enum_for(__method__) { @header.size }
-    @header.each_key(&block)
+    block_given? or return enum_for(:each_name) { @header.size }
+    handler = block or return enum_for(:each_name) { @header.size }
+    @header.each_key do |key|
+      handler.call(key)
+    end
   end
 
   alias each_key each_name
@@ -419,7 +432,7 @@ module Net::HTTPHeader
   #
   # Returns an enumerator if no block is given.
   def each_capitalized_name  #:yield: +key+
-    block_given? or return enum_for(__method__) { @header.size }
+    block_given? or return enum_for(:each_capitalized_name) { @header.size }
     @header.each_key do |k|
       yield capitalize(k)
     end
@@ -440,7 +453,7 @@ module Net::HTTPHeader
   #
   # Returns an enumerator if no block is given.
   def each_value   #:yield: +value+
-    block_given? or return enum_for(__method__) { @header.size }
+    block_given? or return enum_for(:each_value) { @header.size }
     @header.each_value do |va|
       yield va.join(', ')
     end
@@ -455,7 +468,7 @@ module Net::HTTPHeader
   #   req.delete('Nosuch') # => nil
   #
   def delete(key)
-    @header.delete(key.downcase.to_s)
+    @header.delete(String(key).downcase)
   end
 
   # Returns +true+ if the field for the case-insensitive +key+ exists, +false+ otherwise:
@@ -465,7 +478,7 @@ module Net::HTTPHeader
   #   req.key?('Nosuch') # => false
   #
   def key?(key)
-    @header.key?(key.downcase.to_s)
+    @header.key?(String(key).downcase)
   end
 
   # Returns a hash of the key/value pairs:
@@ -486,7 +499,7 @@ module Net::HTTPHeader
   #
   # Net::HTTPHeader#canonical_each is an alias for Net::HTTPHeader#each_capitalized.
   def each_capitalized
-    block_given? or return enum_for(__method__) { @header.size }
+    block_given? or return enum_for(:each_capitalized) { @header.size }
     @header.each do |k,v|
       yield capitalize(k), v.join(', ')
     end
@@ -524,7 +537,7 @@ module Net::HTTPHeader
       raise Net::HTTPHeaderSyntaxError, "invalid syntax for byte-ranges-specifier: '#{value}'"
     end
 
-    byte_range_set = $1
+    byte_range_set = $1.to_s
     result = byte_range_set.split(/,/).map {|spec|
       m = /(\d+)?\s*-\s*(\d+)?/i.match(spec) or
               raise Net::HTTPHeaderSyntaxError, "invalid byte-range-spec: '#{spec}'"
@@ -582,10 +595,14 @@ module Net::HTTPHeader
       @header.delete 'range'
       return r
     end
-    r = (r...r+e) if e
+    if e
+      first = Integer(r) or raise TypeError, 'Range/Integer is required'
+      length = Integer(e) or raise TypeError, 'Range/Integer is required'
+      r = first...(first + length)
+    end
     case r
     when Numeric
-      n = r.to_i
+      n = Integer(r)
       rangestr = (n > 0 ? "0-#{n-1}" : "-#{-n}")
     when Range
       first = r.first
@@ -619,7 +636,7 @@ module Net::HTTPHeader
   #
   def content_length
     return nil unless key?('Content-Length')
-    len = self['Content-Length'].slice(/\d+/) or
+    len = self['Content-Length'].to_s.slice(/\d+/) or
         raise Net::HTTPHeaderSyntaxError, 'wrong Content-Length format'
     len.to_i
   end
@@ -726,7 +743,7 @@ module Net::HTTPHeader
   #
   def main_type
     return nil unless @header['content-type']
-    self['Content-Type'].split(';').first.to_s.split('/')[0].to_s.strip
+    self['Content-Type'].to_s.split(';').first.to_s.split('/')[0].to_s.strip
   end
 
   # Returns the trailing ('subtype') part of the
@@ -741,7 +758,7 @@ module Net::HTTPHeader
   #
   def sub_type
     return nil unless @header['content-type']
-    _, sub = *self['Content-Type'].split(';').first.to_s.split('/')
+    _, sub = *self['Content-Type'].to_s.split(';').first.to_s.split('/')
     return nil unless sub
     sub.strip
   end
@@ -755,11 +772,12 @@ module Net::HTTPHeader
   #   res.type_params     # => {"charset"=>"utf-8"}
   #
   def type_params
-    result = {}
+    result = {} #: Hash[String, String]
     list = self['Content-Type'].to_s.split(';')
     list.shift
     list.each do |param|
       k, v = *param.split('=', 2)
+      next unless k && v
       result[k.strip] = v.strip
     end
     result
@@ -774,7 +792,7 @@ module Net::HTTPHeader
   #
   # Net::HTTPHeader#content_type= is an alias for Net::HTTPHeader#set_content_type.
   def set_content_type(type, params = {})
-    @header['content-type'] = [type + params.map{|k,v|"; #{k}=#{v}"}.join('')]
+    @header['content-type'] = [type.to_s + params.map{|k,v|"; #{k}=#{v}"}.join('')]
   end
 
   alias content_type= set_content_type
