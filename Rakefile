@@ -8,6 +8,11 @@ Rake::TestTask.new(:test) do |t|
   t.test_files = FileList["test/**/test_*.rb"]
 end
 
+desc "Type check with Steep"
+task :steep do
+  sh "steep check"
+end
+
 namespace :rbs do
   Rake::TestTask.new(:test) do |t|
     t.libs << "test_sig"
