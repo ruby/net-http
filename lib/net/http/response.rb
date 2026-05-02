@@ -465,7 +465,7 @@ class Net::HTTPResponse
   def scanning_meta(str)
     require 'strscan'
     ss = StringScanner.new(str)
-    if ss.scan_until(/<meta[\t\n\f\r ]*/)
+    while ss.scan_until(/<meta[\t\n\f\r ]*/)
       attrs = {} # attribute_list
       got_pragma = false
       need_pragma = nil
@@ -492,11 +492,11 @@ class Net::HTTPResponse
       end
 
       # step: Processing
-      return if need_pragma.nil?
-      return if need_pragma && !got_pragma
+      next if need_pragma.nil?
+      next if need_pragma && !got_pragma
 
       charset = Encoding.find(charset) rescue nil
-      return unless charset
+      next unless charset
       charset = Encoding::UTF_8 if charset == Encoding::UTF_16
       return charset # tentative
     end
@@ -521,19 +521,16 @@ class Net::HTTPResponse
     case ss.peek(1)
     when '"'
       ss.getch
-      value = ss.scan(/[^"]+/)
-      value.downcase!
+      value = ss.scan(/[^"]+/)&.downcase
       ss.getch
     when "'"
       ss.getch
-      value = ss.scan(/[^']+/)
-      value.downcase!
+      value = ss.scan(/[^']+/)&.downcase
       ss.getch
     when '>'
       value = ''
     else
-      value = ss.scan(/[^\t\n\f\r >]+/)
-      value.downcase!
+      value = ss.scan(/[^\t\n\f\r >]+/)&.downcase
     end
     [name, value]
   end
