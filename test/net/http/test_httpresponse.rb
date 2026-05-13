@@ -639,35 +639,6 @@ EOS
     assert_not_same  uri, response.uri
   end
 
-  def test_ensure_zero_space_does_not_regress
-    io = dummy_io(<<EOS)
-HTTP/1.1 200OK
-Content-Length: 5
-Connection: close
-
-hello
-EOS
-
-    assert_raise Net::HTTPBadResponse do
-      Net::HTTPResponse.read_new(io)
-    end
-  end
-
-  def test_allow_trailing_space_after_status
-    io = dummy_io(<<EOS)
-HTTP/1.1 200\s
-Content-Length: 5
-Connection: close
-
-hello
-EOS
-
-    res = Net::HTTPResponse.read_new(io)
-    assert_equal('1.1', res.http_version)
-    assert_equal('200', res.code)
-    assert_equal('', res.message)
-  end
-
   def test_normal_status_line
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
@@ -683,9 +654,81 @@ EOS
     assert_equal('OK', res.message)
   end
 
-  def test_allow_empty_reason_code
+  def test_reject_status_line_without_version
     io = dummy_io(<<EOS)
-HTTP/1.1 200
+HTTP 200 OK
+Content-Length: 5
+Connection: close
+
+hello
+EOS
+
+    assert_raise Net::HTTPBadResponse do
+      Net::HTTPResponse.read_new(io)
+    end
+  end
+
+  def test_reject_status_line_with_multidigit_version
+    io = dummy_io(<<EOS)
+HTTP/1.10 200 OK
+Content-Length: 5
+Connection: close
+
+hello
+EOS
+
+    assert_raise Net::HTTPBadResponse do
+      Net::HTTPResponse.read_new(io)
+    end
+  end
+
+  def test_reject_lowercase_http_name
+    io = dummy_io(<<EOS)
+http/1.1 200 OK
+Content-Length: 5
+Connection: close
+
+hello
+EOS
+
+    assert_raise Net::HTTPBadResponse do
+      Net::HTTPResponse.read_new(io)
+    end
+  end
+
+  def test_reject_status_line_with_four_digit_code
+    io = dummy_io(<<EOS)
+HTTP/1.1 2000 OK
+Content-Length: 5
+Connection: close
+
+hello
+EOS
+
+    assert_raise Net::HTTPBadResponse do
+      Net::HTTPResponse.read_new(io)
+    end
+  end
+
+  def test_reject_status_line_with_non_numeric_code
+    io = dummy_io(<<EOS)
+HTTP/1.1 2oo OK
+Content-Length: 5
+Connection: close
+
+hello
+EOS
+
+    assert_raise Net::HTTPBadResponse do
+      Net::HTTPResponse.read_new(io)
+    end
+  end
+
+  def test_allow_empty_reason_phrase
+    # RFC 9112 allows the reason-phrase itself to be empty, but the SP preceding it is required
+    # Note the trailing space after the status code (200)
+    io = dummy_io(<<EOS)
+HTTP/1.1 200 
 Content-Length: 5
 Connection: close
 
@@ -695,12 +738,26 @@ EOS
     res = Net::HTTPResponse.read_new(io)
     assert_equal('1.1', res.http_version)
     assert_equal('200', res.code)
-    assert_equal(nil, res.message)
+    assert_equal('', res.message)
   end
 
-  def test_raises_exception_with_missing_reason
+  def test_reject_empty_reason_phrase_without_preceding_space
     io = dummy_io(<<EOS)
-HTTP/1.1 404
+HTTP/1.1 200
+Content-Length: 5
+Connection: close
+
+hello
+EOS
+
+    assert_raise Net::HTTPBadResponse do
+      Net::HTTPResponse.read_new(io)
+    end
+  end
+
+  def test_allow_whitespace_chars_as_separator
+    io = dummy_io(<<EOS)
+HTTP/1.1\t200\r OK
 Content-Length: 5
 Connection: close
 
@@ -708,10 +765,24 @@ hello
 EOS
 
     res = Net::HTTPResponse.read_new(io)
-    assert_equal(nil, res.message)
-    assert_raise Net::HTTPClientException do
-      res.error!
-    end
+    assert_equal('1.1', res.http_version)
+    assert_equal('200', res.code)
+    assert_equal('OK', res.message)
+  end
+
+  def test_allow_multiple_space_between_version_and_code
+    io = dummy_io(<<EOS)
+HTTP/1.1  200 OK
+Content-Length: 5
+Connection: close
+
+hello
+EOS
+
+    res = Net::HTTPResponse.read_new(io)
+    assert_equal('1.1', res.http_version)
+    assert_equal('200', res.code)
+    assert_equal('OK', res.message)
   end
 
   def test_read_code_type
