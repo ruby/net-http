@@ -744,6 +744,46 @@ EOS
     assert_equal '#<Net::HTTPUnknownResponse ??? test response readbody=true>', res.inspect
   end
 
+  def test_deconstruct_keys
+    res = Net::HTTPOK.new('1.1', '200', 'OK')
+    res.body = 'test body'
+    res['content-type'] = 'text/plain'
+
+    keys = res.deconstruct_keys(nil)
+    assert_equal '200', keys[:code]
+    assert_equal 'OK', keys[:message]
+    assert_equal '1.1', keys[:http_version]
+    assert_equal 'test body', keys[:body]
+    assert_equal 'text/plain', keys[:content_type]
+  end
+
+  def test_deconstruct_keys_with_specific_keys
+    res = Net::HTTPOK.new('1.1', '200', 'OK')
+    res.body = 'test body'
+
+    keys = res.deconstruct_keys([:code, :message])
+    assert_equal({code: '200', message: 'OK'}, keys)
+  end
+
+  def test_pattern_matching
+    res = Net::HTTPOK.new('1.1', '200', 'OK')
+    res['content-type'] = 'application/json'
+
+    begin
+      matched = instance_eval <<~RUBY, __FILE__, __LINE__ + 1
+        case res
+        in code: '200', content_type: /json/
+          true
+        else
+          false
+        end
+      RUBY
+      assert_equal true, matched
+    rescue SyntaxError
+      omit "Pattern matching requires Ruby 2.7+"
+    end
+  end
+
 private
 
   def dummy_io(str)
