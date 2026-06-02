@@ -1,0 +1,200 @@
+class URI::Generic
+  def authority: () -> String?
+end
+
+module Win32
+  module SSPI
+    class NegotiateAuth
+      def self.new: () -> NegotiateAuth
+      def get_initial_token: () -> String
+      def complete_authentication: (String authphrase) -> String
+    end
+  end
+end
+
+module Net
+  class HTTPAuthenticationError < StandardError
+    def initialize: (String msg, untyped err) -> void
+  end
+
+  module HTTPHeader
+    @header: Hash[String, Array[String]]
+    @body: String?
+    @body_data: Array[untyped] | Hash[untyped, untyped] | nil
+    @body_stream: untyped
+    @form_option: Hash[Symbol, untyped]
+
+    attr_accessor body: String?
+  end
+
+  class HTTP
+    @address: String
+    @port: Integer
+    @ipaddr: String?
+    @local_host: String?
+    @local_port: Integer?
+    @curr_http_version: String
+    @keep_alive_timeout: Float | Integer
+    @last_communicated: Float?
+    @close_on_empty_response: bool
+    @socket: Net::BufferedIO?
+    @started: bool
+    @open_timeout: Float | Integer
+    @read_timeout: Float | Integer
+    @write_timeout: Float | Integer
+    @continue_timeout: Float | Integer | nil
+    @max_retries: Integer
+    @debug_output: IO?
+    @response_body_encoding: Encoding | false | nil
+    @ignore_eof: bool
+    @tcpsocket_supports_open_timeout: bool?
+    @proxy_from_env: bool
+    @proxy_uri: URI::Generic | false | nil
+    @proxy_address: String?
+    @proxy_port: Integer?
+    @proxy_user: String?
+    @proxy_pass: String?
+    @proxy_use_ssl: bool?
+    @use_ssl: bool
+    @ssl_context: OpenSSL::SSL::SSLContext?
+    @ssl_session: OpenSSL::SSL::Session?
+    @sspi_enabled: bool
+    self.@is_proxy_class: bool
+    self.@proxy_from_env: bool
+    self.@proxy_addr: String?
+    self.@proxy_address: String?
+    self.@proxy_port: Integer?
+    self.@proxy_user: String?
+    self.@proxy_pass: String?
+    self.@proxy_use_ssl: bool?
+
+    TCP_SOCKET_NEW_HAS_OPEN_TIMEOUT: bool
+    IDEMPOTENT_METHODS_: Array[String]
+
+    def initialize: (String address, ?Integer? port) -> void
+    def do_start: () -> void
+    def connect: () -> void
+    def timeouted_connect: (String? conn_addr, Integer? conn_port) -> TCPSocket
+    def on_connect: () -> void
+    def do_finish: () -> void
+    def unescape: (String value) -> String
+    def conn_address: () -> String?
+    def conn_port: () -> Integer?
+    def edit_path: (String path) -> String
+    def send_entity: (String | URI::HTTP path, String data, headers? initheader, untyped dest, singleton(Net::HTTPRequest) type) ?{ (String body_segment) -> void } -> Net::HTTPResponse
+    def transport_request: (Net::HTTPGenericRequest req) ?{ (Net::HTTPResponse response) -> void } -> Net::HTTPResponse
+    def begin_transport: (Net::HTTPGenericRequest req) -> void
+    def end_transport: (Net::HTTPGenericRequest req, Net::HTTPResponse res) -> void
+    def keep_alive?: (Net::HTTPGenericRequest req, Net::HTTPResponse res) -> bool
+    def sspi_auth?: (Net::HTTPResponse res) -> bool
+    def sspi_auth: (Net::HTTPGenericRequest req) -> untyped
+    def addr_port: () -> String
+    def debug: (String msg) -> void
+
+    alias D debug
+  end
+
+  class HTTPSession = HTTP
+
+  module HTTP::ProxyDelta
+    def proxy_address: () -> String?
+    def proxy_port: () -> Integer?
+    def use_ssl?: () -> bool
+    def addr_port: () -> String
+    def conn_address: () -> String?
+    def conn_port: () -> Integer?
+    def edit_path: (String path) -> String
+  end
+
+  class HTTPRequest
+    METHOD: String
+    REQUEST_HAS_BODY: bool
+    RESPONSE_HAS_BODY: bool
+  end
+
+  class HTTPGenericRequest
+    @method: String
+    @request_has_body: bool
+    @response_has_body: bool
+    @uri: URI::Generic?
+    @path: String
+    @decode_content: bool
+    @body: String?
+    @body_stream: untyped
+    @body_data: Array[untyped] | Hash[untyped, untyped] | nil
+
+    def set_body_internal: (String? str) -> void
+    def exec: (Net::BufferedIO sock, String ver, String path) -> void
+    def update_uri: (String address, Integer port, bool ssl) -> void
+    def pretty_print: (untyped q) -> void
+    def send_request_with_body: (Net::BufferedIO sock, String ver, String path, String body) -> void
+    def send_request_with_body_stream: (Net::BufferedIO sock, String ver, String path, untyped body_stream) -> void
+    def send_request_with_body_data: (Net::BufferedIO sock, String ver, String path, untyped params) -> void
+    def encode_multipart_form_data: (untyped out, untyped params, untyped opt) -> void
+    def quote_string: (String str, untyped charset) -> String
+    def flush_buffer: (untyped out, String? buf, bool chunked_p) -> untyped
+    def wait_for_continue: (Net::BufferedIO sock, String ver) -> void
+    def write_header: (Net::BufferedIO sock, String ver, String path) -> Integer
+
+    class Chunker
+      @sock: Net::BufferedIO
+
+      def initialize: (Net::BufferedIO sock) -> void
+      def write: (*_ToS buf) -> Integer
+      def finish: () -> Integer
+    end
+  end
+
+  class HTTPResponse
+    @http_version: String?
+    @code: String
+    @message: String?
+    @body: String?
+    @read: bool
+    @uri: URI::Generic?
+    @decode_content: bool
+    @body_encoding: Encoding | false | nil
+    @ignore_eof: bool
+    @socket: Net::BufferedIO?
+    @body_exist: bool
+
+    HAS_BODY: bool
+    EXCEPTION_TYPE: untyped
+    def self.read_new: (Net::BufferedIO sock) -> Net::HTTPResponse
+    def self.exception_type: () -> untyped
+    def self.read_status_line: (Net::BufferedIO sock) -> [String?, String, String?]
+    def self.response_class: (String code) -> singleton(Net::HTTPResponse)
+    def self.each_response_header: (Net::BufferedIO sock) { (String, String) -> void } -> void
+
+    def initialize: (String? httpv, String code, String? msg) -> void
+    def body_encoding=: (Encoding | String | false | nil value) -> (Encoding | false | nil)
+    def ignore_eof=: (bool value) -> bool
+    def response: () -> self
+    def header: () -> self
+    def read_header: () -> self
+    def reading_body: (Net::BufferedIO sock, bool reqmethodallowbody) { () -> untyped } -> String?
+    def detect_encoding: (String str, ?Encoding? encoding) -> Encoding?
+    def sniff_encoding: (String str, ?Encoding? encoding) -> Encoding?
+    def check_bom: (String str) -> Encoding?
+    def scanning_meta: (String str) -> Encoding?
+    def get_attribute: (untyped ss) -> [String, String]?
+    def extracting_encodings_from_meta_elements: (String value) -> String?
+    def inflater: () { (untyped io) -> untyped } -> untyped
+    def read_body_0: (untyped dest) -> void
+    def read_chunked: (untyped dest, untyped chunk_data_io) -> void
+    def stream_check: () -> void
+    def procdest: (untyped dest, untyped block) -> untyped
+
+    class Inflater
+      @socket: Net::BufferedIO
+      @inflate: Zlib::Inflate
+
+      def initialize: (Net::BufferedIO socket) -> void
+      def finish: () -> void
+      def bytes_inflated: () -> Integer
+      def inflate_adapter: (untyped dest) -> Net::ReadAdapter
+      def read: (Integer clen, untyped dest, ?bool ignore_eof) -> untyped
+      def read_all: (untyped dest) -> untyped
+    end
+  end
+end

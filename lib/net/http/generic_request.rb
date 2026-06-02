@@ -14,8 +14,8 @@ class Net::HTTPGenericRequest
 
   def initialize(m, reqbody, resbody, uri_or_path, initheader = nil) # :nodoc:
     @method = m
-    @request_has_body = reqbody
-    @response_has_body = resbody
+    @request_has_body = reqbody ? true : false
+    @response_has_body = resbody ? true : false
 
     if URI === uri_or_path then
       raise ArgumentError, "not an HTTP URI" unless URI::HTTP === uri_or_path
@@ -36,10 +36,10 @@ class Net::HTTPGenericRequest
     if Net::HTTP::HAVE_ZLIB then
       if !initheader ||
          !initheader.keys.any? { |k|
-           %w[accept-encoding range].include? k.downcase
+           %w[accept-encoding range].include? k.to_s.downcase
          } then
         @decode_content = true if @response_has_body
-        initheader = initheader ? initheader.dup : {}
+        initheader = initheader ? initheader.dup : {} #: Hash[String | Symbol, untyped]
         initheader["accept-encoding"] =
           "gzip;q=1.0,deflate;q=0.6,identity;q=0.3"
       end
@@ -48,7 +48,9 @@ class Net::HTTPGenericRequest
     initialize_http_header initheader
     self['Accept'] ||= '*/*'
     self['User-Agent'] ||= 'Ruby'
-    self['Host'] ||= @uri.authority if @uri
+    if (uri = @uri)
+      self['Host'] ||= uri.authority
+    end
     @body = nil
     @body_stream = nil
     @body_data = nil
@@ -129,7 +131,7 @@ class Net::HTTPGenericRequest
   # they want to handle it.
 
   def []=(key, val) # :nodoc:
-    @decode_content = false if key.downcase == 'accept-encoding'
+    @decode_content = false if key.to_s.downcase == 'accept-encoding'
 
     super key, val
   end
@@ -218,12 +220,12 @@ class Net::HTTPGenericRequest
   #
 
   def exec(sock, ver, path)   #:nodoc: internal use only
-    if @body
-      send_request_with_body sock, ver, path, @body
-    elsif @body_stream
-      send_request_with_body_stream sock, ver, path, @body_stream
-    elsif @body_data
-      send_request_with_body_data sock, ver, path, @body_data
+    if body = @body
+      send_request_with_body sock, ver, path, body
+    elsif body_stream = @body_stream
+      send_request_with_body_stream sock, ver, path, body_stream
+    elsif body_data = @body_data
+      send_request_with_body_data sock, ver, path, body_data
     else
       write_header sock, ver, path
     end
@@ -231,7 +233,7 @@ class Net::HTTPGenericRequest
 
   def update_uri(addr, port, ssl) # :nodoc: internal use only
     # reflect the connection and @path to @uri
-    return unless @uri
+    uri = @uri or return
 
     if ssl
       scheme = 'https'
@@ -243,19 +245,19 @@ class Net::HTTPGenericRequest
 
     if host = self['host']
       host = URI.parse("//#{host}").host # Remove a port component from the existing Host header
-    elsif host = @uri.host
+    elsif host = uri.host
     else
      host = addr
     end
     # convert the class of the URI
-    if @uri.is_a?(klass)
-      @uri.host = host
-      @uri.port = port
+    if uri.is_a?(klass)
+      uri.host = host
+      uri.port = port
     else
       @uri = klass.new(
-        scheme, @uri.userinfo,
+        scheme, uri.userinfo,
         host, port, nil,
-        @uri.path, nil, @uri.query, nil)
+        uri.path, nil, uri.query, nil)
     end
   end
 
@@ -266,13 +268,13 @@ class Net::HTTPGenericRequest
   class Chunker #:nodoc:
     def initialize(sock)
       @sock = sock
-      @prev = nil
     end
 
-    def write(buf)
+    def write(*buf)
       # avoid memcpy() of buf, buf can huge and eat memory bandwidth
-      rv = buf.bytesize
-      @sock.write("#{rv.to_s(16)}\r\n", buf, "\r\n")
+      chunk = buf.join
+      rv = chunk.bytesize
+      @sock.write("#{rv.to_s(16)}\r\n", chunk, "\r\n")
       rv
     end
 
@@ -314,7 +316,7 @@ class Net::HTTPGenericRequest
     opt = @form_option.dup
     require 'securerandom' unless defined?(SecureRandom)
     opt[:boundary] ||= SecureRandom.urlsafe_base64(40)
-    self.set_content_type(self.content_type, boundary: opt[:boundary])
+    self.set_content_type(self.content_type.to_s, boundary: opt[:boundary])
     if chunked?
       write_header sock, ver, path
       encode_multipart_form_data(sock, params, opt)
