@@ -11,8 +11,10 @@ if $0 == __FILE__
   puts
   puts "Net::HTTP::STATUS_CODES = {"
   url = "https://www.iana.org/assignments/http-status-codes/http-status-codes-1.csv"
-  URI(url).read.each_line do |line|
+  uri = URI(url) #: URI::HTTP
+  uri.read({}).each_line do |line|
     code, mes, = line.split(',')
+    next if mes.nil?
     next if ['(Unused)', 'Unassigned', 'Description'].include?(mes)
     puts "  #{code} => '#{mes}',"
   end

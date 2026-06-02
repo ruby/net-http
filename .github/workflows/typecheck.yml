@@ -1,0 +1,18 @@
+name: typecheck
+
+on: [push, pull_request]
+
+jobs:
+  steep:
+    runs-on: ubuntu-latest
+    env:
+      BUNDLE_GEMFILE: Gemfile.steep
+    steps:
+    - uses: actions/checkout@v6
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: "ruby"
+        bundler-cache: true
+    - name: Type check
+      run: bundle exec rake steep

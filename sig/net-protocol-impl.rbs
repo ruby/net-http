@@ -1,0 +1,94 @@
+module Net
+  class Protocol
+    private
+
+    def ssl_socket_connect: (untyped socket, Time::_Timeout? timeout) -> void
+  end
+
+  class ProtocolError < StandardError
+  end
+
+  class ProtoSyntaxError < ProtocolError
+  end
+
+  class ProtoFatalError < ProtocolError
+  end
+
+  class ProtoUnknownError < ProtocolError
+  end
+
+  class ProtoServerError < ProtocolError
+  end
+
+  class ProtoAuthError < ProtocolError
+  end
+
+  class ProtoCommandError < ProtocolError
+  end
+
+  class ProtoRetriableError < ProtocolError
+  end
+
+  class OpenTimeout < Timeout::Error
+  end
+
+  class ReadTimeout < Timeout::Error
+    attr_reader io: IO?
+
+    def initialize: (?IO? io) -> void
+    def message: () -> String
+  end
+
+  class WriteTimeout < Timeout::Error
+    attr_reader io: IO?
+
+    def initialize: (?IO? io) -> void
+    def message: () -> String
+  end
+
+  class BufferedIO
+    def initialize: (
+      untyped io,
+      ?read_timeout: Time::_Timeout,
+      ?write_timeout: Time::_Timeout,
+      ?continue_timeout: Time::_Timeout?,
+      ?debug_output: IO?
+    ) -> void
+
+    attr_reader io: untyped
+    attr_accessor read_timeout: Time::_Timeout
+    attr_accessor write_timeout: Time::_Timeout
+    attr_accessor continue_timeout: Time::_Timeout?
+    attr_accessor debug_output: IO?
+
+    def inspect: () -> String
+    def eof?: () -> bool
+    def closed?: () -> bool
+    def close: () -> untyped
+    def read: (Integer len, ?untyped dest, ?bool ignore_eof) -> untyped
+    def read_all: (?untyped dest) -> untyped
+    def readuntil: (String terminator, ?bool ignore_eof) -> String
+    def readline: () -> String
+    def write: (*_ToS strs) -> Integer
+    def <<: (*_ToS strs) -> Integer
+    def writeline: (String str) -> Integer
+  end
+
+  class ReadAdapter
+    def initialize: (Proc block) -> void
+    def inspect: () -> String
+    def <<: (String str) -> untyped
+  end
+
+end
+
+class TCPSocket
+  def self.new: (
+    String remote_host,
+    Integer remote_port,
+    ?String? local_host,
+    ?Integer? local_port,
+    ?fast_fallback: boolish,
+    ?open_timeout: Time::_Timeout
+  ) -> instance
+end
