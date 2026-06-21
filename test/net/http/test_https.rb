@@ -256,14 +256,35 @@ class TestNetHTTPS < Test::Unit::TestCase
   def test_max_version
     http = Net::HTTP.new(HOST, config("port"))
     http.use_ssl = true
-    http.max_version = :SSL2
+    begin
+      http.max_version = :SSL2
+    rescue OpenSSL::SSL::SSLError => e
+      # May fail early if SSLv2 is not supported at all by the OpenSSL release
+      return if /SSL_CTX_set_max_proto_version/ =~ e.message
+      raise
+    end
     http.cert_store = TEST_STORE
     @log_tester = lambda {|_| }
     ex = assert_raise(OpenSSL::SSL::SSLError){
       http.request_get("/") {|res| }
     }
-    re_msg = /\ASSL_connect returned=1 errno=0 |SSL_CTX_set_max_proto_version|No appropriate protocol/
+    re_msg = /\ASSL_connect returned=1 errno=0 |No appropriate protocol/
     assert_match(re_msg, ex.message)
+  end
+
+  def test_ssl_context
+    http = Net::HTTP.new(HOST, config("port"))
+    http.use_ssl = true
+    http.cert_store = TEST_STORE
+    assert_same(TEST_STORE, http.ssl_context.cert_store)
+    http.ssl_context.cert_store = OpenSSL::X509::Store.new # empty
+    assert_raise(OpenSSL::SSL::SSLError) {
+      http.request_get("/") {|res| }
+    }
+    assert_predicate(http.ssl_context, :frozen?)
+    assert_raise(FrozenError) {
+      http.cert_store = OpenSSL::X509::Store.new
+    }
   end
 
   def test_ractor
@@ -286,18 +307,19 @@ class TestNetHTTPS < Test::Unit::TestCase
   end if defined?(Ractor) && Ractor.method_defined?(:value)
 end
 
-class TestNetHTTPSIdentityVerifyFailure < Test::Unit::TestCase
+class TestNetHTTPSIPAddressCertificate < Test::Unit::TestCase
   include TestNetHTTPUtils
 
   def self.read_fixture(key)
     File.read(File.expand_path("../fixtures/#{key}", __dir__))
   end
 
+  # Certificate subjectAltName contains IP addresses 127.0.0.1 but no DNS names
   HOST = 'localhost'
   HOST_IP = '127.0.0.1'
   CA_CERT = OpenSSL::X509::Certificate.new(read_fixture("cacert.pem"))
   SERVER_KEY = OpenSSL::PKey.read(read_fixture("server.key"))
-  SERVER_CERT = OpenSSL::X509::Certificate.new(read_fixture("server.crt"))
+  SERVER_CERT = OpenSSL::X509::Certificate.new(read_fixture("server_ip_san.crt"))
   TEST_STORE = OpenSSL::X509::Store.new.tap {|s| s.add_cert(CA_CERT) }
 
   CONFIG = {
@@ -309,17 +331,36 @@ class TestNetHTTPSIdentityVerifyFailure < Test::Unit::TestCase
     'ssl_private_key' => SERVER_KEY,
   }
 
-  def test_identity_verify_failure
-    # the certificate's subject has CN=localhost
+  def test_identity_verify_success
     http = Net::HTTP.new(HOST_IP, config("port"))
+    http.use_ssl = true
+    http.cert_store = TEST_STORE
+    http.request_get("/") {|res|
+      assert_equal($test_net_http_data, res.body)
+    }
+  end
+
+  def test_identity_verify_failure
+    http = Net::HTTP.new("172.0.0.2", config("port"))
+    http.ipaddr = HOST_IP
     http.use_ssl = true
     http.cert_store = TEST_STORE
     @log_tester = lambda {|_| }
     ex = assert_raise(OpenSSL::SSL::SSLError){
       http.request_get("/") {|res| }
-      sleep 0.5
     }
-    re_msg = /certificate verify failed|hostname \"#{HOST_IP}\" does not match/
+    re_msg = /certificate verify failed|hostname .* does not match/
     assert_match(re_msg, ex.message)
+  end
+
+  def test_identity_verify_disabled
+    http = Net::HTTP.new("172.0.0.2", config("port"))
+    http.ipaddr = HOST_IP
+    http.use_ssl = true
+    http.cert_store = TEST_STORE
+    http.verify_hostname = false
+    http.request_get("/") {|res|
+      assert_equal($test_net_http_data, res.body)
+    }
   end
 end
