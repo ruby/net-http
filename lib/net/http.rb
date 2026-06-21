@@ -1192,10 +1192,8 @@ module Net   #:nodoc:
       @use_ssl = false
       @ssl_context = nil
       @ssl_session = nil
+      @verify_hostname = true
       @sspi_enabled = false
-      SSL_IVNAMES.each do |ivname|
-        instance_variable_set ivname, nil
-      end
     end
 
     # Returns a string representation of +self+:
@@ -1515,81 +1513,155 @@ module Net   #:nodoc:
       @use_ssl = flag
     end
 
-    SSL_ATTRIBUTES = [
-      :ca_file,
-      :ca_path,
-      :cert,
-      :cert_store,
-      :ciphers,
-      :extra_chain_cert,
-      :key,
-      :ssl_timeout,
-      :ssl_version,
-      :min_version,
-      :max_version,
-      :verify_callback,
-      :verify_depth,
-      :verify_mode,
-      :verify_hostname,
-    ].freeze # :nodoc:
+    def ssl_sni_enabled?
+      case @address
+      when Resolv::IPv4::Regex, Resolv::IPv6::Regex
+        return false
+      end
+      true
+    end
+    private :ssl_sni_enabled?
 
-    SSL_IVNAMES = SSL_ATTRIBUTES.map { |a| "@#{a}".to_sym }.freeze # :nodoc:
+    # Returns the OpenSSL::SSL::SSLContext object used for SSL/TLS sessions.
+    #
+    # The object is frozen after a session is started for the first time and
+    # cannot be modified afterwards.
+    def ssl_context
+      @ssl_context ||= (
+        ctx = OpenSSL::SSL::SSLContext.new
+        ctx.set_params
 
+        # See the note on #verify_hostname
+        ctx.verify_hostname = verify_hostname && ssl_sni_enabled?
+
+        unless ctx.session_cache_mode.nil? # a dummy method on JRuby
+          ctx.session_cache_mode =
+            OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
+            OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
+        end
+        if ctx.respond_to?(:session_new_cb) # not implemented under JRuby
+          ctx.session_new_cb = proc {|sock, sess| @ssl_session = sess }
+        end
+
+        ctx
+      )
+    end
+
+    def_ssl_attr = proc do |attr|
+      class_eval <<~EOS, __FILE__, __LINE__ + 1
+        def #{attr}
+          ssl_context.#{attr}
+        end
+
+        def #{attr}=(value)
+          ssl_context.#{attr} = value
+        end
+      EOS
+    end
+
+    ##
+    # :attr_accessor: ca_file
     # Sets or returns the path to a CA certification file in PEM format.
-    attr_accessor :ca_file
+    def_ssl_attr.call(:ca_file)
 
+    ##
+    # :attr_accessor: ca_path
     # Sets or returns the path of to CA directory
     # containing certification files in PEM format.
-    attr_accessor :ca_path
+    def_ssl_attr.call(:ca_path)
 
+    ##
+    # :attr_accessor: cert
     # Sets or returns the OpenSSL::X509::Certificate object
     # to be used for client certification.
-    attr_accessor :cert
+    def_ssl_attr.call(:cert)
 
+    ##
+    # :attr_accessor: cert_store
     # Sets or returns the X509::Store to be used for verifying peer certificate.
-    attr_accessor :cert_store
+    def_ssl_attr.call(:cert_store)
 
+    ##
+    # :attr_accessor: ciphers
     # Sets or returns the available SSL ciphers.
     # See {OpenSSL::SSL::SSLContext#ciphers=}[OpenSSL::SSL::SSL::Context#ciphers=].
-    attr_accessor :ciphers
+    def_ssl_attr.call(:ciphers)
 
+    ##
+    # :attr_accessor: extra_chain_cert
     # Sets or returns the extra X509 certificates to be added to the certificate chain.
     # See {OpenSSL::SSL::SSLContext#add_certificate}[OpenSSL::SSL::SSL::Context#add_certificate].
-    attr_accessor :extra_chain_cert
+    def_ssl_attr.call(:extra_chain_cert)
 
+    ##
+    # :attr_accessor: key
     # Sets or returns the OpenSSL::PKey::RSA or OpenSSL::PKey::DSA object.
-    attr_accessor :key
+    def_ssl_attr.call(:key)
 
+    ##
+    # :attr_accessor: ssl_timeout
     # Sets or returns the SSL timeout seconds.
-    attr_accessor :ssl_timeout
+    def_ssl_attr.call(:ssl_timeout)
 
+    ##
+    # :attr_accessor: ssl_version
     # Sets or returns the SSL version.
     # See {OpenSSL::SSL::SSLContext#ssl_version=}[OpenSSL::SSL::SSL::Context#ssl_version=].
-    attr_accessor :ssl_version
+    def_ssl_attr.call(:ssl_version)
 
+    ##
+    # :attr_accessor: min_version
     # Sets or returns the minimum SSL version.
     # See {OpenSSL::SSL::SSLContext#min_version=}[OpenSSL::SSL::SSL::Context#min_version=].
-    attr_accessor :min_version
+    def_ssl_attr.call(:min_version)
 
+    ##
+    # :attr_accessor: max_version
     # Sets or returns the maximum SSL version.
     # See {OpenSSL::SSL::SSLContext#max_version=}[OpenSSL::SSL::SSL::Context#max_version=].
-    attr_accessor :max_version
+    def_ssl_attr.call(:max_version)
 
+    ##
+    # :attr_accessor: verify_callback
     # Sets or returns the callback for the server certification verification.
-    attr_accessor :verify_callback
+    def_ssl_attr.call(:verify_callback)
 
+    ##
+    # :attr_accessor: verify_depth
     # Sets or returns the maximum depth for the certificate chain verification.
-    attr_accessor :verify_depth
+    def_ssl_attr.call(:verify_depth)
 
+    ##
+    # :attr_accessor: verify_mode
     # Sets or returns the flags for server the certification verification
     # at the beginning of the SSL/TLS session.
     # OpenSSL::SSL::VERIFY_NONE or OpenSSL::SSL::VERIFY_PEER are acceptable.
-    attr_accessor :verify_mode
+    def_ssl_attr.call(:verify_mode)
 
+    ##
+    # :attr_accessor: verify_hostname
     # Sets or returns whether to verify that the server certificate is valid
-    # for the hostname.
+    # for the hostname or the IP address of the server.
     # See {OpenSSL::SSL::SSLContext#verify_hostname=}[OpenSSL::SSL::SSL::Context#verify_hostname=].
-    attr_accessor :verify_hostname
+    #--
+    # This attribute is not forwarded directly to SSLContext because the
+    # semantics are slightly different.
+    #   - SSLContext#verify_hostname must be used together with SNI, which
+    #     is unavailable when connecting to an IP address.
+    #   - Net::HTTP#verify_hostname is expected to verify the certificate
+    #     identity regardless of whether SNI is used.
+    #++
+
+    # :stopdoc:
+    def verify_hostname
+      @verify_hostname
+    end
+
+    def verify_hostname=(value)
+      @verify_hostname = value
+      ssl_context.verify_hostname = value && ssl_sni_enabled?
+    end
+    # :startdoc:
 
     # Returns the X509 certificate chain (an array of strings)
     # for the session's socket peer,
@@ -1661,7 +1733,7 @@ module Net   #:nodoc:
       if use_ssl?
         # reference early to load OpenSSL before connecting,
         # as OpenSSL may take time to load.
-        @ssl_context = OpenSSL::SSL::SSLContext.new
+        ssl_context.setup
       end
 
       if proxy? then
@@ -1708,53 +1780,21 @@ module Net   #:nodoc:
           # assuming nothing left in buffers after successful CONNECT response
         end
 
-        ssl_parameters = Hash.new
-        iv_list = instance_variables
-        SSL_IVNAMES.each_with_index do |ivname, i|
-          if iv_list.include?(ivname)
-            value = instance_variable_get(ivname)
-            unless value.nil?
-              ssl_parameters[SSL_ATTRIBUTES[i]] = value
-            end
-          end
-        end
-        @ssl_context.set_params(ssl_parameters)
-        unless @ssl_context.session_cache_mode.nil? # a dummy method on JRuby
-          @ssl_context.session_cache_mode =
-              OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
-                  OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
-        end
-        if @ssl_context.respond_to?(:session_new_cb) # not implemented under JRuby
-          @ssl_context.session_new_cb = proc {|sock, sess| @ssl_session = sess }
-        end
-
-        # Still do the post_connection_check below even if connecting
-        # to IP address
-        verify_hostname = @ssl_context.verify_hostname
-
-        # Server Name Indication (SNI) RFC 3546/6066
-        case @address
-        when Resolv::IPv4::Regex, Resolv::IPv6::Regex
-          # don't set SNI, as IP addresses in SNI is not valid
-          # per RFC 6066, section 3.
-
-          # Avoid openssl warning
-          @ssl_context.verify_hostname = false
-        else
-          ssl_host_address = @address
-        end
-
         debug "starting SSL for #{conn_addr}:#{conn_port}..."
-        s = OpenSSL::SSL::SSLSocket.new(s, @ssl_context)
+        s = OpenSSL::SSL::SSLSocket.new(s, ssl_context)
         s.sync_close = true
-        s.hostname = ssl_host_address if s.respond_to?(:hostname=) && ssl_host_address
+        # Server Name Indication (SNI) RFC 3546/6066
+        s.hostname = @address if ssl_sni_enabled?
 
         if @ssl_session and
            Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + @ssl_session.timeout
           s.session = @ssl_session
         end
         ssl_socket_connect(s, @open_timeout)
-        if (@ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE) && verify_hostname
+        # See the note on #verify_hostname
+        if !ssl_sni_enabled? &&
+            ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE &&
+            verify_hostname
           s.post_connection_check(@address)
         end
         debug "SSL established, protocol: #{s.ssl_version}, cipher: #{s.cipher[0]}"
