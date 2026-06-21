@@ -256,14 +256,35 @@ class TestNetHTTPS < Test::Unit::TestCase
   def test_max_version
     http = Net::HTTP.new(HOST, config("port"))
     http.use_ssl = true
-    http.max_version = :SSL2
+    begin
+      http.max_version = :SSL2
+    rescue OpenSSL::SSL::SSLError => e
+      # May fail early if SSLv2 is not supported at all by the OpenSSL release
+      return if /SSL_CTX_set_max_proto_version/ =~ e.message
+      raise
+    end
     http.cert_store = TEST_STORE
     @log_tester = lambda {|_| }
     ex = assert_raise(OpenSSL::SSL::SSLError){
       http.request_get("/") {|res| }
     }
-    re_msg = /\ASSL_connect returned=1 errno=0 |SSL_CTX_set_max_proto_version|No appropriate protocol/
+    re_msg = /\ASSL_connect returned=1 errno=0 |No appropriate protocol/
     assert_match(re_msg, ex.message)
+  end
+
+  def test_ssl_context
+    http = Net::HTTP.new(HOST, config("port"))
+    http.use_ssl = true
+    http.cert_store = TEST_STORE
+    assert_same(TEST_STORE, http.ssl_context.cert_store)
+    http.ssl_context.cert_store = OpenSSL::X509::Store.new # empty
+    assert_raise(OpenSSL::SSL::SSLError) {
+      http.request_get("/") {|res| }
+    }
+    assert_predicate(http.ssl_context, :frozen?)
+    assert_raise(FrozenError) {
+      http.cert_store = OpenSSL::X509::Store.new
+    }
   end
 
   def test_ractor
