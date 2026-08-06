@@ -1263,8 +1263,22 @@ module Net   #:nodoc:
     #   read 2 bytes
     #   Conn keep-alive
     #
+    # Debug output contains credentials, so enabling it writes a warning to
+    # <tt>$stderr</tt>. The warning is written at most once per thread, and is
+    # not written when <tt>$DEBUG</tt> is set, which already declares that the
+    # process is being debugged, or when +output+ is +nil+, which disables debug
+    # output. Like any other Ruby warning it can be intercepted by overriding
+    # Warning.warn.
+    #
     def set_debug_output(output)
       warn 'Net::HTTP#set_debug_output called after HTTP started', uplevel: 1 if started?
+      if output and !$DEBUG and !Thread.current.thread_variable_get(:net_http_debug_output_warned)
+        Thread.current.thread_variable_set(:net_http_debug_output_warned, true)
+        warn 'Net::HTTP#set_debug_output: every request and response, including ' +
+          'Authorization and Cookie headers and message bodies, will be written ' +
+          'to the given stream in plain text; never enable this in production',
+          uplevel: 1
+      end
       @debug_output = output
     end
 
