@@ -688,6 +688,9 @@ module Net   #:nodoc:
   #   Returns the flags for server the certification verification at the beginning of the SSL/TLS session.
   # - {:verify_mode=}[rdoc-ref:Net::HTTP#verify_mode=]:
   #   Sets the flags for server the certification verification at the beginning of the SSL/TLS session.
+  # - {#set_debug_output}[rdoc-ref:Net::HTTP#set_debug_output]:
+  #   Sets the output stream for debugging, which logs credentials in plain text;
+  #   never use it in production code.
   #
   # === Addresses and Ports
   #
