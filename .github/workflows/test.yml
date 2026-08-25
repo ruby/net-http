@@ -18,6 +18,8 @@ jobs:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
+    env:
+      BUNDLE_WITHOUT: sig
     steps:
     - uses: actions/checkout@v7
     - name: Set up Ruby
@@ -26,11 +28,9 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
     - name: Install dependencies
       run: bundle install
-      env:
-        BUNDLE_WITHOUT: sig
     - name: Run test
-      run: rake test
+      run: bundle exec rake test
     - name: Build
-      run: rake build
+      run: bundle exec rake build
       env:
         LANG: C
