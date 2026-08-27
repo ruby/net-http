@@ -466,14 +466,13 @@ class Net::HTTPResponse
 
   # :nodoc:
   def check_bom(str)
-    case str.byteslice(0, 2)
-    when "\xFE\xFF"
-      return Encoding::UTF_16BE
-    when "\xFF\xFE"
-      return Encoding::UTF_16LE
-    end
-    if "\xEF\xBB\xBF" == str.byteslice(0, 3)
-      return Encoding::UTF_8
+    case str.getbyte(0)
+    when 0xFE
+      return Encoding::UTF_16BE if str.getbyte(1) == 0xFF
+    when 0xFF
+      return Encoding::UTF_16LE if str.getbyte(1) == 0xFE
+    when 0xEF
+      return Encoding::UTF_8 if str.getbyte(1) == 0xBB && str.getbyte(2) == 0xBF
     end
     nil
   end
