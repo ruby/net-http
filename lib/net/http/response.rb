@@ -596,6 +596,8 @@ class Net::HTTPResponse
         rescue => err
           # Ignore #finish's error if there is an exception from yield
           raise err if success
+        ensure
+          inflate_body_io.close
         end
       end
     when 'none', 'identity' then
@@ -692,6 +694,13 @@ class Net::HTTPResponse
     def finish
       return if @inflate.total_in == 0
       @inflate.finish
+    end
+
+    ##
+    # Closes the inflate stream and releases its resources.
+
+    def close
+      @inflate.close
     end
 
     ##
