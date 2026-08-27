@@ -2501,8 +2501,6 @@ module Net   #:nodoc:
           begin
             res = HTTPResponse.read_new(@socket)
             res.decode_content = req.decode_content
-            res.body_encoding = @response_body_encoding
-            res.ignore_eof = @ignore_eof
             if res.kind_of?(HTTPInformation)
               informational_count += 1
               raise HTTPBadResponse, 'too many informational responses' if
@@ -2510,10 +2508,11 @@ module Net   #:nodoc:
             end
           end while res.kind_of?(HTTPInformation)
 
-          res.uri = req.uri
-
           res
         }
+        res.body_encoding = @response_body_encoding
+        res.ignore_eof = @ignore_eof
+        res.uri = req.uri
         res.reading_body(@socket, req.response_body_permitted?) {
           if block_given?
             count = max_retries # Don't restart in the middle of a download
