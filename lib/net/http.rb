@@ -22,8 +22,8 @@
 
 require 'net/protocol'
 require 'uri'
-require 'resolv'
 autoload :OpenSSL, 'openssl'
+autoload :Resolv, 'resolv'
 
 module Net   #:nodoc:
 
