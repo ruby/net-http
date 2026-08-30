@@ -611,22 +611,21 @@ class Net::HTTPResponse
     inflater do |inflate_body_io|
       if chunked?
         read_chunked dest, inflate_body_io
-        return
-      end
+      else
+        @socket = inflate_body_io
 
-      @socket = inflate_body_io
-
-      clen = content_length()
-      if clen
-        @socket.read clen, dest, @ignore_eof
-        return
+        clen = content_length()
+        if clen
+          @socket.read clen, dest, @ignore_eof
+        else
+          clen = range_length()
+          if clen
+            @socket.read clen, dest
+          else
+            @socket.read_all dest
+          end
+        end
       end
-      clen = range_length()
-      if clen
-        @socket.read clen, dest
-        return
-      end
-      @socket.read_all dest
     end
   end
 
