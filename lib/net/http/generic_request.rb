@@ -410,7 +410,9 @@ class Net::HTTPGenericRequest
 
   def wait_for_continue(sock, ver)
     if ver >= '1.1' and @header['expect'] and
-        @header['expect'].include?('100-continue')
+        @header['expect'].any? do |value|
+          value.split(',').any? { |expectation| expectation.strip.casecmp?('100-continue') }
+        end
       if sock.io.to_io.wait_readable(sock.continue_timeout)
         res = Net::HTTPResponse.read_new(sock)
         unless res.kind_of?(Net::HTTPContinue)
