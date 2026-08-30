@@ -435,13 +435,13 @@ class Net::HTTPResponse
     elsif encoding = check_bom(str)
     else
       encoding = case content_type&.downcase
-      when %r{text/x(?:ht)?ml|application/(?:[^+]+\+)?xml}
+      when %r{\A(?:text/x(?:ht)?ml|application/(?:[^+]+\+)?xml)\z}
         /\A<xml[ \t\r\n]+
           version[ \t\r\n]*=[ \t\r\n]*(?:"[0-9.]+"|'[0-9.]*')[ \t\r\n]+
           encoding[ \t\r\n]*=[ \t\r\n]*
           (?:"([A-Za-z][\-A-Za-z0-9._]*)"|'([A-Za-z][\-A-Za-z0-9._]*)')/x =~ str
         encoding = $1 || $2 || Encoding::UTF_8
-      when %r{text/html.*}
+      when %r{\Atext/html\z}
         sniff_encoding(str)
       end
     end
