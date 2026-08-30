@@ -482,7 +482,7 @@ class Net::HTTPResponse
   def scanning_meta(str)
     require 'strscan'
     ss = StringScanner.new(str)
-    if ss.scan_until(/<meta[\t\n\f\r ]*/)
+    if ss.scan_until(/<meta(?=[\t\n\f\r \/>])[\t\n\f\r ]*/i)
       attrs = {} # attribute_list
       got_pragma = false
       need_pragma = nil
