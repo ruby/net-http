@@ -386,16 +386,18 @@ class Net::HTTPResponse
     @read = true
     return if @body.nil?
 
-    case enc = @body_encoding
-    when Encoding, false, nil
-      # Encoding: force given encoding
-      # false/nil: do not force encoding
-    else
-      # other value: detect encoding from body
-      enc = detect_encoding(@body)
-    end
+    if @body.respond_to?(:force_encoding)
+      case enc = @body_encoding
+      when Encoding, false, nil
+        # Encoding: force given encoding
+        # false/nil: do not force encoding
+      else
+        # other value: detect encoding from body
+        enc = detect_encoding(@body)
+      end
 
-    @body.force_encoding(enc) if enc
+      @body.force_encoding(enc) if enc
+    end
 
     @body
   end
@@ -753,4 +755,3 @@ class Net::HTTPResponse
   end
 
 end
-
