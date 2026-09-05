@@ -550,6 +550,23 @@ class TestHTTPRequest < Test::Unit::TestCase
   end
 end
 
+class TestSingletonNetHTTPRequest < Test::Unit::TestCase
+  include RBS::UnitTest::TypeAssertions
+
+  library "net-http"
+  testing "singleton(::Net::HTTPRequest)"
+
+  def test_request_body_permitted?
+    assert_send_type "() -> bool",
+                     Net::HTTP::Post, :request_body_permitted?
+  end
+
+  def test_response_body_permitted?
+    assert_send_type "() -> bool",
+                     Net::HTTP::Post, :response_body_permitted?
+  end
+end
+
 class TestSingletonNetHTTPResponse < Test::Unit::TestCase
   include RBS::UnitTest::TypeAssertions
 
