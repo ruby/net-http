@@ -436,7 +436,7 @@ class Net::HTTPResponse
     else
       encoding = case content_type&.downcase
       when %r{text/x(?:ht)?ml|application/(?:[^+]+\+)?xml}
-        /\A<xml[ \t\r\n]+
+        /\A<\?xml[ \t\r\n]+
           version[ \t\r\n]*=[ \t\r\n]*(?:"[0-9.]+"|'[0-9.]*')[ \t\r\n]+
           encoding[ \t\r\n]*=[ \t\r\n]*
           (?:"([A-Za-z][\-A-Za-z0-9._]*)"|'([A-Za-z][\-A-Za-z0-9._]*)')/x =~ str
