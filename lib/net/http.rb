@@ -2486,6 +2486,12 @@ module Net   #:nodoc:
     IDEMPOTENT_METHODS_ = %w/GET HEAD PUT DELETE OPTIONS TRACE QUERY/.freeze # :nodoc:
 
     def transport_request(req)
+      body_stream = req.body_stream
+      body_stream_position = begin
+        body_stream.pos if body_stream && body_stream.respond_to?(:pos)
+      rescue IOError, SystemCallError
+        nil
+      end
       count = 0
       begin
         begin_transport req
@@ -2527,7 +2533,8 @@ module Net   #:nodoc:
              # avoid a dependency on OpenSSL
              defined?(OpenSSL::SSL) ? OpenSSL::SSL::SSLError : IOError,
              Timeout::Error => exception
-        if count < max_retries && IDEMPOTENT_METHODS_.include?(req.method)
+        if count < max_retries && IDEMPOTENT_METHODS_.include?(req.method) &&
+            rewind_body_stream(body_stream, body_stream_position)
           count += 1
           @socket.close if @socket
           debug "Conn close because of error #{exception}, and retry"
@@ -2544,6 +2551,16 @@ module Net   #:nodoc:
       debug "Conn close because of error #{exception}"
       @socket.close if @socket
       raise exception
+    end
+
+    def rewind_body_stream(stream, position)
+      return true unless stream
+      return false unless position && stream.respond_to?(:pos=)
+
+      stream.pos = position
+      true
+    rescue IOError, SystemCallError
+      false
     end
 
     def begin_transport(req)
