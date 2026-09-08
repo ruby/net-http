@@ -1962,10 +1962,6 @@ module Net   #:nodoc:
       @ipaddr || address()
     end
 
-    def conn_port # :nodoc:
-      port()
-    end
-
     def edit_path(path)
       if proxy?
         if path.start_with?("ftp://") || use_ssl?
