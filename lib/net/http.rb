@@ -1143,7 +1143,12 @@ module Net   #:nodoc:
       #   http.read_timeout   # => 1
       #   http.write_timeout  # => 1
       #
-      attr_accessor :default_configuration
+      attr_writer :default_configuration
+
+      def default_configuration
+        return @default_configuration if instance_variable_defined?(:@default_configuration)
+        superclass.default_configuration if superclass.respond_to?(:default_configuration)
+      end
     end
 
     # Creates a new \Net::HTTP object for the specified server address,
