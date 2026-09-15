@@ -473,6 +473,78 @@ EOS
     assert_equal Encoding::ISO_8859_1, body.encoding
   end
 
+  def test_read_body_body_encoding_with_empty_attribute
+    res_body = "<meta http-equiv='content-type' empty1='' empty2="" content='text/html; charset=UTF-8'>hello\u1234</html>"
+    io = dummy_io(<<EOS)
+HTTP/1.1 200 OK
+Connection: close
+Content-Length: #{res_body.bytesize}
+Content-Type: text/html
+
+#{res_body}
+EOS
+
+    res = Net::HTTPResponse.read_new(io)
+    res.body_encoding = true
+
+    body = nil
+
+    res.reading_body io, true do
+      body = res.read_body
+    end
+
+    assert_equal res_body, body
+    assert_equal Encoding::UTF_8, body.encoding
+  end
+
+  def test_read_body_body_encoding_unclosed_meta_tag_in_attribute
+    res_body = "<meta http-equiv='content-type'"
+    io = dummy_io(<<EOS)
+HTTP/1.1 200 OK
+Connection: close
+Content-Length: #{res_body.bytesize}
+Content-Type: text/html
+
+#{res_body}
+EOS
+
+    res = Net::HTTPResponse.read_new(io)
+    res.body_encoding = true
+
+    body = nil
+
+    res.reading_body io, true do
+      body = res.read_body
+    end
+
+    assert_equal res_body, body
+    assert_equal Encoding::US_ASCII, body.encoding
+  end
+
+  def test_read_body_body_encoding_unclosed_meta_tag_in_attribute_value
+    res_body = "<meta http-equiv='content-type' bad="
+    io = dummy_io(<<EOS)
+HTTP/1.1 200 OK
+Connection: close
+Content-Length: #{res_body.bytesize}
+Content-Type: text/html
+
+#{res_body}
+EOS
+
+    res = Net::HTTPResponse.read_new(io)
+    res.body_encoding = true
+
+    body = nil
+
+    res.reading_body io, true do
+      body = res.read_body
+    end
+
+    assert_equal res_body, body
+    assert_equal Encoding::US_ASCII, body.encoding
+  end
+
   def test_read_body_block
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK

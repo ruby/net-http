@@ -482,40 +482,42 @@ class Net::HTTPResponse
   def scanning_meta(str)
     require 'strscan'
     ss = StringScanner.new(str)
-    if ss.scan_until(/<meta[\t\n\f\r ]*/)
-      attrs = {} # attribute_list
-      got_pragma = false
-      need_pragma = nil
-      charset = nil
+    catch(:invalid_meta_tag) do
+      if ss.scan_until(/<meta[\t\n\f\r ]*/)
+        attrs = {} # attribute_list
+        got_pragma = false
+        need_pragma = nil
+        charset = nil
 
-      # step: Attributes
-      while attr = get_attribute(ss)
-        name, value = *attr
-        next if attrs[name]
-        attrs[name] = true
-        case name
-        when 'http-equiv'
-          got_pragma = true if value == 'content-type'
-        when 'content'
-          encoding = extracting_encodings_from_meta_elements(value)
-          unless charset
-            charset = encoding
+        # step: Attributes
+        while attr = get_attribute(ss)
+          name, value = *attr
+          next if attrs[name]
+          attrs[name] = true
+          case name
+          when 'http-equiv'
+            got_pragma = true if value == 'content-type'
+          when 'content'
+            encoding = extracting_encodings_from_meta_elements(value)
+            unless charset
+              charset = encoding
+            end
+            need_pragma = true
+          when 'charset'
+            need_pragma = false
+            charset = value
           end
-          need_pragma = true
-        when 'charset'
-          need_pragma = false
-          charset = value
         end
+
+        # step: Processing
+        return if need_pragma.nil?
+        return if need_pragma && !got_pragma
+
+        charset = Encoding.find(charset) rescue nil
+        return unless charset
+        charset = Encoding::UTF_8 if charset == Encoding::UTF_16
+        return charset # tentative
       end
-
-      # step: Processing
-      return if need_pragma.nil?
-      return if need_pragma && !got_pragma
-
-      charset = Encoding.find(charset) rescue nil
-      return unless charset
-      charset = Encoding::UTF_8 if charset == Encoding::UTF_16
-      return charset # tentative
     end
     nil
   end
@@ -528,7 +530,7 @@ class Net::HTTPResponse
     end
     name = ss.scan(/[^=\t\n\f\r \/>]*/)
     name.downcase!
-    raise if name.empty?
+    throw :invalid_meta_tag if name.empty?
     ss.skip(/[\t\n\f\r ]*/)
     if ss.getch != '='
       value = ''
@@ -538,18 +540,18 @@ class Net::HTTPResponse
     case ss.peek(1)
     when '"'
       ss.getch
-      value = ss.scan(/[^"]+/)
+      value = ss.scan(/[^"]*/)
       value.downcase!
       ss.getch
     when "'"
       ss.getch
-      value = ss.scan(/[^']+/)
+      value = ss.scan(/[^']*/)
       value.downcase!
       ss.getch
     when '>'
       value = ''
     else
-      value = ss.scan(/[^\t\n\f\r >]+/)
+      throw :invalid_meta_tag unless value = ss.scan(/[^\t\n\f\r >]+/)
       value.downcase!
     end
     [name, value]
