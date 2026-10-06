@@ -512,6 +512,8 @@ class HTTPHeaderTest < Test::Unit::TestCase
     assert_equal({'charset' => 'iso-2022-jp'}, @c.type_params)
     @c.content_type = 'text'
     assert_equal({}, @c.type_params)
+    @c['content-type'] = 'text/html; charset="UTF\-8"'
+    assert_equal({'charset' => 'UTF-8'}, @c.type_params)
   end
 
   def test_set_content_type
