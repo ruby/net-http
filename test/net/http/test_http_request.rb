@@ -122,4 +122,14 @@ class HTTPRequestTest < Test::Unit::TestCase
     assert_equal "[2001:db8::1]", req.uri.host
     assert_equal 8080, req.uri.port
   end
+
+  def test_request_body_permitted?
+    assert_predicate Net::HTTP::Post, :request_body_permitted?
+    assert_not_predicate Net::HTTP::Get, :request_body_permitted?
+  end
+
+  def test_response_body_permitted?
+    assert_predicate Net::HTTP::Post, :response_body_permitted?
+    assert_not_predicate Net::HTTP::Head, :response_body_permitted?
+  end
 end
