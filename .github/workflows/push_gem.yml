@@ -12,6 +12,8 @@ jobs:
   push:
     if: github.repository == 'ruby/net-http'
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_WITHOUT: sig
 
     environment:
       name: rubygems.org
@@ -34,8 +36,6 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: ruby
-        env:
-          BUNDLE_WITHOUT: sig
 
       - name: Publish to RubyGems
         uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
