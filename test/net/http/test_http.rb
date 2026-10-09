@@ -7,6 +7,10 @@ require_relative 'utils'
 
 class TestNetHTTP < Test::Unit::TestCase
 
+  def setup
+    Thread.current.thread_variable_set(:net_http_debug_output_warned, nil)
+  end
+
   def test_class_Proxy
     no_proxy_class = Net::HTTP.Proxy nil
 
@@ -264,6 +268,76 @@ class TestNetHTTP < Test::Unit::TestCase
     assert_equal 10, http.open_timeout
   ensure
     Net::HTTP.default_configuration = nil
+  end
+
+  def test_set_debug_output_warns
+    http = Net::HTTP.new 'hostname.example'
+
+    assert_warning(/#{__FILE__}:#{__LINE__+1}: warning: Net::HTTP#set_debug_output: /) do
+      http.set_debug_output StringIO.new
+    end
+  end
+
+  def test_set_debug_output_names_what_is_logged
+    http = Net::HTTP.new 'hostname.example'
+
+    assert_warning(/Authorization and Cookie headers and message bodies/) do
+      http.set_debug_output StringIO.new
+    end
+  end
+
+  def test_set_debug_output_nil_does_not_warn
+    http = Net::HTTP.new 'hostname.example'
+
+    assert_warning('') do
+      http.set_debug_output nil
+    end
+  end
+
+  def test_set_debug_output_DEBUG_does_not_warn
+    debug, $DEBUG = $DEBUG, true
+
+    http = Net::HTTP.new 'hostname.example'
+
+    assert_warning('') do
+      http.set_debug_output StringIO.new
+    end
+  ensure
+    $DEBUG = debug
+  end
+
+  def test_set_debug_output_warns_once_per_thread
+    http = Net::HTTP.new 'hostname.example'
+
+    assert_warning(/Net::HTTP#set_debug_output: /) do
+      http.set_debug_output StringIO.new
+    end
+
+    assert_warning('') do
+      http.set_debug_output StringIO.new
+    end
+  end
+
+  def test_set_debug_output_warns_once_across_objects
+    assert_warning(/Net::HTTP#set_debug_output: /) do
+      Net::HTTP.new('hostname.example').set_debug_output StringIO.new
+    end
+
+    assert_warning('') do
+      Net::HTTP.new('hostname.example').set_debug_output StringIO.new
+    end
+  end
+
+  def test_set_debug_output_warns_once_in_subclasses
+    assert_warning(/Net::HTTP#set_debug_output: /) do
+      Net::HTTP.new('hostname.example').set_debug_output StringIO.new
+    end
+
+    proxy = Net::HTTP::Proxy('proxy.example', 8000)
+
+    assert_warning('') do
+      proxy.new('hostname.example').set_debug_output StringIO.new
+    end
   end
 
 end
@@ -1511,6 +1585,20 @@ class TestNetHTTPInRactor < Test::Unit::TestCase
         }
       }.value
       assert_equal expected, ret
+    RUBY
+  end
+
+  # The once-per-thread flag is kept in thread-local storage rather than on
+  # Net::HTTP, because non-main Ractors cannot set instance variables of
+  # classes. Recording it there would raise Ractor::IsolationError.
+  def test_set_debug_output
+    assert_ractor(<<~RUBY, require: 'net/http', ignore_stderr: true)
+      require 'stringio'
+      ret = Ractor.new {
+        Net::HTTP.new('hostname.example').set_debug_output(StringIO.new)
+        :ok
+      }.value
+      assert_equal :ok, ret
     RUBY
   end
 end if defined?(Ractor) && Ractor.method_defined?(:value)
