@@ -712,11 +712,16 @@ module Net::HTTPHeader
   #   res['Content-Range'] # => "bytes 0-499/1000"
   #   res.content_range    # => 0..499
   #
+  # Returns +nil+ for an unsatisfied range such as <tt>'bytes */1000'</tt>,
+  # which a <tt>416 Range Not Satisfiable</tt> response may carry;
+  # see {RFC 9110 Section 14.4}[https://www.rfc-editor.org/rfc/rfc9110.html#section-14.4].
+  #
   def content_range
     return nil unless @header['content-range']
-    m = %r<\A\s*(\w+)\s+(\d+)-(\d+)/(\d+|\*)>.match(self['Content-Range']) or
+    m = %r<\A\s*(\w+)\s+(?:(\d+)-(\d+)/(?:\d+|\*)|\*/\d+)>.match(self['Content-Range']) or
         raise Net::HTTPHeaderSyntaxError, 'wrong Content-Range format'
     return unless m[1] == 'bytes'
+    return unless m[2]
     m[2].to_i .. m[3].to_i
   end
 

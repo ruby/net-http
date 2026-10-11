@@ -351,10 +351,14 @@ class HTTPHeaderTest < Test::Unit::TestCase
     assert_equal 1..1, @c.content_range
     @c['Content-Range'] = "tokens 1-1/1000"
     assert_equal nil, @c.content_range
+    @c['Content-Range'] = "bytes */1000"
+    assert_equal nil, @c.content_range
 
     try_invalid_content_range "invalid"
     try_invalid_content_range "bytes 123-abc"
     try_invalid_content_range "bytes abc-123"
+    try_invalid_content_range "bytes */abc"
+    try_invalid_content_range "bytes */*"
   end
 
   def test_range_length
@@ -365,6 +369,8 @@ class HTTPHeaderTest < Test::Unit::TestCase
     @c['Content-Range'] = "bytes 1-1/1000"
     assert_equal 1, @c.range_length
     @c['Content-Range'] = "tokens 1-1/1000"
+    assert_equal nil, @c.range_length
+    @c['Content-Range'] = "bytes */1000"
     assert_equal nil, @c.range_length
 
     try_invalid_content_range "bytes 1-1/abc"
