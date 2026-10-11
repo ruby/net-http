@@ -1447,6 +1447,12 @@ class TestNetHTTPForceEncoding < Test::Unit::TestCase
     assert_equal(Encoding::UTF_8, res.body.encoding)
   end
 
+  def test_response_body_encoding_true_with_trailing_semicolon_in_content_type
+    res = fe_request(true, 'text/html; charset=utf-8; ')
+    assert_equal("hello\u1234", res.body)
+    assert_equal(Encoding::UTF_8, res.body.encoding)
+  end
+
   def test_response_body_encoding_string_without_content_type
     res = fe_request('utf-8')
     assert_equal("hello\u1234", res.body)
