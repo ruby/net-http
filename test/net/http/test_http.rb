@@ -897,6 +897,46 @@ __EOM__
     }
   end
 
+  def test_set_form_multipart_with_mixed_encodings
+    utf8 = "r\u{e4}ksm\u{f6}rg\u{e5}s".freeze
+    binary = "r\u{e4}kmacka".b.freeze
+    data = [
+      ['utf8', StringIO.new(utf8)],
+      ["bin\u{e4}ry", StringIO.new(binary)],
+      ['file', utf8, filename: "f\u{e4}le"],
+      ['file', binary, filename: 'binary']
+    ]
+    expected = <<"__EOM__".b.gsub(/\n/, "\r\n")
+--<boundary>
+Content-Disposition: form-data; name="utf8"
+
+r\u{e4}ksm\u{f6}rg\u{e5}s
+--<boundary>
+Content-Disposition: form-data; name="bin\u{e4}ry"
+
+r\u{e4}kmacka
+--<boundary>
+Content-Disposition: form-data; name="file"; filename="f\u{e4}le"
+Content-Type: application/octet-stream
+
+r\u{e4}ksm\u{f6}rg\u{e5}s
+--<boundary>
+Content-Disposition: form-data; name="file"; filename="binary"
+Content-Type: application/octet-stream
+
+r\u{e4}kmacka
+--<boundary>--
+__EOM__
+    [false, true].each do |chunked|
+      start {|http|
+        @server.mount('/', lambda {|req, res| res.body = req.body })
+        _test_set_form_multipart(http, chunked, data, expected)
+      }
+    end
+    assert_equal(Encoding::UTF_8, utf8.encoding)
+    assert_equal(Encoding::BINARY, binary.encoding)
+  end
+
   def _test_set_form_urlencoded(http, data)
     req = Net::HTTP::Post.new('/')
     req.set_form(data)

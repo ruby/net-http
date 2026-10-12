@@ -341,7 +341,7 @@ class Net::HTTPGenericRequest
     end
     chunked_p = chunked?
 
-    buf = +''
+    buf = ''.b
     params.each do |key, value, h={}|
       key = quote_string(key, charset)
       filename =
@@ -349,7 +349,7 @@ class Net::HTTPGenericRequest
         value.respond_to?(:to_path) ? File.basename(value.to_path) :
         nil
 
-      buf << "--#{boundary}\r\n"
+      buf << "--#{boundary}\r\n".b
       if filename
         filename = quote_string(filename, charset)
         type = (h[:content_type] || 'application/octet-stream').to_s
@@ -358,10 +358,10 @@ class Net::HTTPGenericRequest
         end
         buf << "Content-Disposition: form-data; " \
           "name=\"#{key}\"; filename=\"#{filename}\"\r\n" \
-          "Content-Type: #{type}\r\n\r\n"
+          "Content-Type: #{type}\r\n\r\n".b
         if !out.respond_to?(:write) || !value.respond_to?(:read)
           # if +out+ is not an IO or +value+ is not an IO
-          buf << (value.respond_to?(:read) ? value.read : value)
+          buf << (value.respond_to?(:read) ? value.read : value).b
         elsif value.respond_to?(:size) && chunked_p
           # if +out+ is an IO and +value+ is a File, use IO.copy_stream
           flush_buffer(out, buf, chunked_p)
@@ -378,12 +378,12 @@ class Net::HTTPGenericRequest
         #   HTML5 says, "The parts of the generated multipart/form-data
         #   resource that correspond to non-file fields must not have a
         #   Content-Type header specified."
-        buf << "Content-Disposition: form-data; name=\"#{key}\"\r\n\r\n"
-        buf << (value.respond_to?(:read) ? value.read : value)
+        buf << "Content-Disposition: form-data; name=\"#{key}\"\r\n\r\n".b
+        buf << (value.respond_to?(:read) ? value.read : value).b
       end
       buf << "\r\n"
     end
-    buf << "--#{boundary}--\r\n"
+    buf << "--#{boundary}--\r\n".b
     flush_buffer(out, buf, chunked_p)
     out << "0\r\n\r\n" if chunked_p
   end
