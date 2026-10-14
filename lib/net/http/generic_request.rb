@@ -320,14 +320,14 @@ class Net::HTTPGenericRequest
       encode_multipart_form_data(sock, params, opt)
     else
       require 'tempfile'
-      file = Tempfile.new('multipart')
-      file.binmode
-      encode_multipart_form_data(file, params, opt)
-      file.rewind
-      self.content_length = file.size
-      write_header sock, ver, path
-      IO.copy_stream(file, sock)
-      file.close(true)
+      Tempfile.create('multipart') do |file|
+        file.binmode
+        encode_multipart_form_data(file, params, opt)
+        file.rewind
+        self.content_length = file.size
+        write_header sock, ver, path
+        IO.copy_stream(file, sock)
+      end
     end
   end
 
