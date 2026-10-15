@@ -800,8 +800,16 @@ module Net::HTTPHeader
     list = self['Content-Type'].to_s.split(';')
     list.shift
     list.each do |param|
-      k, v = *param.split('=', 2)
-      result[k.strip] = v.strip
+      k, v = param.split('=', 2)
+      k.strip!
+      v.strip!
+      v.gsub!(/\A"(.*?)(?<!\\)"\z/) do
+        v2 = $1
+        v2.gsub!(/\\(.)/, '\1')
+        v2
+      end
+      v.strip!
+      result[k] = v
     end
     result
   end
