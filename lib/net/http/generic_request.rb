@@ -301,7 +301,7 @@ class Net::HTTPGenericRequest
       IO.copy_stream(f, chunker)
       chunker.finish
     else
-      IO.copy_stream(f, sock)
+      IO.copy_stream(f, sock, content_length())
     end
   end
 
