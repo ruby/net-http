@@ -2510,10 +2510,12 @@ module Net   #:nodoc:
     def transport_request(req)
       count = 0
       begin
+        body_sent = false
         begin_transport req
         res = catch(:response) {
           begin
             req.exec @socket, @curr_http_version, edit_path(req.path)
+            body_sent = true
           rescue Errno::EPIPE
             # Failure when writing full request, but we can probably
             # still read the received response.
@@ -2560,6 +2562,7 @@ module Net   #:nodoc:
         raise
       end
 
+      @socket.close unless body_sent
       end_transport req, res
       res
     rescue => exception
