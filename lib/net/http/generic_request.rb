@@ -365,9 +365,7 @@ class Net::HTTPGenericRequest
         elsif value.respond_to?(:size) && chunked_p
           # if +out+ is an IO and +value+ is a File, use IO.copy_stream
           flush_buffer(out, buf, chunked_p)
-          out << "%x\r\n" % value.size if chunked_p
-          IO.copy_stream(value, out)
-          out << "\r\n" if chunked_p
+          IO.copy_stream(value, Chunker.new(out))
         else
           # +out+ is an IO, and +value+ is not a File but an IO
           flush_buffer(out, buf, chunked_p)
