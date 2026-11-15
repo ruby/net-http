@@ -730,6 +730,27 @@ EOS
     assert_equal "\x1F\x8B\b\x00\x00\x00\x00\x00\x00\x03", body
   end
 
+  def test_read_body_unsatisfied_content_range
+    io = dummy_io(<<EOS)
+HTTP/1.1 416 Range Not Satisfiable
+Connection: close
+Content-Range: bytes */1000
+
+not satisfiable
+EOS
+
+    res = Net::HTTPResponse.read_new(io)
+    assert_kind_of Net::HTTPRangeNotSatisfiable, res
+
+    body = nil
+
+    res.reading_body io, true do
+      body = res.read_body
+    end
+
+    assert_equal "not satisfiable\r\n", body
+  end
+
   def test_read_body_content_encoding_deflate_empty_body
     io = dummy_io(<<EOS)
 HTTP/1.1 200 OK
