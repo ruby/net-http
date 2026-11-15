@@ -800,6 +800,7 @@ module Net::HTTPHeader
     list = self['Content-Type'].to_s.split(';')
     list.shift
     list.each do |param|
+      next if param.strip.empty?
       k, v = *param.split('=', 2)
       result[k.strip] = v.strip
     end
