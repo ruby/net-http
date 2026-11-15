@@ -86,4 +86,22 @@ class Net::HTTPRequest < Net::HTTPGenericRequest
           self.class::RESPONSE_HAS_BODY,
           path, initheader
   end
+
+  # Returns whether the request may have a body:
+  #
+  #   Net::HTTP::Post.request_body_permitted? # => true
+  #   Net::HTTP::Get.request_body_permitted?  # => false
+  #
+  def self.request_body_permitted?
+    self::REQUEST_HAS_BODY
+  end
+
+  # Returns whether the response may have a body:
+  #
+  #   Net::HTTP::Post.response_body_permitted? # => true
+  #   Net::HTTP::Head.response_body_permitted? # => false
+  #
+  def self.response_body_permitted?
+    self::RESPONSE_HAS_BODY
+  end
 end
