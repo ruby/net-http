@@ -150,10 +150,10 @@ class Net::HTTPResponse
       self::EXCEPTION_TYPE
     end
 
-    def read_new(sock)   #:nodoc: internal use only
+    def read_new(sock, ignore_eof: true)   #:nodoc: internal use only
       httpv, code, msg = read_status_line(sock)
       res = response_class(code).new(httpv, code, msg)
-      each_response_header(sock) do |k,v|
+      each_response_header(sock, ignore_eof: ignore_eof) do |k,v|
         res.add_field k, v
       end
       res
@@ -181,11 +181,11 @@ class Net::HTTPResponse
       Net::HTTPUnknownResponse
     end
 
-    def each_response_header(sock)
+    def each_response_header(sock, ignore_eof: true)
       key = value = nil
       remaining = MAX_RESPONSE_HEADER_LENGTH
       while true
-        line = read_line(sock, MAX_RESPONSE_HEADER_LENGTH, true)
+        line = read_line(sock, MAX_RESPONSE_HEADER_LENGTH, ignore_eof)
         remaining -= line.bytesize
         raise Net::HTTPBadResponse, 'response header too large' if remaining < 0
         line = line.chomp
