@@ -1145,6 +1145,11 @@ module Net
     #
     attr_accessor proxy_pass: String?
 
+    # <!-- rdoc-file=lib/net/http.rb -->
+    # Sets or returns the X509::Store used to verify the proxy certificate.
+    #
+    attr_accessor proxy_cert_store: untyped
+
     # <!--
     #   rdoc-file=lib/net/http.rb
     #   - ipaddr()
