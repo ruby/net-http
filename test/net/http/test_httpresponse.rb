@@ -18,6 +18,18 @@ EOS
     assert_equal('close', res['connection'])
   end
 
+  def test_eof_terminated_headers
+    io = dummy_io("HTTP/1.1 200 OK\nContent-Length: 0\n")
+    res = Net::HTTPResponse.read_new(io)
+    assert_equal('200', res.code)
+    assert_equal('0', res['content-length'])
+  end
+
+  def test_eof_terminated_headers_with_ignore_eof_false
+    io = dummy_io("HTTP/1.1 200 OK\nContent-Length: 0\n")
+    assert_raise(EOFError) { Net::HTTPResponse.read_new(io, ignore_eof: false) }
+  end
+
   def test_response_header_too_large
     big_value = 'a' * (Net::HTTPHeader::MAX_FIELD_LENGTH - 100)
     count = (Net::HTTPResponse::MAX_RESPONSE_HEADER_LENGTH / big_value.bytesize) + 2

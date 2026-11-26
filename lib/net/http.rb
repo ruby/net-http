@@ -2513,31 +2513,78 @@ module Net   #:nodoc:
 
     IDEMPOTENT_METHODS_ = %w/GET HEAD PUT DELETE OPTIONS TRACE QUERY/.freeze # :nodoc:
 
+    class RequestIO
+      attr_reader :write_error
+
+      def initialize(socket)
+        @socket = socket
+        @write_error = nil
+      end
+
+      def write(*strs)
+        @socket.write(*strs)
+      rescue Errno::ECONNRESET => error
+        @write_error = error
+        raise
+      end
+
+      alias << write
+
+      def io
+        @socket.io
+      end
+
+      def continue_timeout
+        @socket.continue_timeout
+      end
+
+      def readuntil(*args, **kwargs)
+        @socket.readuntil(*args, **kwargs)
+      end
+
+      def close_on_error
+        @socket.close if @write_error && !@socket.closed?
+      end
+    end
+    private_constant :RequestIO
+
     def transport_request(req)
       count = 0
       begin
         begin_transport req
+        write_error = nil
+        request_io = RequestIO.new(@socket)
         res = catch(:response) {
           begin
-            req.exec @socket, @curr_http_version, edit_path(req.path)
+            req.exec request_io, @curr_http_version, edit_path(req.path)
           rescue Errno::EPIPE
             # Failure when writing full request, but we can probably
             # still read the received response.
+          rescue Errno::ECONNRESET => error
+            raise unless request_io.write_error.equal?(error)
+            write_error = error
           end
 
-          informational_count = 0
           begin
-            res = HTTPResponse.read_new(@socket)
-            res.decode_content = req.decode_content
-            res.body_encoding = @response_body_encoding
-            res.ignore_eof = @ignore_eof
-            if res.kind_of?(HTTPInformation)
-              informational_count += 1
-              raise HTTPBadResponse, 'too many informational responses' if
-                informational_count > HTTPResponse::MAX_INFORMATIONAL_RESPONSES
-            end
-          end while res.kind_of?(HTTPInformation)
+            informational_count = 0
+            begin
+              res = HTTPResponse.read_new(@socket, ignore_eof: !write_error)
+              if res.kind_of?(HTTPInformation)
+                informational_count += 1
+                raise HTTPBadResponse, 'too many informational responses' if
+                  informational_count > HTTPResponse::MAX_INFORMATIONAL_RESPONSES
+              end
+            end while res.kind_of?(HTTPInformation)
+          rescue Net::ReadTimeout, IOError, EOFError, SystemCallError,
+                 HTTPBadResponse, ArgumentError,
+                 defined?(OpenSSL::SSL) ? OpenSSL::SSL::SSLError : IOError
+            raise write_error if write_error
+            raise
+          end
 
+          res.decode_content = req.decode_content
+          res.body_encoding = @response_body_encoding
+          res.ignore_eof = @ignore_eof
           res.uri = req.uri
 
           res
@@ -2564,6 +2611,8 @@ module Net   #:nodoc:
         debug "Conn close because of error #{exception}"
         @socket.close if @socket
         raise
+      ensure
+        request_io.close_on_error if request_io
       end
 
       end_transport req, res
