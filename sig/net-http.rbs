@@ -3632,6 +3632,43 @@ module Net
   end
 
   # <!-- rdoc-file=lib/net/http/requests.rb -->
+  # Class for representing [HTTP method
+  # QUERY](https://www.rfc-editor.org/rfc/rfc10008.html):
+  #
+  #     require 'net/http'
+  #     uri = URI('http://example.com')
+  #     hostname = uri.hostname # => "example.com"
+  #     uri.path = '/posts'
+  #     req = Net::HTTP::Query.new(uri) # => #<Net::HTTP::Query QUERY>
+  #     req.body = '{"title": "foo","body": "bar","userId": 1}'
+  #     req.content_type = 'application/json'
+  #     res = Net::HTTP.start(hostname) do |http|
+  #       http.request(req)
+  #     end
+  #
+  # See [Request Headers](rdoc-ref:Net::HTTPRequest@Request+Headers).
+  #
+  # Properties:
+  #
+  # *   Request body: yes.
+  # *   Response body: yes.
+  # *   [Safe](https://en.wikipedia.org/wiki/HTTP#Safe_method): yes.
+  # *   [Idempotent](https://en.wikipedia.org/wiki/HTTP#Idempotent_method): yes.
+  # *   [Cacheable](https://en.wikipedia.org/wiki/HTTP#Cacheable_method): yes.
+  #
+  # Related:
+  #
+  # *   Net::HTTP#query: sends `QUERY` request, returns response object.
+  #
+  class HTTP::Query < HTTPRequest
+    METHOD: String
+
+    REQUEST_HAS_BODY: bool
+
+    RESPONSE_HAS_BODY: bool
+  end
+
+  # <!-- rdoc-file=lib/net/http/requests.rb -->
   # Class for representing [WebDAV method
   # PROPFIND](http://www.webdav.org/specs/rfc4918.html#METHOD_PROPFIND):
   #

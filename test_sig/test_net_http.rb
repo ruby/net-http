@@ -387,6 +387,27 @@ class NetInstanceTest < Test::Unit::TestCase
     end
   end
 
+  def test_query
+    with_server("localhost") do |uri|
+      assert_send_type "(String, String) -> Net::HTTPResponse",
+                       Net::HTTP.start("localhost", uri.port), :query, "/todos", "{\"completed\": false}"
+      assert_send_type "(String, String, Hash[String, String]) -> Net::HTTPResponse",
+                       Net::HTTP.start("localhost", uri.port), :query, "/todos", "{\"completed\": false}", { "Content-Type" => "application/json" }
+      assert_send_type "(String, String) { (String) -> untyped } -> Net::HTTPResponse",
+                       Net::HTTP.start("localhost", uri.port), :query, "/todos", "{\"completed\": false}" do |string| string end
+      assert_send_type "(String, String, Hash[String, String]) { (String) -> untyped } -> Net::HTTPResponse",
+                       Net::HTTP.start("localhost", uri.port), :query, "/todos", "{\"completed\": false}", { "Content-Type" => "application/json" } do |string| string end
+      assert_send_type "(String, String) -> Net::HTTPResponse",
+                       Net::HTTP.start("localhost", uri.port), :request_query, "/todos", "{\"completed\": false}"
+      assert_send_type "(String, String, Hash[String, String]) -> Net::HTTPResponse",
+                       Net::HTTP.start("localhost", uri.port), :request_query, "/todos", "{\"completed\": false}", { "Content-Type" => "application/json" }
+      assert_send_type "(String, String) { (Net::HTTPResponse) -> untyped } -> Net::HTTPResponse",
+                       Net::HTTP.start("localhost", uri.port), :request_query, "/todos", "{\"completed\": false}" do |response| response end
+      assert_send_type "(String, String, Hash[String, String]) { (Net::HTTPResponse) -> untyped } -> Net::HTTPResponse",
+                       Net::HTTP.start("localhost", uri.port), :request_query, "/todos", "{\"completed\": false}", { "Content-Type" => "application/json" } do |response| response end
+    end
+  end
+
   def test_request
     with_server("localhost") do |uri|
       assert_send_type "(String, String) -> Net::HTTPResponse",
