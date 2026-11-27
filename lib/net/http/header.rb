@@ -539,7 +539,9 @@ module Net::HTTPHeader
     end
 
     byte_range_set = $1
-    result = byte_range_set.split(/,/).map {|spec|
+    suffix_range = false
+    result = byte_range_set.split(/,/).filter_map {|spec|
+      next if spec.strip.empty?
       m = /(\d+)?\s*-\s*(\d+)?/i.match(spec) or
               raise Net::HTTPHeaderSyntaxError, "invalid byte-range-spec: '#{spec}'"
       d1 = m[1].to_i
@@ -552,6 +554,7 @@ module Net::HTTPHeader
       elsif m[1]
         d1..-1
       elsif m[2]
+        suffix_range = true
         -d2..-1
       else
         raise Net::HTTPHeaderSyntaxError, 'range is not specified'
@@ -560,7 +563,7 @@ module Net::HTTPHeader
     # if result.empty?
     # byte-range-set must include at least one byte-range-spec or suffix-byte-range-spec
     # but above regexp already denies it.
-    if result.size == 1 && result[0].begin == 0 && result[0].end == -1
+    if result.size == 1 && suffix_range && result[0].begin == 0 && result[0].end == -1
       raise Net::HTTPHeaderSyntaxError, 'only one suffix-byte-range-spec with zero suffix-length'
     end
     result
@@ -604,9 +607,12 @@ module Net::HTTPHeader
     when Range
       first = r.first
       last = r.end
-      last -= 1 if r.exclude_end?
+      if r.exclude_end?
+        raise Net::HTTPHeaderSyntaxError, 'range is empty' if first == last
+        last -= 1
+      end
       if last == -1
-        rangestr = (first > 0 ? "#{first}-" : "-#{-first}")
+        rangestr = (first >= 0 ? "#{first}-" : "-#{-first}")
       else
         raise Net::HTTPHeaderSyntaxError, 'range.first is negative' if first < 0
         raise Net::HTTPHeaderSyntaxError, 'range.last is negative' if last < 0
