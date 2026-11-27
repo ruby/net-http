@@ -957,14 +957,79 @@ __EOM__
           /^Content-Disposition: form-data; name="file"; filename="#{filename}"\r\n/,
           header)
         assert_equal(expected, body)
-
-        # TODO: test with chunked
-        # data.each{|k,v|v.rewind rescue nil}
-        # req['Transfer-Encoding'] = 'chunked'
-        # res = http.request req
-        # assert_equal(expected, res.body)
       }
     }
+  end
+
+  def test_set_form_multipart_chunked_frames_file_parts_by_bytes_read
+    require 'tempfile'
+    Tempfile.create('ruby-test') {|empty|
+      Tempfile.create('ruby-test') {|file|
+        large = "x" * 5000
+        file << "skipped " << large
+        file.rewind
+        file.read(8)
+        string_io = StringIO.new(+"skipped data")
+        string_io.read(8)
+        reads = ["", "data".freeze]
+        reader = Object.new
+        reader.define_singleton_method(:read) {|*| reads.shift }
+        req = Net::HTTP::Post.new('/')
+        req['Transfer-Encoding'] = 'chunked'
+        req.set_form([
+          ['empty_file', empty, {filename: 'a.txt'}],
+          ['partly_read_large_file', file, {filename: 'b.txt'}],
+          ['partly_read_string_io', string_io, {filename: 'c.txt'}],
+          ['reads_empty_string_first', reader, {filename: 'd.txt'}],
+          ['after', 'value'],
+        ], 'multipart/form-data')
+        out = StringIO.new(+'')
+        req.send(:encode_multipart_form_data, out, req.instance_variable_get(:@body_data), {boundary: 'BOUNDARY'})
+
+        expected = <<~"__EOM__".gsub(/\n/, "\r\n")
+          --BOUNDARY
+          Content-Disposition: form-data; name="empty_file"; filename="a.txt"
+          Content-Type: application/octet-stream
+
+
+          --BOUNDARY
+          Content-Disposition: form-data; name="partly_read_large_file"; filename="b.txt"
+          Content-Type: application/octet-stream
+
+          #{large}
+          --BOUNDARY
+          Content-Disposition: form-data; name="partly_read_string_io"; filename="c.txt"
+          Content-Type: application/octet-stream
+
+          data
+          --BOUNDARY
+          Content-Disposition: form-data; name="reads_empty_string_first"; filename="d.txt"
+          Content-Type: application/octet-stream
+
+          data
+          --BOUNDARY
+          Content-Disposition: form-data; name="after"
+
+          value
+          --BOUNDARY--
+        __EOM__
+        assert_equal expected, decode_chunked(out.string)
+      }
+    }
+  end
+
+  def decode_chunked(body)
+    chunks = []
+    loop do
+      size_line, body = body.split("\r\n", 2)
+      size = Integer(size_line, 16)
+      assert_equal "\r\n", body.byteslice(size, 2)
+      chunk, body = body.byteslice(0, size), body.byteslice(size + 2..)
+      break if size == 0
+      chunks << chunk
+    end
+    assert_equal "", body, 'nothing may follow the last chunk'
+    chunks.join
   end
 
   def test_set_form_multipart_crlf_injection
