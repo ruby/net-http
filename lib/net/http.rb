@@ -1188,6 +1188,7 @@ module Net   #:nodoc:
       @proxy_port     = nil
       @proxy_user     = nil
       @proxy_pass     = nil
+      @proxy_use_ssl  = false
 
       @use_ssl = false
       @ssl_context = nil
@@ -1320,6 +1321,10 @@ module Net   #:nodoc:
     # Sets the proxy password;
     # see {Proxy Server}[rdoc-ref:Net::HTTP@Proxy+Server].
     attr_writer :proxy_pass
+
+    # Sets whether the proxy uses SSL;
+    # see {Proxy Server}[rdoc-ref:Net::HTTP@Proxy+Server].
+    attr_writer :proxy_use_ssl
 
     # Returns the IP address for the connection.
     #
@@ -1760,26 +1765,26 @@ module Net   #:nodoc:
         ssl_context.setup
       end
 
-      if proxy? then
-        conn_addr = proxy_address
-        conn_port = proxy_port
+      if proxy?
+        debug "opening connection to proxy server #{proxy_address}:#{proxy_port}..."
+        s = timeouted_connect(proxy_address, proxy_port)
+        if proxy_use_ssl?
+          debug "starting SSL for #{proxy_address}:#{proxy_port}..."
+          s = OpenSSL::SSL::SSLSocket.new(s, proxy_ssl_context)
+          s.sync_close = true
+          s.hostname = proxy_address if ssl_sni_enabled?(proxy_address)
+          ssl_socket_connect(s, @open_timeout)
+          if proxy_ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE
+            s.post_connection_check(proxy_address)
+          end
+          debug "SSL established to proxy server, " \
+            "protocol: #{s.ssl_version}, cipher: #{s.cipher[0]}"
+        end
       else
-        conn_addr = conn_address
-        conn_port = port
+        debug "opening connection to #{conn_address}:#{port}..."
+        s = timeouted_connect(conn_address, port)
       end
 
-      debug "opening connection to #{conn_addr}:#{conn_port}..."
-      begin
-        s = timeouted_connect(conn_addr, conn_port)
-      rescue => e
-        if (defined?(IO::TimeoutError) && e.is_a?(IO::TimeoutError)) || e.is_a?(Errno::ETIMEDOUT)  # for compatibility with previous versions
-          e = Net::OpenTimeout.new(e)
-        end
-        raise e, "Failed to open TCP connection to " +
-          "#{conn_addr}:#{conn_port} (#{e.message})"
-      end
-      s.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
-      debug "opened"
       if use_ssl?
         if proxy?
           plain_sock = BufferedIO.new(s, read_timeout: @read_timeout,
@@ -1804,7 +1809,7 @@ module Net   #:nodoc:
           # assuming nothing left in buffers after successful CONNECT response
         end
 
-        debug "starting SSL for #{conn_addr}:#{conn_port}..."
+        debug "starting SSL for #{conn_address}:#{port}..."
         s = OpenSSL::SSL::SSLSocket.new(s, ssl_context)
         s.sync_close = true
         # Server Name Indication (SNI) RFC 3546/6066
@@ -1821,6 +1826,7 @@ module Net   #:nodoc:
         end
         debug "SSL established, protocol: #{s.ssl_version}, cipher: #{s.cipher[0]}"
       end
+
       @socket = BufferedIO.new(s, read_timeout: @read_timeout,
                                write_timeout: @write_timeout,
                                continue_timeout: @continue_timeout,
@@ -1847,13 +1853,22 @@ module Net   #:nodoc:
     private_constant :TCP_SOCKET_NEW_HAS_OPEN_TIMEOUT
 
     def timeouted_connect(conn_addr, conn_port)
-      if TCP_SOCKET_NEW_HAS_OPEN_TIMEOUT
+      s = if TCP_SOCKET_NEW_HAS_OPEN_TIMEOUT
         TCPSocket.open(conn_addr, conn_port, @local_host, @local_port, open_timeout: @open_timeout)
       else
         Timeout.timeout(@open_timeout, Net::OpenTimeout) {
           TCPSocket.open(conn_addr, conn_port, @local_host, @local_port)
         }
       end
+      s.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+      s
+    rescue => e
+      s&.close
+      if (defined?(IO::TimeoutError) && e.is_a?(IO::TimeoutError)) || e.is_a?(Errno::ETIMEDOUT)  # for compatibility with previous versions
+        e = Net::OpenTimeout.new(e)
+      end
+      raise e, "Failed to open TCP connection to " +
+        "#{conn_addr}:#{conn_port} (#{e.message})"
     end
     private :timeouted_connect
 
@@ -1995,6 +2010,27 @@ module Net   #:nodoc:
       else
         @proxy_pass
       end
+    end
+
+    # Returns +true+ if SSL is used to connect to the proxy server;
+    # see {Proxy Server}[rdoc-ref:Net::HTTP@Proxy+Server].
+    def proxy_use_ssl?
+      if @proxy_from_env
+        proxy_uri&.scheme == "https"
+      else
+        @proxy_use_ssl
+      end
+    end
+
+    # Returns the OpenSSL::SSL::SSLContext object used for SSL/TLS sessions
+    # with the proxy server.
+    def proxy_ssl_context
+      @proxy_ssl_context ||= (
+        ctx = OpenSSL::SSL::SSLContext.new
+        ctx.set_params
+        ctx.verify_hostname = ssl_sni_enabled?(proxy_address)
+        ctx
+      )
     end
 
     alias proxyaddr proxy_address   #:nodoc: obsolete
