@@ -967,13 +967,13 @@ module Net::HTTPHeader
   #   Field names and values of non-file fields should be encoded with this charset.
   #
   def set_form(params, enctype='application/x-www-form-urlencoded', formopt={})
-    @body_data = params
-    @body = nil
-    @body_stream = nil
-    @form_option = formopt
     case enctype
     when /\Aapplication\/x-www-form-urlencoded\z/i,
       /\Amultipart\/form-data\z/i
+      @body_data = params
+      @body = nil
+      @body_stream = nil
+      @form_option = formopt
       self.content_type = enctype
     else
       raise ArgumentError, "invalid enctype: #{enctype}"
