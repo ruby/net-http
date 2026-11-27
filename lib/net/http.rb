@@ -1191,6 +1191,7 @@ module Net   #:nodoc:
       @proxy_user     = nil
       @proxy_pass     = nil
       @proxy_use_ssl  = nil
+      @proxy_cert_store = nil
 
       @use_ssl = false
       @ssl_context = nil
@@ -1329,6 +1330,9 @@ module Net   #:nodoc:
     # Sets whether the proxy uses SSL;
     # see {Proxy Server}[rdoc-ref:Net::HTTP@Proxy+Server].
     attr_writer :proxy_use_ssl
+
+    # Sets or returns the X509::Store used to verify the proxy certificate.
+    attr_accessor :proxy_cert_store
 
     # Returns the IP address for the connection.
     #
@@ -1713,8 +1717,26 @@ module Net   #:nodoc:
       if use_ssl?
         if proxy?
           if @proxy_use_ssl
-            proxy_sock = OpenSSL::SSL::SSLSocket.new(s)
+            # Authenticate the proxy before sending CONNECT credentials.
+            proxy_ssl_context = OpenSSL::SSL::SSLContext.new
+            proxy_ssl_context.set_params(verify_mode: OpenSSL::SSL::VERIFY_PEER,
+                                         verify_hostname: true)
+            proxy_ssl_context.cert_store = @proxy_cert_store if @proxy_cert_store
+            proxy_ssl_host_address = nil
+            case proxy_address
+            when IPV4_ADDRESS, IPV6_ADDRESS
+              # IP addresses are not valid in SNI.
+              proxy_ssl_context.verify_hostname = false
+            else
+              proxy_ssl_host_address = proxy_address
+            end
+            proxy_sock = OpenSSL::SSL::SSLSocket.new(s, proxy_ssl_context)
+            proxy_sock.sync_close = true
+            if proxy_ssl_host_address && proxy_sock.respond_to?(:hostname=)
+              proxy_sock.hostname = proxy_ssl_host_address
+            end
             ssl_socket_connect(proxy_sock, @open_timeout)
+            proxy_sock.post_connection_check(proxy_address)
           else
             proxy_sock = s
           end

@@ -64,18 +64,13 @@ class HTTPSProxyTest < Test::Unit::TestCase
   end
 
   def test_https_proxy_ssl_connection
-    TCPServer.open("127.0.0.1", 0) {|tcpserver|
-      ctx = OpenSSL::SSL::SSLContext.new
-      ctx.key = OpenSSL::PKey.read(read_fixture("server.key"))
-      ctx.cert = OpenSSL::X509::Certificate.new(read_fixture("server.crt"))
-      serv = OpenSSL::SSL::SSLServer.new(tcpserver, ctx)
-
-      _, port, _, _ = serv.addr
+    with_ssl_proxy do |port, serv|
       client_thread = Thread.new {
-        proxy = Net::HTTP.Proxy("127.0.0.1", port, 'user', 'password', true)
+        proxy = Net::HTTP.Proxy("localhost", port, 'user', 'password', true)
         http = proxy.new("foo.example.org", 8000)
         http.use_ssl = true
         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        http.proxy_cert_store = proxy_cert_store
         begin
           http.start
         rescue EOFError
@@ -97,6 +92,62 @@ class HTTPSProxyTest < Test::Unit::TestCase
         end
       }
       assert_join_threads([client_thread, server_thread])
+    end
+  end
+
+  def test_https_proxy_rejects_untrusted_certificate
+    assert_proxy_certificate_rejected("localhost", trusted: false)
+  end
+
+  def test_https_proxy_rejects_wrong_host_certificate
+    assert_proxy_certificate_rejected("127.0.0.1", trusted: true)
+  end
+
+  def proxy_cert_store
+    OpenSSL::X509::Store.new.tap {|store|
+      store.add_cert(OpenSSL::X509::Certificate.new(read_fixture("cacert.pem")))
     }
+  end
+
+  def with_ssl_proxy
+    TCPServer.open("127.0.0.1", 0) {|tcpserver|
+      ctx = OpenSSL::SSL::SSLContext.new
+      ctx.key = OpenSSL::PKey.read(read_fixture("server.key"))
+      ctx.cert = OpenSSL::X509::Certificate.new(read_fixture("server.crt"))
+      serv = OpenSSL::SSL::SSLServer.new(tcpserver, ctx)
+      yield serv.addr[1], serv
+    }
+  end
+
+  def assert_proxy_certificate_rejected(proxy_address, trusted:)
+    with_ssl_proxy do |port, serv|
+      proxy_request = nil
+      client_error = nil
+      client_thread = Thread.new {
+        proxy = Net::HTTP.Proxy(proxy_address, port, 'user', 'password', true)
+        http = proxy.new("foo.example.org", 8000)
+        http.use_ssl = true
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        http.proxy_cert_store = proxy_cert_store if trusted
+        begin
+          http.start
+        rescue => error
+          client_error = error
+        end
+      }
+      server_thread = Thread.new {
+        begin
+          sock = serv.accept
+          proxy_request = sock.gets("\r\n\r\n")
+        rescue EOFError, Errno::ECONNRESET, Errno::ECONNABORTED, OpenSSL::SSL::SSLError
+          proxy_request = nil
+        ensure
+          sock&.close
+        end
+      }
+      assert_join_threads([client_thread, server_thread])
+      assert_nil(proxy_request, "proxy received bytes before certificate rejection: #{proxy_request.inspect}")
+      assert_kind_of(OpenSSL::SSL::SSLError, client_error)
+    end
   end
 end
