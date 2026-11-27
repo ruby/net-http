@@ -374,18 +374,13 @@ class Net::HTTPGenericRequest
           "name=\"#{key}\"; filename=\"#{filename}\"\r\n" \
           "Content-Type: #{type}\r\n\r\n"
         if !out.respond_to?(:write) || !value.respond_to?(:read)
-          # if +out+ is not an IO or +value+ is not an IO
           buf << (value.respond_to?(:read) ? value.read : value)
-        elsif value.respond_to?(:size) && chunked_p
-          # if +out+ is an IO and +value+ is a File, use IO.copy_stream
-          flush_buffer(out, buf, chunked_p)
-          out << "%x\r\n" % value.size if chunked_p
-          IO.copy_stream(value, out)
-          out << "\r\n" if chunked_p
         else
-          # +out+ is an IO, and +value+ is not a File but an IO
           flush_buffer(out, buf, chunked_p)
-          1 while flush_buffer(out, value.read(4096), chunked_p)
+          buf.clear
+          while (chunk = value.read(4096))
+            flush_buffer(out, chunk, chunked_p)
+          end
         end
       else
         # non-file field:
@@ -411,11 +406,12 @@ class Net::HTTPGenericRequest
   end
 
   def flush_buffer(out, buf, chunked_p)
-    return unless buf
-    out << "%x\r\n"%buf.bytesize if chunked_p
-    out << buf
-    out << "\r\n" if chunked_p
-    buf.clear
+    return if buf.nil? || buf.empty?
+    if chunked_p
+      out.write("%x\r\n" % buf.bytesize, buf, "\r\n")
+    else
+      out << buf
+    end
   end
 
   ##
