@@ -416,14 +416,33 @@ class Net::HTTPGenericRequest
   def wait_for_continue(sock, ver)
     if ver >= '1.1' and @header['expect'] and
         @header['expect'].include?('100-continue')
-      if sock.io.to_io.wait_readable(sock.continue_timeout)
+      timeout = sock.continue_timeout
+      deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout if timeout
+      informational_count = 0
+      while response_available?(sock, timeout)
         res = Net::HTTPResponse.read_new(sock)
-        unless res.kind_of?(Net::HTTPContinue)
-          res.decode_content = @decode_content
-          throw :response, res
+        break if res.kind_of?(Net::HTTPContinue)
+        if res.kind_of?(Net::HTTPInformation) && !res.kind_of?(Net::HTTPSwitchProtocol)
+          informational_count += 1
+          raise Net::HTTPBadResponse, 'too many informational responses' if
+            informational_count > Net::HTTPResponse::MAX_INFORMATIONAL_RESPONSES
+          if deadline
+            timeout = deadline - Process.clock_gettime(Process::CLOCK_MONOTONIC)
+            break if timeout <= 0
+          end
+          next
         end
+        res.decode_content = @decode_content
+        throw :response, res
       end
     end
+  end
+
+  def response_available?(sock, timeout)
+    return sock.wait_readable(timeout) if sock.respond_to?(:wait_readable)
+    sock.__send__(:rbuf_size) > 0 ||
+      (sock.io.respond_to?(:pending) && sock.io.pending > 0) ||
+      sock.io.to_io.wait_readable(timeout)
   end
 
   def write_header(sock, ver, path)
