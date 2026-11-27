@@ -1100,7 +1100,7 @@ module Net   #:nodoc:
     # For proxy-defining arguments +p_addr+ through +p_no_proxy+,
     # see {Proxy Server}[rdoc-ref:Net::HTTP@Proxy+Server].
     #
-    def HTTP.new(address, port = nil, p_addr = :ENV, p_port = nil, p_user = nil, p_pass = nil, p_no_proxy = nil, p_use_ssl = nil)
+    def HTTP.new(address, port = nil, p_addr = :ENV, p_port = nil, p_user = nil, p_pass = nil, p_no_proxy = nil)
       http = super address, port
 
       if proxy_class? then # from Net::HTTP::Proxy()
@@ -1109,7 +1109,6 @@ module Net   #:nodoc:
         http.proxy_port     = @proxy_port
         http.proxy_user     = @proxy_user
         http.proxy_pass     = @proxy_pass
-        http.proxy_use_ssl  = @proxy_use_ssl
       elsif p_addr == :ENV then
         http.proxy_from_env = true
       else
@@ -1121,7 +1120,6 @@ module Net   #:nodoc:
         http.proxy_port    = p_port || default_port
         http.proxy_user    = p_user
         http.proxy_pass    = p_pass
-        http.proxy_use_ssl = p_use_ssl
       end
 
       http
@@ -1190,15 +1188,13 @@ module Net   #:nodoc:
       @proxy_port     = nil
       @proxy_user     = nil
       @proxy_pass     = nil
-      @proxy_use_ssl  = nil
+      @proxy_use_ssl  = false
 
       @use_ssl = false
       @ssl_context = nil
       @ssl_session = nil
+      @verify_hostname = true
       @sspi_enabled = false
-      SSL_IVNAMES.each do |ivname|
-        instance_variable_set ivname, nil
-      end
     end
 
     # Returns a string representation of +self+:
@@ -1523,26 +1519,6 @@ module Net   #:nodoc:
       @use_ssl = flag
     end
 
-    SSL_ATTRIBUTES = [
-      :ca_file,
-      :ca_path,
-      :cert,
-      :cert_store,
-      :ciphers,
-      :extra_chain_cert,
-      :key,
-      :ssl_timeout,
-      :ssl_version,
-      :min_version,
-      :max_version,
-      :verify_callback,
-      :verify_depth,
-      :verify_mode,
-      :verify_hostname,
-    ].freeze # :nodoc:
-
-    SSL_IVNAMES = SSL_ATTRIBUTES.map { |a| "@#{a}".to_sym }.freeze # :nodoc:
-
     # Resolv::IPv4::Regex and Resolv::IPv6::Regex, copied from resolv 0.7.1 rather
     # than required, so that net/http does not load a DNS resolver just to keep an
     # IP address literal out of the Server Name Indication.
@@ -1566,61 +1542,155 @@ module Net   #:nodoc:
 
     private_constant :IPV4_ADDRESS, :IPV6_ADDRESS
 
-    # Sets or returns the path to a CA certification file in PEM format.
-    attr_accessor :ca_file
+    def ssl_sni_enabled?(address)
+      case address
+      when IPV4_ADDRESS, IPV6_ADDRESS
+        return false
+      end
+      true
+    end
+    private :ssl_sni_enabled?
 
+    # Returns the OpenSSL::SSL::SSLContext object used for SSL/TLS sessions.
+    #
+    # The object is frozen after a session is started for the first time and
+    # cannot be modified afterwards.
+    def ssl_context
+      @ssl_context ||= (
+        ctx = OpenSSL::SSL::SSLContext.new
+        ctx.set_params
+
+        # See the note on #verify_hostname
+        ctx.verify_hostname = verify_hostname && ssl_sni_enabled?(@address)
+
+        unless ctx.session_cache_mode.nil? # a dummy method on JRuby
+          ctx.session_cache_mode =
+            OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
+            OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
+        end
+        if ctx.respond_to?(:session_new_cb) # not implemented under JRuby
+          ctx.session_new_cb = proc {|sock, sess| @ssl_session = sess }
+        end
+
+        ctx
+      )
+    end
+
+    def_ssl_attr = proc do |attr|
+      class_eval <<~EOS, __FILE__, __LINE__ + 1
+        def #{attr}
+          ssl_context.#{attr}
+        end
+
+        def #{attr}=(value)
+          ssl_context.#{attr} = value
+        end
+      EOS
+    end
+
+    ##
+    # :attr_accessor: ca_file
+    # Sets or returns the path to a CA certification file in PEM format.
+    def_ssl_attr.call(:ca_file)
+
+    ##
+    # :attr_accessor: ca_path
     # Sets or returns the path of to CA directory
     # containing certification files in PEM format.
-    attr_accessor :ca_path
+    def_ssl_attr.call(:ca_path)
 
+    ##
+    # :attr_accessor: cert
     # Sets or returns the OpenSSL::X509::Certificate object
     # to be used for client certification.
-    attr_accessor :cert
+    def_ssl_attr.call(:cert)
 
+    ##
+    # :attr_accessor: cert_store
     # Sets or returns the X509::Store to be used for verifying peer certificate.
-    attr_accessor :cert_store
+    def_ssl_attr.call(:cert_store)
 
+    ##
+    # :attr_accessor: ciphers
     # Sets or returns the available SSL ciphers.
     # See {OpenSSL::SSL::SSLContext#ciphers=}[https://docs.ruby-lang.org/en/master/OpenSSL/SSL/SSLContext.html#method-i-ciphers-3D].
-    attr_accessor :ciphers
+    def_ssl_attr.call(:ciphers)
 
+    ##
+    # :attr_accessor: extra_chain_cert
     # Sets or returns the extra X509 certificates to be added to the certificate chain.
     # See {OpenSSL::SSL::SSLContext#add_certificate}[https://docs.ruby-lang.org/en/master/OpenSSL/SSL/SSLContext.html#method-i-add_certificate].
-    attr_accessor :extra_chain_cert
+    def_ssl_attr.call(:extra_chain_cert)
 
+    ##
+    # :attr_accessor: key
     # Sets or returns the OpenSSL::PKey::RSA or OpenSSL::PKey::DSA object.
-    attr_accessor :key
+    def_ssl_attr.call(:key)
 
+    ##
+    # :attr_accessor: ssl_timeout
     # Sets or returns the SSL timeout seconds.
-    attr_accessor :ssl_timeout
+    def_ssl_attr.call(:ssl_timeout)
 
+    ##
+    # :attr_accessor: ssl_version
     # Sets or returns the SSL version.
     # See {OpenSSL::SSL::SSLContext#ssl_version=}[https://docs.ruby-lang.org/en/master/OpenSSL/SSL/SSLContext.html#method-i-ssl_version-3D].
-    attr_accessor :ssl_version
+    def_ssl_attr.call(:ssl_version)
 
+    ##
+    # :attr_accessor: min_version
     # Sets or returns the minimum SSL version.
     # See {OpenSSL::SSL::SSLContext#min_version=}[https://docs.ruby-lang.org/en/master/OpenSSL/SSL/SSLContext.html#method-i-min_version-3D].
-    attr_accessor :min_version
+    def_ssl_attr.call(:min_version)
 
+    ##
+    # :attr_accessor: max_version
     # Sets or returns the maximum SSL version.
     # See {OpenSSL::SSL::SSLContext#max_version=}[https://docs.ruby-lang.org/en/master/OpenSSL/SSL/SSLContext.html#method-i-max_version-3D].
-    attr_accessor :max_version
+    def_ssl_attr.call(:max_version)
 
+    ##
+    # :attr_accessor: verify_callback
     # Sets or returns the callback for the server certification verification.
-    attr_accessor :verify_callback
+    def_ssl_attr.call(:verify_callback)
 
+    ##
+    # :attr_accessor: verify_depth
     # Sets or returns the maximum depth for the certificate chain verification.
-    attr_accessor :verify_depth
+    def_ssl_attr.call(:verify_depth)
 
+    ##
+    # :attr_accessor: verify_mode
     # Sets or returns the flags for server the certification verification
     # at the beginning of the SSL/TLS session.
     # OpenSSL::SSL::VERIFY_NONE or OpenSSL::SSL::VERIFY_PEER are acceptable.
-    attr_accessor :verify_mode
+    def_ssl_attr.call(:verify_mode)
 
+    ##
+    # :attr_accessor: verify_hostname
     # Sets or returns whether to verify that the server certificate is valid
-    # for the hostname.
+    # for the hostname or the IP address of the server.
     # See {OpenSSL::SSL::SSLContext#verify_hostname=}[https://docs.ruby-lang.org/en/master/OpenSSL/SSL/SSLContext.html#attribute-i-verify_hostname].
-    attr_accessor :verify_hostname
+    #--
+    # This attribute is not forwarded directly to SSLContext because the
+    # semantics are slightly different.
+    #   - SSLContext#verify_hostname must be used together with SNI, which
+    #     is unavailable when connecting to an IP address.
+    #   - Net::HTTP#verify_hostname is expected to verify the certificate
+    #     identity regardless of whether SNI is used.
+    #++
+
+    # :stopdoc:
+    def verify_hostname
+      @verify_hostname
+    end
+
+    def verify_hostname=(value)
+      @verify_hostname = value
+      ssl_context.verify_hostname = value && ssl_sni_enabled?(@address)
+    end
+    # :startdoc:
 
     # Returns the X509 certificate chain (an array of strings)
     # for the session's socket peer,
@@ -1692,38 +1762,32 @@ module Net   #:nodoc:
       if use_ssl?
         # reference early to load OpenSSL before connecting,
         # as OpenSSL may take time to load.
-        @ssl_context = OpenSSL::SSL::SSLContext.new
+        ssl_context.setup
       end
 
-      if proxy? then
-        conn_addr = proxy_address
-        conn_port = proxy_port
-      else
-        conn_addr = conn_address
-        conn_port = port
-      end
-
-      debug "opening connection to #{conn_addr}:#{conn_port}..."
-      begin
-        s = timeouted_connect(conn_addr, conn_port)
-      rescue => e
-        if (defined?(IO::TimeoutError) && e.is_a?(IO::TimeoutError)) || e.is_a?(Errno::ETIMEDOUT)  # for compatibility with previous versions
-          e = Net::OpenTimeout.new(e)
+      if proxy?
+        debug "opening connection to proxy server #{proxy_address}:#{proxy_port}..."
+        s = timeouted_connect(proxy_address, proxy_port)
+        if proxy_use_ssl?
+          debug "starting SSL for #{proxy_address}:#{proxy_port}..."
+          s = OpenSSL::SSL::SSLSocket.new(s, proxy_ssl_context)
+          s.sync_close = true
+          s.hostname = proxy_address if ssl_sni_enabled?(proxy_address)
+          ssl_socket_connect(s, @open_timeout)
+          if proxy_ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE
+            s.post_connection_check(proxy_address)
+          end
+          debug "SSL established to proxy server, " \
+            "protocol: #{s.ssl_version}, cipher: #{s.cipher[0]}"
         end
-        raise e, "Failed to open TCP connection to " +
-          "#{conn_addr}:#{conn_port} (#{e.message})"
+      else
+        debug "opening connection to #{conn_address}:#{port}..."
+        s = timeouted_connect(conn_address, port)
       end
-      s.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
-      debug "opened"
+
       if use_ssl?
         if proxy?
-          if @proxy_use_ssl
-            proxy_sock = OpenSSL::SSL::SSLSocket.new(s)
-            ssl_socket_connect(proxy_sock, @open_timeout)
-          else
-            proxy_sock = s
-          end
-          proxy_sock = BufferedIO.new(proxy_sock, read_timeout: @read_timeout,
+          plain_sock = BufferedIO.new(s, read_timeout: @read_timeout,
                                       write_timeout: @write_timeout,
                                       continue_timeout: @continue_timeout,
                                       debug_output: @debug_output)
@@ -1740,62 +1804,29 @@ module Net   #:nodoc:
             buf << "Proxy-Authorization: Basic #{credential}\r\n"
           end
           buf << "\r\n"
-          proxy_sock.write(buf)
-          HTTPResponse.read_new(proxy_sock).value
+          plain_sock.write(buf)
+          HTTPResponse.read_new(plain_sock).value
           # assuming nothing left in buffers after successful CONNECT response
         end
 
-        ssl_parameters = Hash.new
-        iv_list = instance_variables
-        SSL_IVNAMES.each_with_index do |ivname, i|
-          if iv_list.include?(ivname)
-            value = instance_variable_get(ivname)
-            unless value.nil?
-              ssl_parameters[SSL_ATTRIBUTES[i]] = value
-            end
-          end
-        end
-        @ssl_context.set_params(ssl_parameters)
-        unless @ssl_context.session_cache_mode.nil? # a dummy method on JRuby
-          @ssl_context.session_cache_mode =
-              OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
-                  OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
-        end
-        if @ssl_context.respond_to?(:session_new_cb) # not implemented under JRuby
-          @ssl_context.session_new_cb = proc {|sock, sess| @ssl_session = sess }
-        end
-
-        # Still do the post_connection_check below even if connecting
-        # to IP address
-        verify_hostname = @ssl_context.verify_hostname
-
-        # Server Name Indication (SNI) RFC 3546/6066
-        case @address
-        when IPV4_ADDRESS, IPV6_ADDRESS
-          # don't set SNI, as IP addresses in SNI is not valid
-          # per RFC 6066, section 3.
-
-          # Avoid openssl warning
-          @ssl_context.verify_hostname = false
-        else
-          ssl_host_address = @address
-        end
-
-        debug "starting SSL for #{conn_addr}:#{conn_port}..."
-        s = OpenSSL::SSL::SSLSocket.new(s, @ssl_context)
+        debug "starting SSL for #{conn_address}:#{port}..."
+        s = OpenSSL::SSL::SSLSocket.new(s, ssl_context)
         s.sync_close = true
-        s.hostname = ssl_host_address if s.respond_to?(:hostname=) && ssl_host_address
+        # Server Name Indication (SNI) RFC 3546/6066
+        s.hostname = @address if ssl_sni_enabled?(@address)
 
         if @ssl_session and
            Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + @ssl_session.timeout
           s.session = @ssl_session
         end
         ssl_socket_connect(s, @open_timeout)
-        if (@ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE) && verify_hostname
+        # See the note on #verify_hostname
+        if ssl_context.verify_mode != OpenSSL::SSL::VERIFY_NONE && verify_hostname
           s.post_connection_check(@address)
         end
         debug "SSL established, protocol: #{s.ssl_version}, cipher: #{s.cipher[0]}"
       end
+
       @socket = BufferedIO.new(s, read_timeout: @read_timeout,
                                write_timeout: @write_timeout,
                                continue_timeout: @continue_timeout,
@@ -1822,13 +1853,22 @@ module Net   #:nodoc:
     private_constant :TCP_SOCKET_NEW_HAS_OPEN_TIMEOUT
 
     def timeouted_connect(conn_addr, conn_port)
-      if TCP_SOCKET_NEW_HAS_OPEN_TIMEOUT
+      s = if TCP_SOCKET_NEW_HAS_OPEN_TIMEOUT
         TCPSocket.open(conn_addr, conn_port, @local_host, @local_port, open_timeout: @open_timeout)
       else
         Timeout.timeout(@open_timeout, Net::OpenTimeout) {
           TCPSocket.open(conn_addr, conn_port, @local_host, @local_port)
         }
       end
+      s.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+      s
+    rescue => e
+      s&.close
+      if (defined?(IO::TimeoutError) && e.is_a?(IO::TimeoutError)) || e.is_a?(Errno::ETIMEDOUT)  # for compatibility with previous versions
+        e = Net::OpenTimeout.new(e)
+      end
+      raise e, "Failed to open TCP connection to " +
+        "#{conn_addr}:#{conn_port} (#{e.message})"
     end
     private :timeouted_connect
 
@@ -1856,14 +1896,13 @@ module Net   #:nodoc:
     @proxy_port = nil
     @proxy_user = nil
     @proxy_pass = nil
-    @proxy_use_ssl = nil
 
     # Creates an \HTTP proxy class which behaves like \Net::HTTP, but
     # performs all access via the specified proxy.
     #
     # This class is obsolete.  You may pass these same parameters directly to
     # \Net::HTTP.new.  See Net::HTTP.new for details of the arguments.
-    def HTTP.Proxy(p_addr = :ENV, p_port = nil, p_user = nil, p_pass = nil, p_use_ssl = nil) #:nodoc:
+    def HTTP.Proxy(p_addr = :ENV, p_port = nil, p_user = nil, p_pass = nil) #:nodoc:
       return self unless p_addr
 
       Class.new(self) {
@@ -1881,7 +1920,6 @@ module Net   #:nodoc:
 
         @proxy_user = p_user
         @proxy_pass = p_pass
-        @proxy_use_ssl = p_use_ssl
       }
     end
 
@@ -1908,9 +1946,6 @@ module Net   #:nodoc:
       # Returns the password for accessing the proxy, or +nil+ if none;
       # see Net::HTTP@Proxy+Server.
       attr_reader :proxy_pass
-
-      # Use SSL when talking to the proxy. If Net::HTTP does not use a proxy, nil.
-      attr_reader :proxy_use_ssl
     end
 
     # Returns +true+ if a proxy server is defined, +false+ otherwise;
@@ -1975,6 +2010,27 @@ module Net   #:nodoc:
       else
         @proxy_pass
       end
+    end
+
+    # Returns +true+ if SSL is used to connect to the proxy server;
+    # see {Proxy Server}[rdoc-ref:Net::HTTP@Proxy+Server].
+    def proxy_use_ssl?
+      if @proxy_from_env
+        proxy_uri&.scheme == "https"
+      else
+        @proxy_use_ssl
+      end
+    end
+
+    # Returns the OpenSSL::SSL::SSLContext object used for SSL/TLS sessions
+    # with the proxy server.
+    def proxy_ssl_context
+      @proxy_ssl_context ||= (
+        ctx = OpenSSL::SSL::SSLContext.new
+        ctx.set_params
+        ctx.verify_hostname = ssl_sni_enabled?(proxy_address)
+        ctx
+      )
     end
 
     alias proxyaddr proxy_address   #:nodoc: obsolete
